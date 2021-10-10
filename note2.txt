@@ -1,0 +1,438 @@
+if (tryGetChat) {
+	return (
+		<KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior="padding"
+    keyboardVerticalOffset={Platform.select({
+        ios: () => 0,
+        android: () => RFValue(0)
+        // gives the padding between keyboard and chat
+    })()}
+  >
+		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+		<View style={styles.innerContainer}>
+			{
+				Platform.OS === 'ios'
+				?
+				<View style={ styles.iosPaddingTop }>
+				</View>
+				:
+				<View style={ styles.androidPaddingTop }>
+				</View>
+			}
+			<UserAccountHeaderForm
+				goBack={() => { navigation.goBack(); }}
+				leftCompartmentIcon={
+					chatDoc && chatDoc.theOtherUserActive
+					?
+					<Entypo name="dot-single" size={RFValue(27)} color="green" />
+					:
+					<Entypo name="dot-single" size={RFValue(27)} color="black" />
+				}
+				username={theOtherUser.username}
+				title={null}
+				firstIcon={
+					theOtherUser.type === 'business'
+					? <Feather name="menu" size={RFValue(23)} color={displayPostsShown ? color.blue1 : color.black1} />
+					: null
+				}
+				secondIcon={
+					theOtherUser.type === 'business'
+					? <Feather name="shopping-bag" size={RFValue(28)} color={color.black1} />
+					: null
+				}
+				firstOnPress={
+					() => {setDisplayPostsShown(!displayPostsShown);}
+				}
+				secondOnPress={
+					null
+				}
+			/>
+				{ 
+					theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length > 0 
+					?
+					<View style={styles.displayPostsContainer}>
+						<FlatList
+							onEndReached={() => {
+								if (userAccountDisplayPostState === false) {
+									getUserAccountDisplayPosts(
+										userAccountDisplayPostFetchSwitch, 
+										userAccountDisplayPostLast,
+										theOtherUser, 
+										user
+									);
+								}
+							}}
+							onEndReachedThreshold={0.01}
+	            horizontal
+	            showsHorizontalScrollIndicator={false}
+	            data={userAccountDisplayPosts}
+	            keyExtractor={(displayPost) => displayPost.id}
+	            renderItem={({ item }) => {
+	              return (
+	                <TouchableOpacity 
+	                  style={styles.postImageContainer}
+	                  onPress={() => {
+	                  	if (chosenDisplayPostUrl === item.data.files[0].url) {
+	                  		setChosenDisplayPostUrl('')
+	                  	} else {
+		                  	setChosenDisplayPostUrl(item.data.files[0].url);
+	                  	}
+	                  }}
+	                >
+		                <DisplayPostImage
+		                	type={item.data.files[0].type}
+		                	url={item.data.files[0].url}
+		                />
+		                <DisplayPostInfo
+		                	taggedCount={kOrNo(item.data.taggedCount)}
+		                	likeCount={kOrNo(item.data.like)}
+		                />
+		                { item.data.files.length > 1
+		                	? <MultiplePhotosIndicator
+		                			size={RFValue(24)}
+		                		/>
+		                	: null
+		                }
+		                { 
+		                	chosenDisplayPostUrl === item.data.files[0].url
+		                	?
+		                	<View style={styles.chosenStatus}>
+			                	<View style={styles.chosenShadow}>
+			                	
+				                </View>
+				                <View style={styles.chosenCheck}>
+				                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+				                </View>
+				              </View>
+				              : null
+		                }
+	                </TouchableOpacity>
+	              )
+	            }}
+	          />
+						{ 
+							userAccountDisplayPostState
+							?
+							<GetDisplayPostLoading />
+							: 
+							null
+						}
+					</View>
+					: theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length === 0
+					?
+					<View style={styles.displayPostsContainer}>
+	          <View style={styles.cloudContainer}>
+	          	<AntDesign name="cloudo" size={RFValue(37)} color={color.black1} />
+	          </View>
+	          <View style={styles.cloudContainer}>
+	          	<AntDesign name="cloudo" size={RFValue(37)} color={color.black1} />
+	          </View>
+					</View>
+					: null
+				}
+        	
+				<GiftedChat
+			 		text={message}
+			 		onInputTextChanged={(text) => { setMessage(text) }}
+			 		messages={messages}
+			 		onSend={() => {
+			 			// when chat does not exist make chat first then send
+			 			if (tryGetChat && chat === null) {
+			 				const openChat = chatPostFire.openChat(theOtherUser.id, user.id)
+			 				openChat
+			 				.then((chat) => {
+			 					setChat(chat);
+			 					chatPostFire.sendMessageFire(
+					 				chat.id, 
+					 				theOtherUser.id, 
+					 				user.id, 
+					 				message, 
+					 				files, 
+					 				chosenDisplayPostUrl, 
+					 				false, // orignally, chatDoc.theOtherUserActive
+					 				changeProgress
+					 			);
+					 			clearFiles();
+					 			setChosenDisplayPostUrl('');
+					 			setDisplayPostsShown(false);
+			 				})
+			 				.catch((error) => {
+			 					console.log("ChatScreen: chatPostFire: openChat: ", error);
+			 				});
+			 			} else {
+			 				chatPostFire.sendMessageFire(
+				 				chat.id, 
+				 				theOtherUser.id, 
+				 				user.id, 
+				 				message, 
+				 				files, 
+				 				chosenDisplayPostUrl, 
+				 				chatDoc.theOtherUserActive, 
+				 				changeProgress
+				 			);
+				 			clearFiles();
+				 			setChosenDisplayPostUrl('');
+				 			setDisplayPostsShown(false);
+			 			}
+			 		}}
+			 		user={{
+			      _id: user.id
+			    }}
+			    renderMessageImage={(props) => {
+			    	return (
+			    		<TouchableOpacity
+				    		style={{ borderRadius: RFValue(7), padding: RFValue(5) }}
+				    		onPress={() => {
+				    			navigation.navigate('ImageZoomin', 
+						    		{ 
+						    			currentScreen: "Chat",
+						    			imageUri: props.currentMessage.image
+						    		}
+						    	)
+				    		}}
+				    	>
+				    		<Image
+				    			source={{ uri: props.currentMessage.image }}
+				    			style={{ borderRadius: RFValue(11), resizeMode: 'contain', width: RFValue(100), height: RFValue(100) }}
+				    		/>
+				    	</TouchableOpacity>
+			    	)
+			    }}
+			    loadEarlier={
+			    	messageFetchSwitch && chat 
+			    	? true
+			    	: false
+			    }
+			    onLoadEarlier={() => {
+			    	if (chat) {
+			    		chatGetFire.getMessages(
+				    		chat.id, 
+				    		theOtherUser.id, 
+				    		theOtherUser.name, 
+				    		theOtherUser.photoURL, 
+				    		appendEarlierMessages,
+				    		setMessageLast,
+								setMessageFetchSwitch,
+								setMessageState,
+								messageLast,
+								messageFetchSwitch,
+								messageState,
+				    	)
+			    	}
+			    }}
+			    scrollToBottom={true}
+			    scrollToBottomComponent={() => {
+			    	return (
+			    		<Feather name="chevron-down" size={RFValue(23)} color={color.black1} />
+			    	)
+			    }}
+	    		renderSend={(props) => (
+	          <Send
+	            {...props}
+	            containerStyle={styles.sendContainer}
+	          >
+	            <Ionicons name="send" size={RFValue(21)} color={getRandomColor()} />
+	          </Send>
+	    		)}
+	    		renderActions={() => {
+	    			return (
+	    				<TouchableHighlight 
+	    					style={styles.actionButtonContainer}
+	    					onPress={() => {
+	    						Keyboard.dismiss()
+
+	    					}}
+  						underlayColor={color.gray4}
+	    				>
+	    					<AntDesign name="plussquareo" size={24} color="black" />
+	    				</TouchableHighlight>
+	    			)
+	    		}}
+			 	/>
+			 	{
+					keyboardShown === false && files.length === 0
+					?
+					<View style={styles.actionContainer}>
+						<TouchableHighlight 
+							underlayColor={color.gray4}
+							style={styles.buttonContainer}
+							onPress={() => {
+								pickImage('chat');
+							}}
+						>
+							<Feather name="image" size={RFValue(27)} color="black" />
+						</TouchableHighlight>
+						<TouchableHighlight 
+							style={styles.buttonContainer}
+							underlayColor={color.gray4}
+							onPress={() => {
+								console.log("pressed");
+							}}
+						>
+							<AntDesign name="camerao" size={RFValue(27)} color="black" />
+						</TouchableHighlight>
+					</View>
+					: files.length > 0
+					? 
+					<View style={styles.pickImageContainer}>
+			      <FlatList
+			        horizontal
+			        showsHorizontalScrollIndicator={false}
+			        data={files}
+			        keyExtractor={(image) => image.id}
+			        renderItem={({ item }) => {
+			          return (
+			            <TouchableOpacity 
+			              onPress={() => {navigation.navigate('ImageZoomin', 
+			                  {
+			                    imageUri: item.uri,
+			                    currentScreen: 'ContentCreate',
+			                  }
+			                );
+			              }}
+			              style={styles.imageContainer}
+			            >
+			              <CancelButton onPressFunction={() => cancelFileChat(item.id)}/>
+			              <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
+			            </TouchableOpacity>
+			          )
+			        }}
+			      />
+			      { 
+			      	files.length <= 4 && 
+		          <TouchableHighlight 
+		            style={styles.pickImageButton} 
+		            onPress={() => {pickImage('chat');}}
+		            underlayColor={color.gray1}
+		          >
+		            <AntDesign name="plus" size={RFValue(38)} color={color.gray2} />
+		          </TouchableHighlight>
+		        }
+			    </View>
+					: null
+				}
+		</View>
+		</TouchableWithoutFeedback>
+		</KeyboardAvoidingView>
+	)
+} else {
+	return (
+		<View style={{ flex: 1, justifyContent: 'center' }}>
+    <SpinnerFromActivityIndicator />
+  </View>
+	)
+}
+<ChatBox
+	showActionContainer={showActionContainer}
+	keyboardShown={keyboardShown}
+	files={files}
+	messages={ messages }
+	userId={ user.id }
+	theOtherUserPhotoURL={ theOtherUser.photoURL }
+	message={ message }
+	setMessage={ setMessage }
+	onSend= {() => {
+		// when chat does not exist make chat first then send
+		if (tryGetChat && chat === null) {
+			const openChat = chatPostFire.openChat(theOtherUser.id, user.id)
+			openChat
+			.then((chat) => {
+				setChat(chat);
+				chatPostFire.sendMessageFire(
+ 				chat.id, 
+ 				theOtherUser.id, 
+ 				user.id, 
+ 				message, 
+ 				files, 
+ 				chosenDisplayPostUrl, 
+ 				false, // orignally, chatDoc.theOtherUserActive
+ 				changeProgress
+ 			);
+ 			clearFiles();
+ 			setChosenDisplayPostUrl('');
+ 			setDisplayPostsShown(false);
+			})
+			.catch((error) => {
+				console.log("ChatScreen: chatPostFire: openChat: ", error);
+			});
+		} else {
+			chatPostFire.sendMessageFire(
+				chat.id, 
+				theOtherUser.id, 
+				user.id, 
+				message, 
+				files, 
+				chosenDisplayPostUrl, 
+				chatDoc.theOtherUserActive, 
+				changeProgress
+			);
+			clearFiles();
+			setChosenDisplayPostUrl('');
+			setDisplayPostsShown(false);
+		}
+	}}
+/>
+
+{
+	showExtendedActions && files.length === 0
+	?
+	<View style={styles.extendedActionContainer}>
+		<TouchableHighlight 
+			underlayColor={color.gray4}
+			style={styles.buttonContainer}
+			onPress={() => {
+				pickImage('chat');
+			}}
+		>
+			<Feather name="image" size={RFValue(27)} color="black" />
+		</TouchableHighlight>
+		<TouchableHighlight 
+			style={styles.buttonContainer}
+			underlayColor={color.gray4}
+			onPress={() => {
+				console.log("pressed");
+			}}
+		>
+			<AntDesign name="camerao" size={RFValue(27)} color="black" />
+		</TouchableHighlight>
+	</View>
+	: files.length > 0
+	? 
+	<View style={styles.pickImageContainer}>
+    <FlatList
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      data={files}
+      keyExtractor={(image) => image.id}
+      renderItem={({ item }) => {
+        return (
+          <TouchableOpacity 
+            onPress={() => {navigation.navigate('ImageZoomin', 
+                {
+                  imageUri: item.uri,
+                  currentScreen: 'ContentCreate',
+                }
+              );
+            }}
+            style={styles.imageContainer}
+          >
+            <CancelButton onPressFunction={() => cancelFileChat(item.id)}/>
+            <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
+          </TouchableOpacity>
+        )
+      }}
+    />
+    { 
+    	files.length <= 4 && 
+      <TouchableHighlight 
+        style={styles.pickImageButton} 
+        onPress={() => {pickImage('chat');}}
+        underlayColor={color.gray1}
+      >
+        <AntDesign name="plus" size={RFValue(38)} color={color.gray2} />
+      </TouchableHighlight>
+    }
+  </View>
+	: null
+}

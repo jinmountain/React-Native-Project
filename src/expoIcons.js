@@ -1,0 +1,77 @@
+import React from 'react';
+
+// designs
+import { FontAwesome } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import { EvilIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+
+const dollarSign = (size, color) => {
+	return <FontAwesome name="dollar" size={size} color={color} />
+};
+
+const entypoDot = (size, color) => {
+	return <Entypo name="dot-single" size={size} color={color} />
+};
+
+const antClose = (size, color) => {
+	return <AntDesign name="close" size={size} color={color} />
+};
+
+const antCheck = (size, color) => {
+	return <AntDesign name="check" size={size} color={color} />
+};
+
+const featherMoreHorizontal = (size, color) => {
+	return <Feather name="more-horizontal" size={size} color={color} />
+};
+
+const IoniconsMdArrowBack = (size, color) => {
+	return <Ionicons name="md-arrow-back" size={size} color={color} />
+};
+
+const evilIconsLocation = (size, color) => {
+	return <EvilIcons name="location" size={size} color={color} />
+};
+
+const evilIconsClose = (size, color) => {
+	return <EvilIcons name="close" size={size} color={color} />;
+};
+
+const entypoShop = (size, color) => {
+	return <Entypo name="shop" size={size} color={color} />
+};
+
+const featherMoreVertical = (size, color) => {
+	return <Feather name="more-vertical" size={size} color={color.gray2} />
+};
+
+const featherMap = (size, color) => {
+	return <Feather name="map" size={size} color={color} />
+};
+
+const featherShoppingBack = (size, color) => {
+	return <Feather name="shopping-bag" size={size} color={color} />
+};
+
+const ioniconsNotifications = (size, color) => {
+	return <Ionicons name="notifications" size={size} color={color} />
+};
+
+export default { 
+	dollarSign, 
+	entypoDot, 
+	antClose, 
+	antCheck, 
+	featherMoreHorizontal, 
+	IoniconsMdArrowBack, 
+	evilIconsLocation,
+	evilIconsClose,
+	entypoShop,
+	featherMap,
+	featherMoreVertical,
+	featherShoppingBack,
+	ioniconsNotifications
+};

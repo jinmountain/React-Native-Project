@@ -1,0 +1,121 @@
+Snail 
+=============
+Why use Snail
+=============
+People want unique designs not some designs that are mass produced
+they want to be unique and be the first
+they want others to follow them and be looked up
+Be The First
+
+==============
+What functions
+==============
+can notify customers on behalf of businesses
+can show the most popular designs
+can connect customers to the most competent technicians
+can provide business insight based on big data
+can help businesses to come up with new nail designs and business strategies
+
+====================================================
+we don't ask money
+we want the industry to grow so win win for everyone
+====================================================
+
+=================
+Replace &,<,>,",'
+=================
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// only alphbets, numbers, dot and underscore allowed
+var expr = /^[a-zA-Z0-9._]*$/;
+if (!expr.test(username)) 
+
+==============
+Export exmaple
+==============
+util.js
+
+export function foo() { console.log('foo') }
+export function bar() { console.log('bar') }
+export function baz() { foo(); bar() }
+
+export default {foo, bar, baz}
+
+a.js, using default export
+
+import util from './util'
+util.foo()
+
+b.js, using named exports
+
+import {bar} from './util'
+bar()
+
+================
+FlatList Example
+================
+<FlatList
+	horizontal={false}
+	numOfColumns={numOfColumns}
+	showsHorizontalScrollIndicator={false}
+	data={posts}
+	keyExtractor={(post) => post.id}
+	renderItem={({ item }) => {
+	  return (
+	    <TouchableOpacity 
+	      style={styles.imageContainer}
+	    >
+	      <Image 
+	        style={{width: 100, height: 100}} 
+	        source={{ uri: item.data.image[0] }}
+	      />
+	    </TouchableOpacity>
+	  )
+	}}
+/>
+
+==========
+Cool emoji
+==========
+。　　•　　•　 　ﾟ　　。
+　　.　　°　.　　•　• 　　.　　　
+　.　　 。　 ඞ 。　 . •
+
+=============================
+Ternaries Conditions (nested)
+=============================
+1) Using If
+const withIf = ({
+  conditionA, conditionB
+}) => {
+  if (conditionA) {
+    if (conditionB) {
+      return valueA;
+    }
+    return valueB;
+  }
+  return valueC;
+};
+
+2) Using Ternary
+const withTernary = ({
+  conditionA, conditionB
+}) => (
+  (!conditionA)
+    ? valueC
+    : (conditionB)
+    ? valueA
+    : valueB
+);
+
+======================
+round to first decimal
+======================
+Number((Math.round(businessUser.totalRating/businessUser.countRating * 10) / 10).toFixed(1))
