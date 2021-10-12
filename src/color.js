@@ -1,5 +1,6 @@
 export default {
 	black1: '#030303', // for general black
+	black2: '#121212', // sexy black
 
 	skyblue1: '#E9FEFF', // for touchable highlight
 	skyblue2: '#1D9BF1', // alertTopBox button background color
@@ -8,6 +9,7 @@ export default {
 	blue2: '#1F93F4', // user message box background color |
 
 	red1: '#F4212E', // red button background color | alert color
+	red2: '#E44753', // noti color | like color
 
 	grey1: '#E0E0E0', // for incomplete, guide line,
 	grey2: '#909090', // medium gray, gray buttons

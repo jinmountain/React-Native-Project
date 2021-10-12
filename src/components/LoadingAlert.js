@@ -11,26 +11,47 @@ const LoadingAlert = ({ progress }) => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.loadingAlertContainer}>
-				<View style={styles.iconContainer}>
-					<MaterialCommunityIcons name="alpha-l" size={RFValue(23)} color={color.gray3} />
-					<MaterialCommunityIcons name="alpha-o" size={RFValue(23)} color={color.gray3} />
-					<MaterialCommunityIcons name="alpha-a" size={RFValue(23)} color={color.gray3} />
-					<MaterialCommunityIcons name="alpha-d" size={RFValue(23)} color={color.gray3} />
-					<MaterialCommunityIcons name="alpha-i" size={RFValue(23)} color={color.gray3} />
-					<MaterialCommunityIcons name="alpha-n" size={RFValue(23)} color={color.gray3} />
-					<MaterialCommunityIcons name="alpha-g" size={RFValue(23)} color={color.gray3} />
-				</View>
 				{
 					progress
 					?
-					<View>
+					<View style={styles.progressBarContainer}>
+						<View style={[ styles.progressbar, { width: `${progress}%` }]}>
+						</View>
 						<Text style={styles.progressText}>{progress} %</Text>
 					</View>
 					:
 					null
 				}
-				
-				<SpinnerFromActivityIndicator />
+				<View style={styles.iconContainer}>
+					<View style={styles.letterContainer}>
+						<Text style={styles.letterText}>W</Text>
+					</View>
+					<View style={styles.letterContainer}>
+						<Text style={styles.letterText}>O</Text>
+					</View>
+					<View style={styles.letterContainer}>
+						<Text style={styles.letterText}>N</Text>
+					</View>
+					<View style={styles.letterContainer}>
+						<Text style={styles.letterText}>D</Text>
+					</View>
+					<View style={styles.letterContainer}>
+						<Text style={styles.letterText}>E</Text>
+					</View>
+					<View style={styles.letterContainer}>
+						<Text style={styles.letterText}>R</Text>
+					</View>
+					{/*<MaterialCommunityIcons name="alpha-l" size={RFValue(23)} color={color.grey3} />
+					<MaterialCommunityIcons name="alpha-o" size={RFValue(23)} color={color.grey3} />
+					<MaterialCommunityIcons name="alpha-a" size={RFValue(23)} color={color.grey3} />
+					<MaterialCommunityIcons name="alpha-d" size={RFValue(23)} color={color.grey3} />
+					<MaterialCommunityIcons name="alpha-i" size={RFValue(23)} color={color.grey3} />
+					<MaterialCommunityIcons name="alpha-n" size={RFValue(23)} color={color.grey3} />
+					<MaterialCommunityIcons name="alpha-g" size={RFValue(23)} color={color.grey3} />*/}
+				</View>
+				<View style={styles.spinnerContainer}>
+					<SpinnerFromActivityIndicator />
+				</View>
 			</View>
 		</View>
 	)
@@ -49,30 +70,54 @@ const styles = StyleSheet.create({
 		zIndex: 3,
 		alignSelf: 'center',
 		position: 'absolute',
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: "white",
+		backgroundColor: color.white2,
 		shadowColor: "#000",
 		shadowOffset: { x: 1, y: 1 },
     shadowRadius: 5,
     shadowOpacity: 0.4,
     elevation: 5, // for android
-    borderRadius: 10,
-    padding: RFValue(7),
-    paddingBottom: RFValue(10),
+    borderRadius: RFValue(7),
+    width: RFValue(170),
+    height: RFValue(170),
 	},
 	iconContainer: {
-		padding: RFValue(7),
+		flex: 1,
 		flexDirection: 'row',
+		paddingHorizontal: RFValue(15),
+		paddingTop: RFValue(10),
 	},
-	text: {
-		fontSize: RFValue(15),
-		color: color.black1,
-		padding: RFValue(7),
+	letterContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	letterText: {
+		fontSize: RFValue(17),
+		color: color.black2,
+	},
+
+	progressBarContainer: {
+		height: RFValue(30),
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	progressbar: {
+		position: 'absolute',
+		height: RFValue(30),
+		backgroundColor: color.black2
 	},
 	progressText: {
+		color: color.white2,
 		fontSize: RFValue(15),
 		fontWeight: 'bold',
+	},
+
+	spinnerContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingHorizontal: RFValue(7),
+		paddingBottom: RFValue(10),
 	},
 });
 

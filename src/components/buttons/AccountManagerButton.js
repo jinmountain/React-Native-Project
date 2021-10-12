@@ -25,7 +25,7 @@ const AccountManagerButton = ({ onPress, icon, textTop, textBottom }) => {
 		<TouchableHighlight 
 			style={styles.menuButton}
 			onPress={onPress}
-			underlayColor={color.gray4}
+			underlayColor={color.grey4}
 		>
 			<View style={styles.textContainer}>
 				{icon}

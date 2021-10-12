@@ -9,7 +9,7 @@ const SpinnerFromActivityIndicator = ({customSize, customColor}) => {
 		<View style={styles.container}>
 			<ActivityIndicator 
 				size={ customSize ? customSize : "large" } 
-				color={ customColor ? customColor : color.blue1 } 
+				color={ customColor ? customColor : color.black2 } 
 			/>
 		</View>
 	)

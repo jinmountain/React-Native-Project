@@ -60,6 +60,18 @@ const ioniconsNotifications = (size, color) => {
 	return <Ionicons name="notifications" size={size} color={color} />
 };
 
+const ioniconsNotificationsOutline = (size, color) => {
+	return <Ionicons name="notifications-outline" size={size} color={color} />
+};
+
+const antdesignHearto = (size, color) => {
+	return <AntDesign name="hearto" size={size} color={color} />
+};
+
+const antdesignHeart = (size, color) => {
+	return <AntDesign name="heart" size={size} color={color} />
+};
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -73,5 +85,8 @@ export default {
 	featherMap,
 	featherMoreVertical,
 	featherShoppingBack,
-	ioniconsNotifications
+	ioniconsNotifications,
+	ioniconsNotificationsOutline,
+	antdesignHearto,
+	antdesignHeart
 };

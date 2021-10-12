@@ -247,23 +247,23 @@ const UserRsvScreen = ({ route, navigation }) => {
 
   const onRefresh = useCallback(() => {
     let isMounted = true;
-    setRefreshing(true);
+    isMounted && setRefreshing(true);
 
     const clearState = new Promise((res, rej) => {
       // things to reset
-      setScreenReady(false);
+      isMounted && setScreenReady(false);
 
-      setUpcomingRsvs([]);
-      setGetUpcomingRsvsState(false);
-      setUpcomingRsvsFetchSwitch(true);
-      clearUpcomingRsvLast();
+      isMounted && setUpcomingRsvs([]);
+      isMounted && setGetUpcomingRsvsState(false);
+      isMounted && setUpcomingRsvsFetchSwitch(true);
+      isMounted && clearUpcomingRsvLast();
 
-      setPreviousRsvs([]);
-      setGetPreviousRsvsState(false);
-      setPreviousRsvsFetchSwitch(true);
-      clearPreviousRsvLast();
+      isMounted && setPreviousRsvs([]);
+      isMounted && setGetPreviousRsvsState(false);
+      isMounted && setPreviousRsvsFetchSwitch(true);
+      isMounted && clearPreviousRsvLast();
 
-      setDateNow(Date.now());
+      isMounted && setDateNow(Date.now());
 
       res(true);
     });
@@ -272,8 +272,8 @@ const UserRsvScreen = ({ route, navigation }) => {
     .then(() => {
       const getScreenReady = new Promise ((res, rej) => {
         if ( isMounted && !getUpcomingRsvsState ) {
-          setGetUpcomingRsvsState(true);
-          const getUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, upcomingRsvLast);
+          isMounted && setGetUpcomingRsvsState(true);
+          const getUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, null);
 
           getUpcomingRsvs
           .then((result) => {
@@ -288,7 +288,7 @@ const UserRsvScreen = ({ route, navigation }) => {
               isMounted && setUpcomingRsvsFetchSwitch(false);
             }
 
-            setGetUpcomingRsvsState(false);
+            isMounted && setGetUpcomingRsvsState(false);
           })
           .catch((error) => {
             console.log("ActivityScreen: getUpcomingRsvs: ", error);
@@ -296,8 +296,8 @@ const UserRsvScreen = ({ route, navigation }) => {
         }
 
         if ( isMounted && !getPreviousRsvsState ) {
-          setGetPreviousRsvsState(true);
-          const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, previousRsvLast);
+          isMounted && setGetPreviousRsvsState(true);
+          const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, null);
 
           getPreviousRsvs
           .then((result) => {
@@ -312,7 +312,7 @@ const UserRsvScreen = ({ route, navigation }) => {
               isMounted && setPreviousRsvsFetchSwitch(false);
             }
 
-            setGetPreviousRsvsState(false);
+            isMounted && setGetPreviousRsvsState(false);
           })
           .catch((error) => {
             console.log("ActivityScreen: getCompletedRsvs: ", error);
@@ -324,8 +324,8 @@ const UserRsvScreen = ({ route, navigation }) => {
 
       getScreenReady
       .then(() => {
-        setScreenReady(true);
-        setRefreshing(false);
+        isMounted && setScreenReady(true);
+        isMounted && setRefreshing(false);
       })
       .catch((error) => {
         console.log(error);
@@ -337,9 +337,9 @@ const UserRsvScreen = ({ route, navigation }) => {
     }
   }, []);
 
-  // when screen get alert box show request
+  // when screen get alert box request and refresh request from params
   useEffect(() => {
-    console.log("showAlertBoxRequest: ", showAlertBoxRequest, "showAlertBoxRequestText: ", showAlertBoxRequestText);
+    console.log("showAlertBoxRequest: ", showAlertBoxRequest, "showAlertBoxRequestText: ", showAlertBoxRequestText,"screenRefresh: ", screenRefresh);
     let isMounted = true;
 
     // when showAlertBoxRequest is true, show the alert box
@@ -349,23 +349,129 @@ const UserRsvScreen = ({ route, navigation }) => {
         isMounted && setAlertBoxTopText(showAlertBoxRequestText);
         res();
       });
+
       // after showed the alert box set the params back to default setting
       setAlertBoxStates
       .then(() => {
-        navigation.setParams({ showAlertBoxRequest: false, showAlertBoxRequestText: null });
+        navigation.setParams({ 
+          showAlertBoxRequest: false, 
+          showAlertBoxRequestText: null, 
+          // screenRefresh: null 
+        });
       });
     };
     
     return () => {
       isMounted = false;
     }
-  }, [showAlertBoxRequest])
+  }, [showAlertBoxRequest]);
 
   useEffect(() => {
     let isMounted = true;
+    if (screenRefresh) {
+      isMounted && setRefreshing(true);
+
+      const clearState = new Promise((res, rej) => {
+        // things to reset
+        isMounted && setScreenReady(false);
+
+        isMounted && setUpcomingRsvs([]);
+        isMounted && setGetUpcomingRsvsState(false);
+        isMounted && setUpcomingRsvsFetchSwitch(true);
+        isMounted && clearUpcomingRsvLast();
+
+        isMounted && setPreviousRsvs([]);
+        isMounted && setGetPreviousRsvsState(false);
+        isMounted && setPreviousRsvsFetchSwitch(true);
+        isMounted && clearPreviousRsvLast();
+
+        isMounted && setDateNow(Date.now());
+
+        res(true);
+      });
+
+      clearState
+      .then(() => {
+        const getScreenReady = new Promise ((res, rej) => {
+          if ( isMounted && !getUpcomingRsvsState ) {
+            isMounted && setGetUpcomingRsvsState(true);
+            const getUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, null);
+
+            getUpcomingRsvs
+            .then((result) => {
+              console.log("refresh: upcomingRsvs: ", result.rsvs.length);
+              isMounted && setUpcomingRsvs(result.rsvs);
+              if (result.lastRsv !== undefined && isMounted) {
+                isMounted && addUpcomingRsvLast(result.lastRsv);
+              } else {
+                isMounted && setUpcomingRsvsFetchSwitch(false);
+              };
+
+              if (!result.fetchSwitch) {
+                isMounted && setUpcomingRsvsFetchSwitch(false);
+              }
+
+              isMounted && setGetUpcomingRsvsState(false);
+            })
+            .catch((error) => {
+              console.log("ActivityScreen: getUpcomingRsvs: ", error);
+            });
+          }
+
+          if ( isMounted && !getPreviousRsvsState ) {
+            isMounted && setGetPreviousRsvsState(true);
+            const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, null);
+
+            getPreviousRsvs
+            .then((result) => {
+              isMounted && setPreviousRsvs(result.rsvs);
+              if (result.lastRsv !== undefined && isMounted) {
+                isMounted && addPreviousRsvLast(result.lastRsv);
+              } else {
+                isMounted && setPreviousRsvsFetchSwitch(false);
+              };
+
+              if (!result.fetchSwitch) {
+                isMounted && setPreviousRsvsFetchSwitch(false);
+              }
+
+              isMounted && setGetPreviousRsvsState(false);
+            })
+            .catch((error) => {
+              console.log("ActivityScreen: getCompletedRsvs: ", error);
+            });
+          }
+
+          res(true);
+        });
+
+        getScreenReady
+        .then(() => {
+          isMounted && setScreenReady(true);
+          isMounted && setRefreshing(false);
+          // set params back to default
+          navigation.setParams({  
+            screenRefresh: null 
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      });
+    }
+
+    return () => {
+      isMounted = false;
+    }
+  }, [screenRefresh]);
+
+  // get rsvs when screen is opened 
+  useEffect(() => {
+    let isMounted = true;
+
     const getScreenReady = new Promise ((res, rej) => {
-      if ( isMounted && !getUpcomingRsvsState ) {
-        setGetUpcomingRsvsState(true);
+      if ( isMounted && !getUpcomingRsvsState && upcomingRsvsFetchSwitch ) {
+        isMounted && setGetUpcomingRsvsState(true);
         const getUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, upcomingRsvLast);
 
         getUpcomingRsvs
@@ -381,15 +487,15 @@ const UserRsvScreen = ({ route, navigation }) => {
             isMounted && setUpcomingRsvsFetchSwitch(false);
           }
 
-          setGetUpcomingRsvsState(false);
+          isMounted && setGetUpcomingRsvsState(false);
         })
         .catch((error) => {
           console.log("ActivityScreen: getUpcomingRsvs: ", error);
         });
       }
 
-      if ( isMounted && !getPreviousRsvsState ) {
-        setGetPreviousRsvsState(true);
+      if ( isMounted && !getPreviousRsvsState && previousRsvsFetchSwitch ) {
+        isMounted && setGetPreviousRsvsState(true);
         const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, previousRsvLast);
 
         getPreviousRsvs
@@ -405,7 +511,7 @@ const UserRsvScreen = ({ route, navigation }) => {
             isMounted && setPreviousRsvsFetchSwitch(false);
           }
 
-          setGetPreviousRsvsState(false);
+          isMounted && setGetPreviousRsvsState(false);
         })
         .catch((error) => {
           console.log("ActivityScreen: getCompletedRsvs: ", error);
@@ -434,7 +540,7 @@ const UserRsvScreen = ({ route, navigation }) => {
       setPreviousRsvsFetchSwitch(true);
       clearPreviousRsvLast();
     }
-  }, [screenRefresh]);
+  }, []);
 
 	return (
 		<View style={{ flex: 1 }}>
@@ -486,24 +592,6 @@ const UserRsvScreen = ({ route, navigation }) => {
                           rsvStatus: 'upcoming',
                           rsvDetail: item
                         });
-                        // if (showBottomSheet) {
-                        //   sheetRef.current.snapTo(0);
-
-                        //   setBottomSheetRsvTech(item.tech);
-                        //   setBottomSheetRsvPost(item.post);
-                        // } else {
-                        //   const showBottomSheetPromise = new Promise((res, rej) => {
-                        //     setShowBottomSheet(true);
-                        //     res();
-                        //   });
-                        //   showBottomSheetPromise
-                        //   .then(() => {
-                        //     sheetRef.current.snapTo(0);
-
-                        //     setBottomSheetRsvTech(item.tech);
-                        //     setBottomSheetRsvPost(item.post);
-                        //   });
-                        // }
                       }}
                       // delayPressIn={700}
                       // onPressIn={() => { 
@@ -551,24 +639,6 @@ const UserRsvScreen = ({ route, navigation }) => {
                           rsvStatus: 'previous',
                           rsvDetail: item
                         });
-                        // if (showBottomSheet) {
-                        //   sheetRef.current.snapTo(0);
-
-                        //   setBottomSheetRsvTech(item.tech);
-                        //   setBottomSheetRsvPost(item.post);
-                        // } else {
-                        //   const showBottomSheetPromise = new Promise((res, rej) => {
-                        //     setShowBottomSheet(true);
-                        //     res();
-                        //   });
-                        //   showBottomSheetPromise
-                        //   .then(() => {
-                        //     sheetRef.current.snapTo(0);
-
-                        //     setBottomSheetRsvTech(item.tech);
-                        //     setBottomSheetRsvPost(item.post);
-                        //   });
-                        // }
                       }}
                       delayPressIn={700}
                       onPressIn={() => { 

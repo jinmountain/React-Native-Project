@@ -85,7 +85,10 @@ const MainBottomTab = () => {
             ? <Octicons name="pulse" size={RFValue(24)} color={color.black1} />
             : <MaterialCommunityIcons name="pulse" size={RFValue(24)} color={color.black1} />
           ),
-          tabBarBadge: 2
+          tabBarBadge: "",
+          tabBarBadgeStyle: {
+            backgroundColor: color.red2
+          }
         }}
       />
       <BottomTab.Screen 

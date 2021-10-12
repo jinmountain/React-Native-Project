@@ -122,41 +122,39 @@ const DeletionConfirmationScreen = ({ route, navigation }) => {
 								})
 							}
 							else if (requestType === 'rsv') {
-								// const cancelRsv = rsvPostFire.cancelRsv(
-								// 	rsvId,
-								// 	busId,
-								// 	busLocationType,
-								// 	busLocality,
-								// 	cusId,
-								// 	postServiceType,
-								// );
-								// cancelRsv
-								// .then((result) => {
-								// 	if (result === true) {
-								// 		navigation.navigate('Activity', {
-								// 			screenRefresh: true,
-								// 			alertBoxStatus: true,
-								// 			alertBoxText: "Your Reservation is Cancelled"
-								// 		});
-								// 	} 
-								// 	if (result === "rsvNotFound") {
-								// 		navigation.navigate('Activity', {
-								// 			screenRefresh: true,
-								// 			alertBoxStatus: true,
-								// 			alertBoxText: "Reservation Not Found."
-								// 		});
-								// 	}
-									
-								// 	console.log(result);
-								// })
-								// .catch((error) => {
-								// 	console.log("error occured: cancelRsv: ", error);
-								// })
-								navigation.navigate('Activity', {
-									screenRefresh: true,
-									showAlertBoxRequest: true,
-									showAlertBoxRequestText: "Your Reservation is Cancelled"
-								});
+								const cancelRsv = rsvPostFire.cancelRsv(
+									rsvId,
+									busId,
+									busLocationType,
+									busLocality,
+									cusId,
+									postServiceType,
+								);
+								cancelRsv
+								.then((result) => {
+									if (result === true) {
+										navigation.navigate('UserRsv', {
+											screenRefresh: true,
+											showAlertBoxRequest: true,
+											showAlertBoxRequestText: "Your Reservation is Cancelled"
+										});
+									} 
+									if (result === "rsvNotFound") {
+										navigation.navigate('UserRsv', {
+											screenRefresh: true,
+											showAlertBoxRequest: true,
+											showAlertBoxRequestText: "Reservation Not Found."
+										});
+									}
+								})
+								.catch((error) => {
+									console.log("error occured: cancelRsv: ", error);
+									navigation.navigate('UserRsv', {
+										screenRefresh: true,
+										showAlertBoxRequest: true,
+										showAlertBoxRequestText: "Something went wrong. Try Again Later."
+									});
+								})
 							}
 							
 						}}

@@ -78,7 +78,17 @@ const ConfirmationPage = ({
 		        	&&
 	          	<TouchableOpacity 
 	              style={ styles.midCompartmentHighlight }
-	              onPress={() => { navigation.navigate("ActivityTab") }}
+	              onPress={() => { 
+	              	navigation.navigate("ActivityTab", {
+	              		screen: 'UserRsvStack', 
+              			params: {
+              				screen: 'UserRsv',
+              				params: {
+              					screenRefresh: true,
+              				}
+              			}
+		              });
+		            }}
 	            >
 	              <View style={styles.compartment}>
                   <View style={styles.compartmentIconContainer}>
@@ -311,7 +321,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 				<Animated.View 
 					style={{
 						width: '90%',
-						height: '90%',
+						height: '100%',
 						borderRadius: RFValue(3),
 						backgroundColor: colors.card,
 						transform: [
@@ -449,7 +459,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 									>
 										<View style={styles.paymentTypeContainer}>
 											<THButtonWithBorder 
-												icon={<AntDesign name="isv" size={RFValue(17)} color={color.black1} />}
+												icon={<AntDesign name="isv" size={RFValue(15)} color={color.black1} />}
 												text={"Pay at Store"}
 												onPress={() => {
 													console.log("Pay at Store");
@@ -460,7 +470,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 										</View>
 										<View style={styles.paymentTypeContainer}>
 											<THButtonWithBorder 
-												icon={<AntDesign name="creditcard" size={RFValue(17)} color={color.black1} />}
+												icon={<AntDesign name="creditcard" size={RFValue(15)} color={color.black1} />}
 												text={"Default Card"}
 												onPress={() => {
 													console.log("Pay at Store");
@@ -471,19 +481,8 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 										</View>
 										<View style={styles.paymentTypeContainer}>
 											<THButtonWithBorder 
-												icon={<AntDesign name="creditcard" size={RFValue(17)} color={color.black1} />}
-												text={"Default Card"}
-												onPress={() => {
-													console.log("Pay at Store");
-												}} 
-												value={ selectPaymentType === "atStore" ? true : false }
-												valueEffect ={{ backgroundColor: color.blue1 }}
-											/>
-										</View>
-										<View style={styles.paymentTypeContainer}>
-											<THButtonWithBorder 
-												icon={<AntDesign name="creditcard" size={RFValue(17)} color={color.black1} />}
-												text={"Default Card"}
+												icon={<AntDesign name="creditcard" size={RFValue(15)} color={color.black1} />}
+												text={"Add New Payment Method"}
 												onPress={() => {
 													console.log("Pay at Store");
 												}} 

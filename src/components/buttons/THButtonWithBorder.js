@@ -16,7 +16,7 @@ const THButtonWithBorder = ({ icon, text, onPress, value, valueEffect }) => {
     <TouchableHighlight
       style={{ ...styles.buttonContainer, ...valueEffect }}
       onPress={onPress}
-      underlayColor={color.gray4}
+      underlayColor={color.grey4}
     >
       <View style={styles.button}>
         {icon}
@@ -29,7 +29,7 @@ const THButtonWithBorder = ({ icon, text, onPress, value, valueEffect }) => {
     <TouchableHighlight
       style={styles.buttonContainer}
       onPress={onPress}
-      underlayColor={color.gray4}
+      underlayColor={color.grey4}
     >
       <View style={styles.button}>
         {icon}
@@ -49,13 +49,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 10,
     borderWidth: 0.5,
-    borderColor: color.gray1,
+    borderColor: color.grey1,
     paddingHorizontal: RFValue(13),
     paddingVertical: RFValue(9),
     marginHorizontal: RFValue(3),
   },
   button: {
   	flexDirection: 'row',
+    alignItems: 'center',
   },
   buttonText: {
   	paddingHorizontal: RFValue(3),

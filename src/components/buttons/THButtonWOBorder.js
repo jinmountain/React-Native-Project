@@ -14,7 +14,7 @@ const THButtonWOBorder = ({ icon, text, onPress }) => {
 		<TouchableHighlight
 			style={styles.buttonContainer}
       onPress={onPress}
-      underlayColor={color.gray4}
+      underlayColor={color.grey4}
 		>
       <View style={styles.button}>
       	{icon}
