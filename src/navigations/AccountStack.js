@@ -7,6 +7,8 @@ import ImageZoominScreen from '../screens/ImageZoominScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ChatListScreen from '../screens/ChatListScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
+import PostManagerScreen from '../screens/PostManagerScreen';
+import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
 
 // Stacks
 import PostsSwipeStack from './PostsSwipeStack';
@@ -31,6 +33,42 @@ const AccountStack = () => {
       <Stack.Screen 
         name="PostDetail" 
         component={PostDetailScreen} 
+      />
+      <Stack.Screen 
+        name="PostManager" 
+        component={PostManagerScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="DeletionConfirmationScreen" 
+        component={DeletionConfirmationScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+        initialParams={{
+          requestType: null,
+          // post deletion
+          postId: null,
+          postData: null,
+
+          // rsv deletion
+          rsvId: null,
+          busId: null,
+          busLocationType: null,
+          busLocality: null,
+          cusId: null,
+          postServiceType: null
+        }}
       />
       <Stack.Screen 
         name="UserAccountStack" 

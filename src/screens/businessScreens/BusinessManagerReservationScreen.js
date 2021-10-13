@@ -41,7 +41,7 @@ import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 // Color
 import color from '../../color';
 
-const RsvInfoCompartment = ({ rsv }) => {
+const RsvInfoCompartment = ({ rsv, borderLineTop }) => {
 	// item object structure
 	// rsv: {
 	// 	confirm: rsvData.confirm,
@@ -70,6 +70,10 @@ const RsvInfoCompartment = ({ rsv }) => {
 	// }
 	return (
 		<View style={styles.rsvInfoCompartment}>
+			{
+				borderLineTop
+				&& <HeaderBottomLine />
+			}
 			<View style={styles.timeContainer}>
 				<Text style={styles.timeText}>
 					{useConvertTime.convertToNormHourMin(rsv.rsv.startAt)}
@@ -334,7 +338,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 								setDaysFromToday(daysFromToday - 1);
 							}}
 							style={styles.controllerButtonTHContainer}
-							underlayColor={color.gray1}
+							underlayColor={color.grey1}
 						>
 							<View style={styles.controllerButtonContainer}>
 								<FontAwesome name="calendar-minus-o" size={RFValue(23)} color="black" />
@@ -371,7 +375,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 								setDaysFromToday(daysFromToday + 1);
 							}}
 							style={styles.controllerButtonTHContainer}
-							underlayColor={color.gray1}
+							underlayColor={color.grey1}
 						>
 							<View style={styles.controllerButtonContainer}>
 								<FontAwesome name="calendar-plus-o" size={RFValue(23)} color="black" />
@@ -406,18 +410,17 @@ const BusinessManager = ({ navigation, isFocused }) => {
 										setLongPressed(false);
 									}}
 								>
-									{
-										index > 0
-										&& <HeaderBottomLine />
-									}
-									<RsvInfoCompartment rsv={item}/>
+									<RsvInfoCompartment 
+										rsv={item} 
+										borderLineTop={index > 0}
+									/>
 								</TouchableOpacity>
 							))
 							: getUpcomingRsvsState
 							?
 							<View style={styles.messageContainer}>
 								<SpinnerFromActivityIndicator 
-									customColor={color.gray1}
+									customColor={color.grey1}
 								/>
 							</View>
 							:
@@ -524,7 +527,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 							  						console.log("Error occured: BusinessManagerReservationScreen: completeRsv: ", error);
 							  					})
 							  				}}
-							  				underlayColor={color.gray1}
+							  				underlayColor={color.grey1}
 							  				style={styles.actionButtonContainer}
 							  			>
 						  					<View style={styles.actionButtonInnerContainer}>
@@ -544,7 +547,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 							?
 							<View style={styles.messageContainer}>
 								<SpinnerFromActivityIndicator 
-									customColor={color.gray1}
+									customColor={color.grey1}
 								/>
 							</View>
 							:
@@ -635,7 +638,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 							  						console.log("Error occured: BusinessManagerReservationScreen: uncompleteRsv: ", error);
 							  					})
 							  				}}
-							  				underlayColor={color.gray1}
+							  				underlayColor={color.grey1}
 							  				style={styles.actionButtonContainer}
 							  			>
 						  					<View style={styles.actionButtonInnerContainer}>
@@ -655,7 +658,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 							?
 							<View style={styles.messageContainer}>
 								<SpinnerFromActivityIndicator 
-									customColor={color.gray1}
+									customColor={color.grey1}
 								/>
 							</View>
 							:
@@ -704,7 +707,7 @@ const styles = StyleSheet.create({
 	rsvContainer: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		flexDirection: 'row',
+		flexDirection: 'row'
 	},
 	rsvInfoCompartment: {
 		flex: 2.5

@@ -211,7 +211,7 @@ const ChatBox = ({
 							Keyboard.dismiss();
 							setShowExtendedActions(!showExtendedActions);
 						}}
-						underlayColor={color.gray4}
+						underlayColor={color.grey4}
 					>
 						<AntDesign name="plussquareo" size={RFValue(23)} color="black" />
 					</TouchableHighlight>
@@ -221,7 +221,7 @@ const ChatBox = ({
 						onPress={() => {
 							setShowExtendedActions(!showExtendedActions);
 						}}
-						underlayColor={color.gray4}
+						underlayColor={color.grey4}
 					>
 						<AntDesign name="closesquareo" size={RFValue(23)} color="black" />
 					</TouchableHighlight>
@@ -256,7 +256,7 @@ const ChatBox = ({
 				<TouchableHighlight
 					style={styles.sendButtonContainer}
 		      onPress={onSend}
-		      underlayColor={color.gray5}
+		      underlayColor={color.grey4}
 				>
 					<View>
 						<Ionicons name="send" size={RFValue(21)} color={sendButtonColor} />
@@ -286,12 +286,18 @@ const styles = StyleSheet.create({
 		borderRadius: RFValue(13),
 	}, 
 	actionButtonContainer: {
-		borderRadius: 100,
-		padding: RFValue(9),
+		width: RFValue(50),
+		backgroundColor: color.white2,
+		height: '100%',
+		justifyContent: 'center',
+		alignItems: 'center'
 	},
 	textInputContainer: {
 		flex: 1,
 		paddingVertical: RFValue(7),
+		backgroundColor: color.white2,
+		height: '100%',
+		justifyContent: 'center',
 	},
 
 	dateSignContainer: {
@@ -306,7 +312,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		flexDirection: 'row',
 		borderRadius: RFValue(7),
-		backgroundColor: color.gray1
+		backgroundColor: color.grey1
 	},
 	dateSignText: {
 		color: '#fff',
@@ -335,7 +341,7 @@ const styles = StyleSheet.create({
 	},
 	timeText: {
 		fontSize: RFValue(11),
-		color: color.gray3,
+		color: color.grey3,
 	},
 
 	theOtherUserMessageContainer: {
@@ -356,7 +362,7 @@ const styles = StyleSheet.create({
 		padding: RFValue(5),
 		borderTopRightRadius: RFValue(7),
 		borderBottomRightRadius: RFValue(7),
-		backgroundColor: color.gray4,
+		backgroundColor: color.grey4,
 		borderRadius: RFValue(7),
 	},
 
@@ -379,6 +385,8 @@ const styles = StyleSheet.create({
 
 	extendedActionContainer: {
 		width: 0,
+		backgroundColor: color.white2,
+		height: '100%',
 	},
 	extendedActionButtonContainer: {
 		justifyContent: 'center',

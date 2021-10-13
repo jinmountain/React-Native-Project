@@ -18,12 +18,9 @@ import SignupScreen from './src/screens/SignupScreen';
 import PasswordResetScreen from './src/screens/PasswordResetScreen';
 import EmailVerificationScreen from './src/screens/EmailVerificationScreen';
 import ResolveAuthScreen from './src/screens/ResolveAuthScreen';
-import SearchDetailScreen from './src/screens/SearchDetailScreen';
-import SearchListScreen from './src/screens/SearchListScreen';
-import UserRsvScreen from './src/screens/UserRsvScreen';
 import CameraScreen from './src/screens/CameraScreen';
 import ImageUploadMethodModal from './src/screens/ImageUploadMethodModal';
-import ErrorModal from './src/screens/ErrorModal';
+import ChatScreen from './src/screens/ChatScreen';
 
 // Navigations
 import MainBottomTab from './src/navigations/MainBottomTab';
@@ -82,6 +79,13 @@ const MainFlow = () => {
       <Stack.Screen 
         name="Main" 
         component={MainBottomTab}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="Chat" 
+        component={ChatScreen}
         options={{
           headerShown: false,
         }}

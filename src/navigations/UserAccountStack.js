@@ -35,10 +35,6 @@ const UserAccountStack = () => {
         name="ShopStack" 
         component={ShopStack} 
       />
-      <Stack.Screen 
-        name="Chat" 
-        component={ChatScreen} 
-      />
     </Stack.Navigator>
   );
 };

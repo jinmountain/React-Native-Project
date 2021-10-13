@@ -116,7 +116,6 @@ const HeaderForm = (
 
 const styles = StyleSheet.create({
   headerContainer: {
-    paddingTop: RFValue(3),
     height: '9%',
     justifyContent: "center",
     backgroundColor: "#FFF",
@@ -190,8 +189,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    width: RFValue(77),
-    height: RFValue(77),
+    width: RFValue(50),
+    height: RFValue(50),
     borderRadius: RFValue(100),
   },
   headerTitle: {

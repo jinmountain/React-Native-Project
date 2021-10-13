@@ -82,15 +82,15 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  <View style={styles.progressBarContainer}>
 		  	<TouchableOpacity 
 		  		style={
-		  			{ ...styles.progressBar, ...{backgroundColor: color.skyblue1}}
+		  			{ ...styles.progressBar, ...{backgroundColor: color.black2}}
 		  		}
 		  	>
-					<AntDesign name="smileo" size={RFValue(20)} color={color.black1} />
+					<AntDesign name="smileo" size={RFValue(20)} color={color.white2} />
 		  	</TouchableOpacity>
 		  	<TouchableOpacity 
 		  		style={
 		  			locationType
-		  			? { ...styles.progressBar, ...{backgroundColor: color.skyblue1}}
+		  			? { ...styles.progressBar, ...{backgroundColor: color.black2}}
 		  			: styles.progressBar
 		  		}
 		  		onPress={() => { 
@@ -99,14 +99,14 @@ const UBLocationAddressScreen = ({ navigation }) => {
 			    	clearBusinessLocation();
 		  		}}
 		  	>
-		  		<AntDesign name="isv" size={RFValue(20)} color={color.black1} />
-		  		<View style={{borderWidth: 1, marginHorizontal: 2}}></View>
-	  			<AntDesign name="rocket1" size={RFValue(20)} color={color.black1} />
+		  		<AntDesign name="isv" size={RFValue(20)} color={ locationType ? color.white2 : color.black1} />
+		  		<View style={{ borderWidth: 1, marginHorizontal: 2 }}></View>
+	  			<AntDesign name="rocket1" size={RFValue(20)} color={locationType ? color.white2 : color.black1} />
 		  	</TouchableOpacity>
 		  	<TouchableOpacity 
 		  		style={
 		  			businessLocation
-		  			? { ...styles.progressBar, ...{backgroundColor: color.skyblue1}}
+		  			? { ...styles.progressBar, ...{backgroundColor: color.black2 }}
 		  			: styles.progressBar
 		  		}
 		  		onPress={() => { 
@@ -118,12 +118,12 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  			}
 		  		}}
 		  	>
-		  		<FontAwesome name="map-o" size={RFValue(20)} color={color.black1} />
+		  		<FontAwesome name="map-o" size={RFValue(20)} color={businessLocation ? color.white2 : color.black2 } />
 		  	</TouchableOpacity>
 		  	<TouchableOpacity 
 		  		style={
 		  			locationType && businessLocation
-		  			? { ...styles.progressBar, ...{backgroundColor: color.skyblue1}}
+		  			? { ...styles.progressBar, ...{backgroundColor: color.black2}}
 		  			: styles.progressBar
 		  		}
 		  	>
@@ -132,8 +132,8 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  			size={RFValue(20)} 
 		  			color={ 
 		  				locationType && businessLocation
-		  				? color.blue1
-		  				:	color.gray1
+		  				? color.white2
+		  				:	color.black2
 		  			}
 		  		/>
 		  	</TouchableOpacity>
@@ -142,7 +142,7 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  <View style={styles.buttonListContainer}>
 	  		<TouchableHighlight 
 	  			style={styles.buttonContainer}
-	  			underlayColor="#E9FEFF"
+	  			underlayColor={color.grey4}
 	  			onPress={() => {
 	  				navigation.navigate("UBInStoreMobile");
 	  				clearLocationType();
@@ -168,7 +168,7 @@ const UBLocationAddressScreen = ({ navigation }) => {
 	  					: null
 	  				}
 	  			}}
-	  			underlayColor="#E9FEFF"
+	  			underlayColor={color.grey4}
 	  		>
 					<View style={styles.buttonTextContainer}>
 						<FontAwesome name="map-o" size={RFValue(28)} color={color.black1} />
@@ -183,7 +183,7 @@ const UBLocationAddressScreen = ({ navigation }) => {
 	  			onPress={() => {
 	  				resetLocationsAddress();
 	  			}}
-	  			underlayColor={color.skyblue1}
+	  			underlayColor={color.grey4}
 	  		>
 	  			<View style={styles.buttonTextContainer}>
 		  			<MaterialCommunityIcons name="backspace-outline" size={RFValue(28)} color={color.black1} />
@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
 	progressBar: {
 		flex: 1,
 		flexDirection: 'row',
-		borderWidth: 0.5,
 		borderColor: color.gray1,
 		justifyContent: 'center',
 		alignItems: 'center',

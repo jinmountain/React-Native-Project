@@ -133,6 +133,7 @@ const DeletionConfirmationScreen = ({ route, navigation }) => {
 								cancelRsv
 								.then((result) => {
 									if (result === true) {
+										console.log("deleted the rsv");
 										navigation.navigate('UserRsv', {
 											screenRefresh: true,
 											showAlertBoxRequest: true,
@@ -140,6 +141,7 @@ const DeletionConfirmationScreen = ({ route, navigation }) => {
 										});
 									} 
 									if (result === "rsvNotFound") {
+										console.log("cannot delete. the rsv is not found");
 										navigation.navigate('UserRsv', {
 											screenRefresh: true,
 											showAlertBoxRequest: true,

@@ -33,7 +33,8 @@ const getUpcomingRsvsOfCus = (userId, currentTimestamp, lastRsv) => {
 		.then((querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
 			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-			const fetchSwitch = docLength < 7 ? false : true;
+			let fetchSwitch = false;
+			fetchSwitch = docLength < 7 ? false : true;
 			let docIndex = 0;
 
 			if (docLength > 0) {
@@ -82,6 +83,7 @@ const getUpcomingRsvsOfCus = (userId, currentTimestamp, lastRsv) => {
 					reservations.push(rsvDetail);
 					docIndex += 1;
 					if (docIndex === docLength) {
+						console.log("getUpcomingRsvs: fetchSwitch: ", fetchSwitch);
 						res({ rsvs: reservations, lastRsv: lastVisible, fetchSwitch: fetchSwitch });
 					}
 				});
@@ -123,7 +125,8 @@ const getPreviousRsvsOfCus = (userId, currentTimestamp, lastRsv) => {
 			const docLength = querySnapshot.docs.length;
 			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
 			// if the docs length is shorter than limit turn off switch
-			const fetchSwitch = docLength < 7 ? false : true;
+			let fetchSwitch = false;
+			fetchSwitch = docLength < 7 ? false : true;
 			let docIndex = 0;
 
 			if (docLength > 0) {
@@ -172,6 +175,7 @@ const getPreviousRsvsOfCus = (userId, currentTimestamp, lastRsv) => {
 					reservations.push(rsvDetail);
 					docIndex += 1;
 					if (docIndex === docLength) {
+						console.log("getPreviousRsvs: fetchSwitch: ", fetchSwitch);
 						res({ rsvs: reservations, lastRsv: lastVisible, fetchSwitch: fetchSwitch });
 					}
 				});

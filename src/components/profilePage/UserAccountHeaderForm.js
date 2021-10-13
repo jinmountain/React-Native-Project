@@ -26,6 +26,7 @@ import HeaderBottomLine from '../../components/HeaderBottomLine';
 
 
 const UserAccountHeaderForm = ({ 
+  userActiveState,
   leftButtonTitle, 
   leftButtonIcon,
   leftButtonPress,
@@ -41,8 +42,8 @@ const UserAccountHeaderForm = ({
   const orientation = useOrientation();
 	return (
 		<View style={{ ...styles.accountScreenHeaderContainer, ...{ 
-      height: orientation === 'LANDSCAPE' ? '13%' : '9%', 
-      minHeight: orientation === 'LANDSCAPE' ? '13%' : '9%', } 
+      height: orientation === 'LANDSCAPE' ? '13%' : RFValue(70), 
+      minHeight: orientation === 'LANDSCAPE' ? '13%' : RFValue(70), } 
     }}>
       <View style={styles.compartmentOuter}>
         <View style={styles.leftCompartmentContainer}>
@@ -84,7 +85,18 @@ const UserAccountHeaderForm = ({
             :
             [ styles.usernameContainer, { paddingLeft: RFValue(17) } ]
           }>
-            <Text style={styles.compartmentText}>{username}</Text>
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={styles.compartmentText}>{username}</Text>
+            </View>
+            {
+              userActiveState
+              ?
+              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                {userActiveState}
+              </View>
+              :
+              null
+            }
           </View>
         </View>
 
@@ -158,7 +170,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   usernameContainer: {
-
+    flexDirection: 'row',
   },
 
   middleCompartmentContainer: {
@@ -198,8 +210,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    width: RFValue(77),
-    height: RFValue(77),
+    width: RFValue(50),
+    height: RFValue(50),
     borderRadius: RFValue(100),
   },
   compartment: {

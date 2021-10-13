@@ -43,6 +43,7 @@ import { Context as PostContext } from '../context/PostContext';
 // Firebase
 import chatGetFire from '../firebase/chat/chatGetFire';
 import chatPostFire from '../firebase/chat/chatPostFire';
+import contentGetFire from '../firebase/contentGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -58,6 +59,9 @@ import { useIsFocused } from '@react-navigation/native';
 
 // Color
 import color from '../color';
+
+// expo icons
+import expoIcons from '../expoIcons';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -137,14 +141,15 @@ const ChatScreen = ({ route, navigation }) => {
 
 	const { 
 		state: { 
-			userAccountDisplayPosts,
-			userAccountDisplayPostLast,
-			userAccountDisplayPostFetchSwitch,
-			userAccountDisplayPostState
+			chatScreenDisplayPostLast
 		}, 
-		getUserAccountDisplayPosts,
-		clearFirstAndGetUserAccountDisplayPosts,
+		addChatScreenDisplayPostLast,
+		clearChatScreenDisplayPostLast,
 	} = useContext(PostContext);
+
+	const [ userAccountDisplayPosts, setUserAccountDisplayPosts ] = useState([]);
+	const [ userAccountDisplayPostFetchSwitch, setUserAccountDisplayPostFetchSwtich ] = useState(true);
+	const [ userAccountDisplayPostState, setUserAccountDisplayPostState ] = useState(false);
 
 	// const [ chatId, setChatId ] = useState('');
 
@@ -231,6 +236,12 @@ const ChatScreen = ({ route, navigation }) => {
     	clearFiles();
     	clearChosneDisplayPostUrls();
     	clearChat();
+
+    	// diplay post states
+    	setUserAccountDisplayPosts([]);
+			setUserAccountDisplayPostFetchSwtich(true);
+			setUserAccountDisplayPostState(false);
+			clearChatScreenDisplayPostLast();
     }
 	}, [theOtherUser]);
 
@@ -306,9 +317,11 @@ const ChatScreen = ({ route, navigation }) => {
   	console.log("ChatScreen: appStateSocial: ", appStateSocial);
   	if (chat) {
   		if (isFocused && appStateSocial === 'active') {
-	  		chatPostFire.enterOrLeaveChat(theOtherUser.id, user.id, chat.id, true)
+	  		chatPostFire.enterOrLeaveChat(theOtherUser.id, user.id, chat.id, true);
+	  		console.log("chat active");
 	  	} else {
 	  		chatPostFire.enterOrLeaveChat(theOtherUser.id, user.id, chat.id, false)
+	  		console.log("chat inactive");
 	  	}
   	}
 
@@ -336,6 +349,37 @@ const ChatScreen = ({ route, navigation }) => {
   if (tryGetChat) {
 		return (
 			<MainTemplate>
+				<UserAccountHeaderForm
+					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonPress={() => { navigation.goBack() }}
+					userActiveState={
+						chatDoc && chatDoc.theOtherUserActive
+						?
+						<Entypo name="dot-single" size={RFValue(27)} color={sendButtonColor} />
+						:
+						<Entypo name="dot-single" size={RFValue(27)} color={color.grey4} />
+					}
+					username={theOtherUser.username}
+					title={null}
+					firstIcon={
+						theOtherUser.type === 'business'
+						? <Feather name="menu" size={RFValue(23)} color={displayPostsShown ? color.blue1 : color.black1} />
+						: null
+					}
+					secondIcon={
+						theOtherUser.type === 'business'
+						? <Feather name="shopping-bag" size={RFValue(28)} color={color.black1} />
+						: null
+					}
+					firstOnPress={
+						() => {
+							setDisplayPostsShown(!displayPostsShown);
+						}
+					}
+					secondOnPress={
+						null
+					}
+				/>
 				<KeyboardAvoidingView 
 					style={{ flex: 1 }} 
 					behavior={Platform.OS == "ios" ? "padding" : "height"}
@@ -344,39 +388,16 @@ const ChatScreen = ({ route, navigation }) => {
 						// progress bar
 						progress &&
 						<View style={{ width: '100%', minHeight: '1%' }}>
-							<View style={{ width: `${progress}%`, minHeight: '1%', backgroundColor: sendButtonColor }}>
+							<View style={{ 
+								width: `${progress}%`, 
+								minHeight: '1%', 
+								backgroundColor: sendButtonColor,
+								borderTopRightRadius: RFValue(3),
+								borderBottomLeftRadius: RFValue(3)
+							}}>
 							</View>
 						</View>
 					}
-					
-					<UserAccountHeaderForm
-						goBack={() => { navigation.goBack(); }}
-						leftCompartmentIcon={
-							chatDoc && chatDoc.theOtherUserActive
-							?
-							<Entypo name="dot-single" size={RFValue(27)} color={sendButtonColor} />
-							:
-							<Entypo name="dot-single" size={RFValue(27)} color={color.gray4} />
-						}
-						username={theOtherUser.username}
-						title={null}
-						firstIcon={
-							theOtherUser.type === 'business'
-							? <Feather name="menu" size={RFValue(23)} color={displayPostsShown ? color.blue1 : color.black1} />
-							: null
-						}
-						secondIcon={
-							theOtherUser.type === 'business'
-							? <Feather name="shopping-bag" size={RFValue(28)} color={color.black1} />
-							: null
-						}
-						firstOnPress={
-							() => {setDisplayPostsShown(!displayPostsShown);}
-						}
-						secondOnPress={
-							null
-						}
-					/>
 					{
 						// Message Fetch State
 						// show loading spinner when getting earlier messages
@@ -397,14 +418,23 @@ const ChatScreen = ({ route, navigation }) => {
 						<View style={styles.displayPostsContainer}>
 							<FlatList
 								onEndReached={() => {
-									if (userAccountDisplayPostState === false) {
-										getUserAccountDisplayPosts(
-											userAccountDisplayPostFetchSwitch, 
-											userAccountDisplayPostLast,
-											theOtherUser, 
-											user
-										);
-									}
+									if (
+						      	!userAccountPostState && 
+						      	userAccountPostFetchSwitch
+						      ) {
+						      	setUserAccountPostState(true);
+						      	const getUserPosts = contentGetFire.getUserPostsFire(chatScreenDisplayPostLast, targetUser, user.id);
+						      	getUserPosts
+						      	.then((posts) => {
+						      		setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
+											if (posts.lastPost !== undefined) {
+												addChatScreenDisplayPostLast(posts.lastPost);
+											} else {
+												setUserAccountPostFetchSwtich(false);
+											};
+											setUserAccountPostState(false);
+						      	})
+						      }
 								}}
 								onEndReachedThreshold={0.01}
 		            horizontal
@@ -622,9 +652,9 @@ const ChatScreen = ({ route, navigation }) => {
 							      <TouchableHighlight 
 							        style={styles.pickImageButton} 
 							        onPress={() => {pickImage('chat');}}
-							        underlayColor={color.gray1}
+							        underlayColor={color.grey1}
 							      >
-							        <AntDesign name="plus" size={RFValue(38)} color={color.gray2} />
+							        <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
 							      </TouchableHighlight>
 							    }
 							  </View>
@@ -645,7 +675,7 @@ const ChatScreen = ({ route, navigation }) => {
 						?
 						<Entypo name="dot-single" size={RFValue(27)} color={sendButtonColor} />
 						:
-						<Entypo name="dot-single" size={RFValue(27)} color={color.gray4} />
+						<Entypo name="dot-single" size={RFValue(27)} color={color.grey4} />
 					}
 					username={theOtherUser.username}
 					title={null}

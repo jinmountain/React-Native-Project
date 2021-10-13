@@ -273,14 +273,16 @@ const getUpcomingRsvsOfBus = (busId, currentTimestamp, daysFromToday) => {
 		if (daysFromToday > 0) {
 			getReservations = reservationsRef
 			.where("busId", "==", busId)
-			.where("dateInMs", "==", dateInMs);
+			.where("dateInMs", "==", dateInMs)
+			.limit(10)
 		}
 
 		if (daysFromToday == 0) {
 			getReservations = reservationsRef
 			.where("busId", "==", busId)
 			.where("dateInMs", "==", dateInMs)
-			.where("startAt", ">=", currentTimestamp);
+			.where("startAt", ">=", currentTimestamp)
+			.limit(10)
 		}
 		
 		getReservations
@@ -361,7 +363,7 @@ const getPreviousRsvsOfBus = (busId, currentTimestamp, daysFromToday, completed)
 			.where("dateInMs", "==", dateInMs)
 			.where("completed", "==", completed)
 			.orderBy("startAt", "desc")
-			.limit(15);
+			.limit(10);
 		}
 
 		if (daysFromToday === 0) {
@@ -371,7 +373,7 @@ const getPreviousRsvsOfBus = (busId, currentTimestamp, daysFromToday, completed)
 			.where("completed", "==", completed)
 			.where("startAt", "<", currentTimestamp)
 			.orderBy("startAt", "desc")
-			.limit(15);
+			.limit(10);
 		}
 		
 		getReservations

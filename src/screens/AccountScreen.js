@@ -351,7 +351,8 @@ const AccountScreen = ({ navigation }) => {
 			                  style={{ ...styles.postImageContainer, ...{ height: windowWidth/2 + RFValue(50), width: windowWidth/2 } }}
 			                  onPress={() => {
 			                  	navigation.navigate('PostDetail', {
-			                  		post: item
+			                  		post: item,
+			                  		postSource: 'account'
 			                  	});
 			                  }}
 			                >

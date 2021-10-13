@@ -147,6 +147,12 @@ const postReducer = (state, action) => {
 		case 'clear_previous_rsv_last':
 			return { ...state, previousRsvLast: null };
 
+		// chat screen display post
+		case 'add_chat_display_post_last':
+			return { ...state, chatScreenDisplayPostLast: action.payload };
+		case 'clear_chat_display_post_last':
+			return { ...state, chatScreenDisplayPostLast: null };
+
 		default:
 			return state;
 	}
@@ -476,6 +482,15 @@ const clearPreviousRsvLast = dispatch => () => {
 	dispatch({ type: 'clear_previous_rsv_last' });
 }
 
+// chat screen display post
+const addChatScreenDisplayPostLast = dispatch => (lastDisplayPost) => {
+	dispatch({ type: 'add_chat_display_post_last', payload: lastDisplayPost });
+};
+
+const clearChatScreenDisplayPostLast = dispatch => () => {
+	dispatch({ type: 'clear_chat_display_post_last' });
+}
+
 export const { Provider, Context } = createDataContext(
 	postReducer,
 	{ 
@@ -522,11 +537,15 @@ export const { Provider, Context } = createDataContext(
 		addPreviousRsvLast,
 
 		clearUpcomingRsvLast,
-		clearPreviousRsvLast
+		clearPreviousRsvLast,
 
 		// Like
 		// likePostJson,
 		// undolikePostJson
+
+		// chat screen display post
+		addChatScreenDisplayPostLast,
+		clearChatScreenDisplayPostLast
 	},
 	{ 
 		// Create Post
@@ -573,6 +592,9 @@ export const { Provider, Context } = createDataContext(
 		// Activity Screen
 		// last reservation for upcoming, uncompleted, and completed
 		uncomingRsvLast: null,
-		previousRsvLast: null
+		previousRsvLast: null,
+
+		// chat screen display post last
+		chatScreenDisplayPostLast: null,
 	}
 );

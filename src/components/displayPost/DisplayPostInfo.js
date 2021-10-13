@@ -23,31 +23,31 @@ const DisplayPostInfo = ({ containerWidth, title, taggedCount, likeCount, etc, p
 	return (
 		<View style={{ ...styles.displayPostInfoContainer, ...{ width: containerWidth } }}>
 			<View style={styles.infoTop}>
-				<Text style={styles.infoText}>
+				<Text style={styles.infoText} numberOfLines={1}>
 					{title}
 				</Text>
 			</View>
 			<View style={styles.infoBottom}>
 				<View style={styles.infoContainer}>
 					<AntDesign name="hearto" size={RFValue(11)} color={color.ratingRed} />
-					<Text style={styles.infoText}>
+					<Text style={styles.infoText} numberOfLines={1}>
 						{likeCount}
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
-					<Text style={styles.infoText}>
+					<Text style={styles.infoText} numberOfLines={1}>
 						${price}
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
 			  	<AntDesign name="clockcircleo" size={RFValue(11)} color={color.black1} />
-			  	<Text style={styles.infoText}>
+			  	<Text style={styles.infoText} numberOfLines={1}>
 						{etc}
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
 					<AntDesign name="staro" size={RFValue(11)} color={color.black1} />
-					<Text style={styles.infoText}>
+					<Text style={styles.infoText} numberOfLines={1}>
 						{taggedCount}
 			  	</Text>
 				</View>
@@ -74,16 +74,21 @@ const styles = StyleSheet.create({
 	infoTop: {
 		justifyContent: 'center',
 		alignItems: 'center',
+		backgroundColor: color.white2,
+		borderRadius: RFValue(7)
 	},
 	infoBottom: {
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		backgroundColor: color.white2,
+		borderRadius: RFValue(7)
 	},
 	infoText: {
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginHorizontal: RFValue(3),
+		fontSize: RFValue(14)
 	},
 });
 

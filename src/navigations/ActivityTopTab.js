@@ -47,15 +47,15 @@ const ActivityTopTab = () => {
 	      			return (
 	      				focused
 	      				? 
-	      				<View>
+	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.featherShoppingBack(RFValue(21), color.black1)
+	      						expoIcons.featherShoppingBack(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      				: 
-	      				<View>
+	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.featherShoppingBack(RFValue(21), color.black1)
+	      						expoIcons.featherShoppingBack(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)
@@ -70,15 +70,15 @@ const ActivityTopTab = () => {
 	      			return (
 	      				focused
 	      				? 
-	      				<View>
+	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.antdesignHeart(RFValue(21), color.red2)
+	      						expoIcons.antdesignHeart(RFValue(19), color.red2)
 	      					}
 	      				</View>
 	      				: 
-	      				<View>
+	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.antdesignHearto(RFValue(21), color.black1)
+	      						expoIcons.antdesignHearto(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)
@@ -93,15 +93,15 @@ const ActivityTopTab = () => {
 	      			return (
 	      				focused
 	      				? 
-	      				<View>
+	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.ioniconsNotifications(RFValue(21), color.black1)
+	      						expoIcons.ioniconsNotifications(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      				: 
-	      				<View>
+	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.ioniconsNotificationsOutline(RFValue(21), color.black1)
+	      						expoIcons.ioniconsNotificationsOutline(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)

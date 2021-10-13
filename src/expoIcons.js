@@ -28,7 +28,7 @@ const featherMoreHorizontal = (size, color) => {
 	return <Feather name="more-horizontal" size={size} color={color} />
 };
 
-const IoniconsMdArrowBack = (size, color) => {
+const ioniconsMdArrowBack = (size, color) => {
 	return <Ionicons name="md-arrow-back" size={size} color={color} />
 };
 
@@ -78,7 +78,7 @@ export default {
 	antClose, 
 	antCheck, 
 	featherMoreHorizontal, 
-	IoniconsMdArrowBack, 
+	ioniconsMdArrowBack, 
 	evilIconsLocation,
 	evilIconsClose,
 	entypoShop,

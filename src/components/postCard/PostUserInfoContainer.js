@@ -108,7 +108,7 @@ const PostUserInfoContainer = ({ postSource, postUser, postId, postData, current
             underlayColor={color.grey4}
           >
             <View style={styles.displayPostInfoContainer}>
-              <Feather name="shopping-bag" size={RFValue(23)} color={color.black1} />
+              <Feather name="shopping-bag" size={RFValue(17)} color={color.black1} />
               <View style={styles.displayPostInfoInner}>
                 <View style={styles.displayPostInfoElement}>
                   <Text style={styles.displayPostInfoText}>$</Text>
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     justifyContent: 'center',
     height: cardHeight * 0.1,
+    flexDirection: 'row',
   },
   infoContainer: {
     flexDirection: 'row',
@@ -189,9 +190,9 @@ const styles = StyleSheet.create({
     fontSize: RFValue(16),
   },
   postManagerButtonContainer: {
-    position: 'absolute',
+    // position: 'absolute',
     alignSelf: 'flex-end',
-    paddingHorizontal: RFValue(7),
+    // paddingRight: RFValue(3),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -220,12 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: RFValue(5),
+    paddingHorizontal: RFValue(3),
   },
   displayPostInfoElement: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: RFValue(3),
+    paddingHorizontal: RFValue(1),
   },
   displayPostInfoText: {
     fontSize: RFValue(15),
