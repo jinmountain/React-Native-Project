@@ -410,8 +410,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 										if (
 											screenReady && 
 											userAccountDisplayPostFetchSwitch && 
-											!userAccountDisplayPostState && 
-											userAccountDisplayPostFetchSwitch
+											!userAccountDisplayPostState
 										) {
 											setUserAccountDisplayPostState(true);
 											const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, user, user.id);
@@ -425,8 +424,6 @@ const UserAccountScreen = ({ route, navigation }) => {
 												};
 												setUserAccountDisplayPostState(false);
 											})
-										} else {
-											console.log("UserAccountScreen: FlatList: onEndReached: display switch: " + userAccountDisplayPostFetchSwitch + " display state: " + userAccountDisplayPostState );
 										}
 									}}
 									onEndReachedThreshold={0.01}

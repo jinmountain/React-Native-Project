@@ -42,8 +42,8 @@ const UserAccountHeaderForm = ({
   const orientation = useOrientation();
 	return (
 		<View style={{ ...styles.accountScreenHeaderContainer, ...{ 
-      height: orientation === 'LANDSCAPE' ? '13%' : RFValue(70), 
-      minHeight: orientation === 'LANDSCAPE' ? '13%' : RFValue(70), } 
+      height: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), 
+      minHeight: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), } 
     }}>
       <View style={styles.compartmentOuter}>
         <View style={styles.leftCompartmentContainer}>
@@ -132,7 +132,7 @@ const UserAccountHeaderForm = ({
   				</View>
   		  </View>
       </View>
-      <HeaderBottomLine />
+      {/*<HeaderBottomLine />*/}
 		</View>
 	)
 };

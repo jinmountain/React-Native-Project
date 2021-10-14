@@ -109,14 +109,14 @@ const HeaderForm = (
           </View>
         </View>
       </View>
-      <HeaderBottomLine />
+      {/*<HeaderBottomLine />*/}
     </View>
   )
 };
 
 const styles = StyleSheet.create({
   headerContainer: {
-    height: '9%',
+    height: RFValue(70),
     justifyContent: "center",
     backgroundColor: "#FFF",
     // ...Platform.select({

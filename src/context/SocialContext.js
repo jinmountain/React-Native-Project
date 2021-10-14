@@ -16,7 +16,7 @@ const socialReducer = (state, action) => {
 		case 'add_messages': 
 			return { ...state, messages: [ ...state.messages, action.payload ] };
 		case 'add_file':
-			return { ...state, files: [...state.files, action.payload]};
+			return { ...state, files: [...state.files, action.payload ]};
 		case 'cancel_file':
 			return { ...state, files: [...state.files.filter((file) => file.id !== action.payload)] };
 		case 'clear_files':
@@ -34,7 +34,7 @@ const socialReducer = (state, action) => {
 		case 'append_messages':
 			return { ...state, messages: [ ...action.payload, ...state.messages ] };
 		case 'append_earlier_messages':
-			return { ...state, messages: [ ...state.messages, ...action.payload,  ] };
+			return { ...state, messages: [ ...state.messages, ...action.payload ] };
 		case 'clear_messages':
 			return { ...state, messages: [] };
 		case 'add_date_sign':
@@ -130,7 +130,7 @@ const changeProgress = dispatch => (progress) => {
 	console.log('Upload progress: ', progress);
 };
 
-const clearFiles = dispatch => () => {
+const clearFilesChat = dispatch => () => {
 	dispatch({ type: 'clear_files' });
 	console.log('files >> []');
 };
@@ -156,7 +156,7 @@ const cancelChosenDisplayPostUrl = dispatch => (url) => {
 	console.log("cancelChosenDisplayPostUrl: chosenDisplayPostUrls >> ", url);
 };
 
-const clearChosneDisplayPostUrls = dispatch => () => {
+const clearChosenDisplayPostUrls = dispatch => () => {
 	dispatch({ type: 'clear_chosen_display_post_urls' });
 	console.log("chosenDisplayPostUrls >> []");
 };
@@ -233,11 +233,11 @@ export const { Provider, Context } = createDataContext(
 		setMessages,
 		addFileChat,
 		cancelFileChat,
-		clearFiles,
+		clearFilesChat,
 		// display post 
 		addChosenDisplayPostUrl,
 		cancelChosenDisplayPostUrl,
-		clearChosneDisplayPostUrls,
+		clearChosenDisplayPostUrls,
 
 		// Messaging
 		appendMessages,

@@ -12,6 +12,9 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 const WINDOW_HEIGHT = Dimensions.get("window").height;
 const closeButtonSize = Math.floor(WINDOW_HEIGHT * 0.04);
 
+// color
+import  color from '../color'
+
 const CancelButton = ({onPressFunction}) => {
   
 	return (
@@ -34,7 +37,7 @@ const styles = StyleSheet.create({
     height: closeButtonSize,
     width: closeButtonSize,
     borderRadius: Math.floor(closeButtonSize / 2),
-    backgroundColor: "#c4c5c4",
+    backgroundColor: color.white2,
     opacity: 0.7,
     zIndex: 2,
   },

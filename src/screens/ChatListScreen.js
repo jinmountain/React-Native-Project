@@ -34,6 +34,9 @@ import { Entypo } from '@expo/vector-icons';
 // Color
 import color from '../color';
 
+// expo icons
+import expoIcons from '../expoIcons';
+
 // Hooks
 import { kOrNo } from '../hooks/kOrNo';
 import { wait } from '../hooks/wait';
@@ -156,7 +159,8 @@ const ChatListScreen = ({ navigation }) => {
 			?
 			<View style={styles.mainContainer}>
 				<UserAccountHeaderForm
-					goBack={() => { navigation.goBack() }}
+					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonPress={() => { navigation.goBack() }}
 					username={null}
 					title={"Chats"}
 				/>

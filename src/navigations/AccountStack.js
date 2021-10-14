@@ -83,10 +83,6 @@ const AccountStack = () => {
         component={ChatListScreen} 
       />
       <Stack.Screen 
-        name="Chat" 
-        component={ChatScreen} 
-      />
-      <Stack.Screen 
         name="UpdateProfileStack" 
         component={UpdateProfileStack} 
       />

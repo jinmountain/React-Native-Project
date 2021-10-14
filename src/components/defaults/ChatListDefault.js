@@ -22,7 +22,7 @@ const ChatListDefault = () => {
 			</View>
 			<View style={styles.chatContainer}>
 				<View style={styles.chatEmpty}>
-					<SpinnerFromActivityIndicator customColor={color.gray4}/>
+					<SpinnerFromActivityIndicator customColor={color.grey4}/>
 				</View>
 				<View style={styles.chat}>
 					<View style={styles.headContainer}>
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
 	actionBar: {
 		height: RFValue(57),
 		borderRadius: RFValue(13),
-		backgroundColor: color.gray4,
+		backgroundColor: color.grey4,
 	},
 	chatContainer: {
 		flex: 9,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
 	head: {
 		height: RFValue(57),
 		width: RFValue(57),
-		backgroundColor: color.gray4,
+		backgroundColor: color.grey4,
 		borderRadius: 100,
 	},
 	contentContainer: {
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
 	content: {
 		height: RFValue(77),
 		width: '100%',
-		backgroundColor: color.gray4,
+		backgroundColor: color.grey4,
 		borderRadius: RFValue(7),
 	},
 	chatEmpty: {

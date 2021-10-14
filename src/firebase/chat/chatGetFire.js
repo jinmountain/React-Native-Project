@@ -164,36 +164,33 @@ const getMessages = (
 	    		newMessage = { ...newMessage, ...{video: docData.video}}
 	    	}
 
-	    	// if find earlier date on the next       >> return addToMessage: true
-	    	// if the next item's date is not earlier >> return false
-	    	// previous date is null                  >> return addToMessage: false
-
-	    	// save the current date
-
-	    	// 1) assign dateToCompare with dateSign
-	    	// 2) if dateSign and dateToCompare are null assign dateToCompare with docDate.creatAt or currentDate
-	    	
+	    	// current doc's createdAt
 	    	currentDate = docData.createdAt;
 	    	
+	    	// if localDateToCompare is null because dateToCompare input was null
+	    	// assign localDateToCompare with currentDate, which is docData's createdAt
 	    	if (localDateToCompare === null) {
 	    		localDateToCompare = giveDateToCompare(currentDate);
 	    	}
 	    	
+	    	// compare the docData's createdAt with localDateToCompare
 	    	const timeCompareResult = timeCompare(docData.createdAt, localDateToCompare);
-	    	// 3) timeCompareResult return two different results, a json or false
+	    	// timeCompareResult return two different results, a json or false
+	    	// return a json if it founds the new doc's createdAt is past of localDateToCompare
 
-	    	// 4) when timeCompareResult is a json, add the json to newMessage
-	    	// 5) after that assign dateToCompare with docData.createdAt or currentDate, which is earlier date than dateToCompare
+	    	// when timeCompareResult is a json, add the json to newMessage as dateSign
+	    	// if timeCompareResult was not false add currentDate which is the earlier date to localDateToCompare
 	    	if (timeCompareResult)
 	    	{
-	    		// add date sign to messages
+	    		// add date sign to newMessage
 	    		console.log("timeCompareResult: ", timeCompareResult);
-	    		newMessage = { ...newMessage, ...{dateSign: timeCompareResult }};
+	    		newMessage = { ...newMessage, ...{ dateSign: timeCompareResult }};
 
 	    		// after add the date
-	    		// assign the new date to the current date that is earlier so can move on
+	    		// assign the new date to the current date that is earlier so can keep comparing
 	    		localDateToCompare = giveDateToCompare(currentDate);
 	    	}
+	    	// store the last doc's date in case of fetching more previous messages
 	    	addDateToCompare(giveDateToCompare(currentDate));
 
 	    	return newMessage;

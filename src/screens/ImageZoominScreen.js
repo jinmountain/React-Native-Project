@@ -11,10 +11,10 @@ import {
 import { Video, AVPlaybackStatus } from 'expo-av';
 
 // Components
+import MainTemplate from '../components/MainTemplate';
 import { NavigationBar } from '../components/NavigationBar';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { HeaderForm } from '../components/HeaderForm';
-import { SafeAreaView, } from 'react-native-safe-area-context';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -31,17 +31,12 @@ const ImageZoominScreen = ({ route, isFocused, navigation }) => {
 	// const [visible, setVisible] = useState(true);
 
 	return (
-		<SafeAreaView style={{ flex: 1, }}>
+		<MainTemplate>
 			<HeaderForm 
 				leftButtonTitle={null}
-				leftButtonIcon={expoIcons.IoniconsMdArrowBack(RFValue(27), color.black1)}
-        headerTitle='' 
-        rightButtonTitle=''
+				leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
         leftButtonPress={() => {
           navigation.goBack(); 
-        }}
-        rightButtonPress={() => {
-          null;
         }}
 			/>
 			{/*<View style={styles.screenContainer}>
@@ -79,7 +74,7 @@ const ImageZoominScreen = ({ route, isFocused, navigation }) => {
           null
 				}
 			</View>
-		</SafeAreaView>
+		</MainTemplate>
 	);
 };
 

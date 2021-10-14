@@ -18,7 +18,7 @@ const ChatScreenDefault = () => {
 		<View style={styles.container}>
 			<View style={styles.messageContainer}>
 				<View style={styles.messageEmpty}>
-					<SpinnerFromActivityIndicator customColor={color.gray4}/>
+					<SpinnerFromActivityIndicator customColor={color.grey4}/>
 				</View>
 				<View style={styles.message}>
 					<View style={styles.headContainer}>
@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
 	},
 	actionBar: {
 		height: RFValue(57),
-		borderRadius: RFValue(13),
-		backgroundColor: color.gray4,
+		borderRadius: RFValue(7),
+		backgroundColor: color.grey4,
 	},
 	messageContainer: {
 		flex: 9,
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
 	head: {
 		height: RFValue(37),
 		width: RFValue(37),
-		backgroundColor: color.gray4,
-		borderRadius: 100,
+		backgroundColor: color.grey4,
+		borderRadius: RFValue(100),
 	},
 	contentContainer: {
 		flex: 1,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
 	content: {
 		height: RFValue(37),
 		width: RFValue(77),
-		backgroundColor: color.gray4,
+		backgroundColor: color.grey4,
 		borderRadius: RFValue(7),
 	},
 	messageEmpty: {

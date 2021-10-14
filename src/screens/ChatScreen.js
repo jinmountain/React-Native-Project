@@ -125,11 +125,11 @@ const ChatScreen = ({ route, navigation }) => {
 		clearChat,
 		cancelFileChat, 
 		// changeProgress, 
-		clearFiles,
+		clearFilesChat,
 		// chosen display post urls
 		addChosenDisplayPostUrl,
 		cancelChosenDisplayPostUrl,
-		clearChosneDisplayPostUrls,
+		clearChosenDisplayPostUrls,
 		// Messaging
 		appendMessages,
 		appendEarlierMessages,
@@ -150,7 +150,6 @@ const ChatScreen = ({ route, navigation }) => {
 	const [ userAccountDisplayPosts, setUserAccountDisplayPosts ] = useState([]);
 	const [ userAccountDisplayPostFetchSwitch, setUserAccountDisplayPostFetchSwtich ] = useState(true);
 	const [ userAccountDisplayPostState, setUserAccountDisplayPostState ] = useState(false);
-
 	// const [ chatId, setChatId ] = useState('');
 
 	const [ displayPostsShown, setDisplayPostsShown ] = useState(false);
@@ -205,14 +204,21 @@ const ChatScreen = ({ route, navigation }) => {
 		    		}
 		    	}
 
-		    	// get display posts if theOtherUser is business
-		    	if (theOtherUser.type === 'business') {
-		    		clearFirstAndGetUserAccountDisplayPosts(
-							userAccountDisplayPostFetchSwitch, 
-							theOtherUser, 
-							user.id
-						);
-		    	}
+		    	// get theOtherUser's display posts if theOtherUser is business
+		    	if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
+						isMounted && setUserAccountDisplayPostState(true);
+						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, theOtherUser, user.id);
+						getDisplayPosts
+						.then((posts) => {
+							isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+							if (posts.lastPost !== undefined) {
+								isMounted && addChatScreenDisplayPostLast(posts.lastPost);
+							} else {
+								isMounted && setUserAccountDisplayPostFetchSwtich(false);
+							};
+							isMounted && setUserAccountDisplayPostState(false);
+						})
+					}
 				} else {
 					addChat(null);
 					setChatExist(false);
@@ -233,8 +239,8 @@ const ChatScreen = ({ route, navigation }) => {
     	setMessageFetchSwitch(true);
     	setMessageFetchState(false);
     	clearDateToCompare();
-    	clearFiles();
-    	clearChosneDisplayPostUrls();
+    	clearFilesChat();
+    	clearChosenDisplayPostUrls();
     	clearChat();
 
     	// diplay post states
@@ -330,21 +336,7 @@ const ChatScreen = ({ route, navigation }) => {
 		  	chatPostFire.enterOrLeaveChat(theOtherUser.id, user.id, chat.id, false);
     	}
     };
-  }, [appStateSocial, chat])
-
-	// callback function to append new messages realtime
-	// const appendMessages = useCallback((messages) => {
- //      setMessages((previousMessages) => GiftedChat.append(previousMessages, messages))
- //    },
- //    [messages]
-	// );
-
-	// // callback function to append earlier messages
-	// const appendEarlierMessages = useCallback((messages) => {
- //      setMessages((previousMessages) => GiftedChat.append(messages, previousMessages))
- //    },
- //    [messages]
-	// );
+  }, [appStateSocial, chat]);
 
   if (tryGetChat) {
 		return (
@@ -418,29 +410,30 @@ const ChatScreen = ({ route, navigation }) => {
 						<View style={styles.displayPostsContainer}>
 							<FlatList
 								onEndReached={() => {
-									if (
-						      	!userAccountPostState && 
-						      	userAccountPostFetchSwitch
-						      ) {
-						      	setUserAccountPostState(true);
-						      	const getUserPosts = contentGetFire.getUserPostsFire(chatScreenDisplayPostLast, targetUser, user.id);
-						      	getUserPosts
-						      	.then((posts) => {
-						      		setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
+									let isMounted = true;
+									if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
+										isMounted && setUserAccountDisplayPostState(true);
+										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chatScreenDisplayPostLast, theOtherUser, user.id);
+										getDisplayPosts
+										.then((posts) => {
+											isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
 											if (posts.lastPost !== undefined) {
-												addChatScreenDisplayPostLast(posts.lastPost);
+												isMounted && addChatScreenDisplayPostLast(posts.lastPost);
 											} else {
-												setUserAccountPostFetchSwtich(false);
+												isMounted && setUserAccountDisplayPostFetchSwtich(false);
 											};
-											setUserAccountPostState(false);
-						      	})
-						      }
+											isMounted && setUserAccountDisplayPostState(false);
+										})
+									}
+									return () => {
+										isMounted = false;
+									}
 								}}
 								onEndReachedThreshold={0.01}
 		            horizontal
 		            showsHorizontalScrollIndicator={false}
 		            data={userAccountDisplayPosts}
-		            keyExtractor={(displayPost) => displayPost.id}
+		            keyExtractor={(displayPost, index) => index.toString()}
 		            renderItem={({ item }) => {
 		              return (
 		                <TouchableOpacity 
@@ -456,12 +449,15 @@ const ChatScreen = ({ route, navigation }) => {
 			                <DisplayPostImage
 			                	type={item.data.files[0].type}
 			                	url={item.data.files[0].url}
+			                	imageWidth={windowWidth/2}
 			                />
 			                <DisplayPostInfo
 			                	taggedCount={kOrNo(item.data.taggedCount)}
+			                	title={item.data.title}
 			                	likeCount={kOrNo(item.data.like)}
 			                	etc={item.data.etc}
 			                	price={item.data.price}
+			                	containerWidth={windowWidth/2}
 			                />
 			                { item.data.files.length > 1
 			                	? <MultiplePhotosIndicator
@@ -498,7 +494,7 @@ const ChatScreen = ({ route, navigation }) => {
 						</View>
 						: theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length === 0
 						?
-						<DisplayPostsDefault/>
+							<DisplayPostsDefault/>
 						: null
 					}
 					
@@ -559,9 +555,9 @@ const ChatScreen = ({ route, navigation }) => {
 									 				false, // orignally, chatDoc.theOtherUserActive
 									 				setProgress
 									 			);
-									 			clearFiles();
+									 			clearFilesChat();
 									 			setMessage('');
-									 			clearChosneDisplayPostUrls();
+									 			clearChosenDisplayPostUrls();
 									 			setDisplayPostsShown(false);
 											})
 											.catch((error) => {
@@ -580,9 +576,9 @@ const ChatScreen = ({ route, navigation }) => {
 												chatDoc.theOtherUserActive, 
 												setProgress
 											);
-											clearFiles();
+											clearFilesChat();
 											setMessage('');
-											clearChosneDisplayPostUrls();
+											clearChosenDisplayPostUrls();
 											setDisplayPostsShown(false);
 										}
 									} else {
@@ -669,14 +665,8 @@ const ChatScreen = ({ route, navigation }) => {
 		return (
 			<MainTemplate>
 				<UserAccountHeaderForm
-					goBack={() => { navigation.goBack(); }}
-					leftCompartmentIcon={
-						chatDoc && chatDoc.theOtherUserActive
-						?
-						<Entypo name="dot-single" size={RFValue(27)} color={sendButtonColor} />
-						:
-						<Entypo name="dot-single" size={RFValue(27)} color={color.grey4} />
-					}
+					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonPress={() => { navigation.goBack() }}
 					username={theOtherUser.username}
 					title={null}
 					firstIcon={
@@ -708,7 +698,7 @@ const styles = StyleSheet.create({
 	},
 	innerContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: color.white1,
     justifyContent: "space-around"
   },
   loadingSpinnerContainer: {
@@ -718,7 +708,7 @@ const styles = StyleSheet.create({
   },
   displayPostsContainer: {
 		elevation: 5,
-		height: windowWidth/2 + RFValue(30),
+		height: windowWidth/2 + RFValue(50),
 		width: '100%',
 		backgroundColor: '#fff',
 		shadowColor: "#000",
@@ -731,7 +721,7 @@ const styles = StyleSheet.create({
 		alignSelf: 'center',
 	},
 	postImageContainer: {
-		height: windowWidth/2 + RFValue(30),
+		height: windowWidth/2 + RFValue(50),
 		alignItems: 'center',
 		marginRight: 2,
 	},
@@ -760,6 +750,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     paddingHorizontal: 3,
+    backgroundColor: color.white2
   },
   pickImageButton: {
     width: RFValue(100),
@@ -781,13 +772,13 @@ const styles = StyleSheet.create({
   },
   chosenStatus: {
   	flex: 1, 
-  	height: windowWidth/2 + RFValue(30), 
+  	height: windowWidth/2 + RFValue(50), 
   	width: windowWidth/2 , 
   	position: 'absolute', 
   },
   chosenShadow: {
   	flex: 1, 
-  	height: windowWidth/2 + RFValue(30), 
+  	height: windowWidth/2 + RFValue(50), 
   	width: windowWidth/2 , 
   	position: 'absolute', 
   	backgroundColor: color.black1, 
@@ -796,7 +787,7 @@ const styles = StyleSheet.create({
    chosenCheck: {
   	flex: 1, 
   	position: 'absolute', 
-  	height: windowWidth/2 + RFValue(30), 
+  	height: windowWidth/2 + RFValue(50), 
   	width: windowWidth/2, 
   	justifyContent: 'center', 
   	alignItems: 'center'

@@ -201,7 +201,13 @@ const ChatBox = ({
 				  }}
 				/>
 			</View>
-			<View	style={isKeyboardVisible ? { ...styles.chatBarContainer, ...{ marginBottom: RFValue(33) }} : styles.chatBarContainer}>
+			<View	
+				style={
+					isKeyboardVisible 
+					? { ...styles.chatBarContainer, ...{ marginBottom: RFValue(33) }} 
+					: styles.chatBarContainer
+				}
+			>
 				{
 					!showExtendedActions
 					?
