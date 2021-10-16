@@ -98,11 +98,12 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 					// allow update when at least one is changed
 					newProfileJson !== undefined && newProfileJson !== null 
 					? 
-					updateUser(
-						navigation.navigate,
-						user.id,
-						user.type,
-						newProfileJson
+					(
+						updateUser(
+							user.type,
+							newProfileJson
+						),
+						navigation.navigate('Account')
 					)
 					: null
 				}} 
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
 		fontSize: RFValue(20),
 	},
 	requisiteWarning: {
-		color: color.blue1,
+		color: color.red2,
 	},
 });
 export default UpdateProfileScreen;

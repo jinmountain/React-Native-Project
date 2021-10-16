@@ -1,5 +1,6 @@
 import createDataContext from './createDataContext';
 import authFire from '../firebase/authFire';
+import usersGetFire from '../firebase/usersGetFire';
 import { profileUpdateFire } from '../firebase/profileUpdateFire';
 import businessUpdateFire from '../firebase/businessUpdateFire';
 
@@ -92,48 +93,82 @@ const localSignin = dispatch => async (navigate, screen) => {
 };
 
 const accountRefresh = dispatch => (navigate) => {
-	const getUserData = authFire.localSigninFire();
-	getUserData
-	.then((userData) => {
-		console.log('userData is up to date.', userData.id);
-		dispatch({ type: 'add_currentUser', payload: userData});
+	const authCheck = authFire.authCheck();
+	authCheck
+	.then((currentUser) => {
+		const getUserInfo = usersGetFire.getUserInfoFire(currentUser.uid);
+		getUserInfo
+		.then((userData) => {
+			if (userData) {
+				dispatch({ type: 'add_currentUser', payload: userData});
+				console.log('current user data is up to date: ', userData.id);
+			} else {
+				// when userData is false
+				console.log('can not find the curren user data');
+			}
+		})
+		.catch((error) => {
+			console.log("error: accountRefresh: getUserInfoFire: ", error);
+		});
 	})
 	.catch((error) => {
-		console.log('AuthContext: accountRefresh: localSigninFire: ', error);
-		navigate('Signin');
+		// when authCheck fails
+		const signOut = authFire.signoutFire();
+		signOut
+		.then(() => {
+			dispatch({ type: 'clear_currentUser'});
+			console.log("AuthContext: accountRefresh: authCheck: ", error);
+		})
+		.catch((error) => {
+			console.log("error: signoutFire: ", error);
+		});
 	});
 };
 
-const updateUser = dispatch => async (navigate, userId, type, newProfile) => {
-	console.log(type, newProfile);
-	try {
-		// get the new user data from the promise
-		const newUserData = profileUpdateFire(userId, type, newProfile);
-		newUserData.then( async (response) => {
-			if (response !== false) {
-				console.log("New user info applied: ", response);
-				// After update account screen didn't show the updated info and it is fixed.
-				try {
-					const userData = await authFire.localSigninFire();
-					console.log('userData is received.', userData.id);
-					dispatch({ type: 'add_currentUser', payload: userData});
-					navigate('Account');
-				} catch (error) {
-					console.log('localSignin after updateUser: ', error);
-					await signoutFire();
-					dispatch({ type: 'clear_currentUser'});
-					console.log('User info is removed from auth context.');
-				};
+const updateUser = dispatch => async (type, newProfile) => {
+	console.log("update user: ", type, newProfile);
+	const authCheck = authFire.authCheck();
+	authCheck
+	.then((currentUser) => {
+		const currentUserId = currentUser.uid;
+		const newUserData = profileUpdateFire(currentUserId, type, newProfile);
+		newUserData
+		.then( async (response) => {
+			if (response) {
+				console.log("new user info applied: ", response);
+				const getUserInfo = usersGetFire.getUserInfoFire(currentUserId);
+				getUserInfo
+				.then((userData) => {
+					if (userData) {
+						dispatch({ type: 'add_currentUser', payload: userData});
+						console.log('received new user data: ', userData.id);
+					} else {
+						console.log('new user data update failed');
+					}
+				})
+				.catch((error) => {
+					console.log("error: getUserInfoFire: ", error);
+				});
 			} else {
-				console.log("Profile update didn't go well.");
+				console.log("AuthContext: updateUser: profile update failed");
 			}
 		})
 		.catch((err) => {
 			console.log(err);
 		});
-	} catch (error) {
-		console.log('Error occured during AuthContext updateUser: ', error);
-	}
+	})
+	.catch((error) => {
+		// when authCheck fails
+		const signOut = authFire.signoutFire();
+		signOut
+		.then(() => {
+			dispatch({ type: 'clear_currentUser'});
+			console.log("AuthContext: updateUser: authCheck: ", error);
+		})
+		.catch((error) => {
+			console.log("error: AuthContext: updateUser: signOut: ", error);
+		})
+	});
 }
 
 const clearErrorMessage = dispatch => () => {

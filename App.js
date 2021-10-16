@@ -20,6 +20,7 @@ import EmailVerificationScreen from './src/screens/EmailVerificationScreen';
 import ResolveAuthScreen from './src/screens/ResolveAuthScreen';
 import CameraScreen from './src/screens/CameraScreen';
 import ImageUploadMethodModal from './src/screens/ImageUploadMethodModal';
+import ImageZoominScreen from './src/screens/ImageZoominScreen';
 import ChatScreen from './src/screens/ChatScreen';
 
 // Navigations
@@ -103,6 +104,13 @@ const MainFlow = () => {
         options={{
           headerShown: false,
         }}
+      />
+      <Stack.Screen 
+        name="ImageZoomin" 
+        component={ImageZoominScreen}
+        options={{
+          headerShown: false,
+        }} 
       />
       <Stack.Screen 
         name="BusinessMain" 

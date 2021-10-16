@@ -21,7 +21,18 @@ const ProfileInputForm = (
 	const [ input, setInput ] = useState('');
 
 	useEffect(() => {
-		setInput(assignedValue);
+		if (assignedValue) {
+			setInput(assignedValue);
+		}
+		else if (currentValue) {
+			setInput(currentValue);
+		}
+
+		// if there is currentValue add that to inputCheck 
+		// or only new input will be updated
+		if (currentValue) {
+			setInputCheck(currentValue);
+		}
 	}, [])
 
 	return (

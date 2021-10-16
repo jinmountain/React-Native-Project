@@ -3,7 +3,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 // Screens
 import AccountScreen from '../screens/AccountScreen';
-import ImageZoominScreen from '../screens/ImageZoominScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ChatListScreen from '../screens/ChatListScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
@@ -85,10 +84,6 @@ const AccountStack = () => {
       <Stack.Screen 
         name="UpdateProfileStack" 
         component={UpdateProfileStack} 
-      />
-      <Stack.Screen 
-        name="ImageZoomin" 
-        component={ImageZoominScreen} 
       />
       <Stack.Screen 
         name="AccountManagerStack" 

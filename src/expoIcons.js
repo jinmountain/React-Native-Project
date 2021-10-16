@@ -72,6 +72,14 @@ const antdesignHeart = (size, color) => {
 	return <AntDesign name="heart" size={size} color={color} />
 };
 
+const antdesignBars = (size, color) => {
+	return <AntDesign name="bars" size={size} color={color} />
+};
+
+const entypoNewMessage = (size, color) => {
+	return <Entypo name="new-message" size={size} color={color} />
+}
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -88,5 +96,7 @@ export default {
 	ioniconsNotifications,
 	ioniconsNotificationsOutline,
 	antdesignHearto,
-	antdesignHeart
+	antdesignHeart,
+	antdesignBars,
+	entypoNewMessage
 };

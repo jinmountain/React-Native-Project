@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   	zIndex: 0,
   	alignItems: 'center',
   	justifyContent: 'center',
-    backgroundColor: color.skyblue2,
+    backgroundColor: color.black2,
     shadowColor: "#000",
     shadowRadius: 3,
     shadowOpacity: 0.3,

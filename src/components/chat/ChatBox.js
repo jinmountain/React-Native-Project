@@ -20,6 +20,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 // Components
+import DefaultUserPhoto from '../defaults/DefaultUserPhoto';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -168,7 +169,12 @@ const ChatBox = ({
 					    </View>
 				    	:
 				    	<View>
-					    	<TouchableOpacity style={styles.theOtherUserMessageContainer}>
+					    	<TouchableOpacity 
+					    		style={styles.theOtherUserMessageContainer}
+					    		onPress={() => {
+					    			onPressShort(item)
+					    		}}
+					    	>
 					    		<View style={styles.theOtherUserMesssageInnerContainer}>
 						    		{
 						  				item.user.avatar
@@ -181,11 +187,40 @@ const ChatBox = ({
 										    />
 										  </View>
 									    :
-									    null
+									    <View style={styles.headContainer}>
+									    	<DefaultUserPhoto 
+				                  customSizeBorder={RFValue(37)}
+				                  customSizeUserIcon={RFValue(26)}
+				                />
+									    </View>
 								  	}
 								  	<View style={styles.theOtherUserBodyContainer}>
 							    		<View style={styles.contentContainer}>
-							    			<Text style={styles.messageText}>{item.text} </Text>
+							    			{ item.text
+							    				?
+								    			<Text style={styles.messageText}>{item.text} </Text>
+								    			:item.video
+								            ?
+								            <View style={{width: RFValue(100), height: RFValue(100)}}>
+								              <Video
+								                // ref={video}
+								                style={{backgroundColor: color.white2, borderWidth: 0, width: RFValue(100), height: RFValue(100)}}
+								                source={{
+								                  uri: item.video,
+								                }}
+								                useNativeControls={false}
+								                resizeMode="contain"
+								                shouldPlay={false}
+								              />
+								            </View>
+								            : item.image
+								            ?
+								            <Image 
+								              source={{uri: item.image}}
+								              style={{width: RFValue(100), height: RFValue(100)}}
+								            />
+								            : null
+								          }
 							    		</View>
 							    		<View style={styles.timeContainer}>
 							    			<Text style={styles.timeText}>
@@ -359,7 +394,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 	},
 	headContainer: {
-		justifyContent: 'center',
+		justifyContent: 'flex-start',
 		alignItems: 'center',
 		paddingVertical: RFValue(3),
 		paddingRight: RFValue(7),

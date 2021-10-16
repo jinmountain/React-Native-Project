@@ -20,6 +20,7 @@ import MainTemplate from '../components/MainTemplate';
 import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
 import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderForm';
 import ChatListDefault from '../components/defaults/ChatListDefault';
+import DefaultUserPhoto from '../components/defaults/DefaultUserPhoto';
 
 // Context
 import { Context as AuthContext } from '../context/AuthContext';
@@ -161,8 +162,19 @@ const ChatListScreen = ({ navigation }) => {
 				<UserAccountHeaderForm
 					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
-					username={null}
-					title={"Chats"}
+					username={user.username}
+					firstIcon={
+						expoIcons.antdesignBars(RFValue(27), color.black1)
+					}
+					secondIcon={
+						expoIcons.entypoNewMessage(RFValue(27), color.black1)
+					}
+					firstOnPress={
+						null
+					}
+					secondOnPress={
+						null
+					}
 				/>
 				<FlatList
           onEndReached={() => {
@@ -218,11 +230,18 @@ const ChatListScreen = ({ navigation }) => {
                 }}
               >
                 <View style={styles.userPhotoContainer}>
-                  { item.theOtherUser && 
+                  { 
+                  	item.theOtherUser && item.theOtherUser.photoURL
+                  	?
                     <Image 
                       source={{uri: item.theOtherUser.photoURL}}
                       style={styles.userPhoto}
                     />
+                    :
+                    <DefaultUserPhoto 
+		                  customSizeBorder={RFValue(57)}
+		                  customSizeUserIcon={RFValue(40)}
+		                />
                   }
                 </View>
                 <View style={styles.chatInfoContainer}>
@@ -245,14 +264,25 @@ const ChatListScreen = ({ navigation }) => {
                 	</View>
                 	<View style={styles.bottomCompartment}>
 	                  <View style={styles.lastMessageContainer}>
-	                    { item.lastMessage.length > 0 && 
-	                      <Text numberOfLines={1}>{item.lastMessage}</Text>
+	                    { 
+	                    	item.lastMessage.length > 0 && 
+	                      <Text 
+	                      	style={styles.lastMessageText}
+	                      	numberOfLines={1}
+	                      >
+	                      	{item.lastMessage}
+	                      </Text>
 	                    }
 	                  </View>
 	                  <View style={styles.notificationCountContainer}>
 	                    { item.notificationCount > 0 && 
                     		<View style={styles.notificationCount}>
-                      		<Text numberOfLines={1}>{item.notificationCount}</Text>
+                      		<Text 
+                      			style={styles.notificationCountText}
+                      			numberOfLines={1}
+                      		>
+                      			{item.notificationCount}
+                      		</Text>
                       	</View>
 	                    }
 	                  </View>
@@ -273,10 +303,12 @@ const ChatListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
 	mainContainer: {
 		flex: 1,
+		backgroundColor: color.white1,
 	},
 	chatContainer: {
 		flexDirection: 'row',
 		height: RFValue(77),
+		backgroundColor: color.white2
 	},
 	userPhotoContainer: {
 		justifyContent: 'center',
@@ -304,7 +336,13 @@ const styles = StyleSheet.create({
 	},
 	timeText: {
 		fontSize: RFValue(13),
-		color: color.gray3,
+		color: color.grey3,
+	},
+	lastMessageText: {
+		fontSize: RFValue(15)
+	},
+	notificationCountText: {
+		fontSize: RFValue(13)
 	},
 	bottomCompartment: {
 		flexDirection: 'row',

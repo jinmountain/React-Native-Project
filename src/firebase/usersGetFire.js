@@ -83,14 +83,22 @@ const getUserInfoFire = (uid) => {
     .get()
     .then((doc) => {
       if (doc.exists) {
-        console.log(doc.data());
-        res(doc.data());
+        const userData = doc.data();
+        if (userData && userData.g) {
+          delete userData['g']
+        }
+        if (userData && userData.coordinates) {
+          delete userData['coordinates']
+        }
+        console.log(userData);
+        res(userData);
       } else {
-        console.log(uid, "is not an existing user.")
+        res(false);
+        console.log(uid, "is not an existing user")
       }
     })
     .catch((error) => {
-      console.log("Error occured during getting an user info: ", error);
+      rej(error);
     })
   });
 };

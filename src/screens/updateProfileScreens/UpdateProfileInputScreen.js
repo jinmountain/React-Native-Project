@@ -55,12 +55,12 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 	const [uniqueUsernameControl, setUniqueUsernameControl] = useState(false);
 	const [rulesUsernameControl, setRulesUsernameControl] = useState(false);
 
-	if (inputType === 'Username' || newUsername !== null) {
+	if (inputType === 'Username' && newUsername !== null) {
 		useEffect(() => {
 			uniqueUsername(newInputCheck, user.username, setUniqueUsernameControl);
 			meetUsernameRules(newInputCheck, setRulesUsernameControl);
 		}, [newInputCheck]);
-	}
+	};
 
 	return (
 		<SafeAreaView style={styles.updateProfileInputScreenContainer}>
@@ -81,14 +81,14 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 		    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
 		    	: inputType === 'Sign' && newInputCheck !== ''
 		    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
-		    	: 'Confirm'
+		    	: <AntDesign name="check" size={RFValue(25)} color={color.black1} />
 	    	}
 		    leftButtonPress={() => {
 		    	navigation.goBack();
 		    }}
 		    rightButtonPress={() => {
 		    	{
-		    		inputType === 'Name' && newInputCheck !== ''
+		    		inputType === 'Name'
 			    	? (
 			    			addNewName(newInputCheck),
 			    			addNewInputToJson({ name: newInputCheck }),
@@ -108,13 +108,13 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 				    		addNewUsername(newInputCheck),
 			    			navigation.goBack()
 			    		)
-			    	: inputType === 'Website' && newInputCheck !== ''
+			    	: inputType === 'Website'
 			    	? (
 			    			addNewWebsite(newInputCheck),
 			    			addNewInputToJson({ website: newInputCheck }),
 			    			navigation.goBack()
 			    		)
-			    	: inputType === 'Sign' && newInputCheck !== ''
+			    	: inputType === 'Sign'
 			    	? (
 			    			addNewSign(newInputCheck),
 			    			addNewInputToJson({ sign: newInputCheck }),
@@ -151,7 +151,7 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 							setInputCheck={setNewInputCheck}
 							assignedValue={newWebsite}
 							currentValue={user.website}
-							maxLength={30}
+							// maxLength={30}
 							placeholderValue={"Website"}
 							multiline={false}
 							customHeight={RFValue(35)}
@@ -161,10 +161,11 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 							setInputCheck={setNewInputCheck}
 							assignedValue={newSign}
 							currentValue={user.sign}
-							maxLength={30}
+							// maxLength={30}
+							numberOfLines={30}
 							placeholderValue={"Sign"}
-							multiline={false}
-							customHeight={RFValue(35)}
+							multiline={true}
+							customHeight={RFValue(70)}
 						/>
 		    	: null
 		    }
@@ -175,7 +176,7 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 		    	? <View style={styles.alertContainer}>
 							<AntDesign name="exclamationcircleo" size={RFValue(18)} color="black" />
 							<Text style={styles.alertText}>
-								Username must be unique, limited to 30 characters, and contain only letters, numbers, periods, and underscores.
+								Username must be unique, longer than 4 characters, limited to 30 characters, and contain only letters, numbers, periods, and underscores.
 							</Text>
 						</View>
 					: <View style={styles.validContainer}>

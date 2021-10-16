@@ -4,7 +4,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 // Screens
 import MapSearchScreen from '../screens/MapSearchScreen';
 import MapSearchPostsScreen from '../screens/MapSearchPostsScreen';
-import ChatScreen from '../screens/ChatScreen';
 // Stacks
 import PostsSwipeStack from './PostsSwipeStack';
 import UserAccountStack from './UserAccountStack';
@@ -34,10 +33,6 @@ const SearchStack = () => {
       <Stack.Screen  
         name="PostsSwipeStack" 
         component={PostsSwipeStack}
-      />
-      <Stack.Screen 
-        name="Chat" 
-        component={ChatScreen} 
       />
     </Stack.Navigator>
   );

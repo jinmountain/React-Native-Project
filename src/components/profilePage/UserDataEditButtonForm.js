@@ -22,16 +22,18 @@ const UserDataEditButtonForm = ({ navigate, newInput, currentValue, dataType, al
 			onPress={() => {
 				dataType === 'Username' && allowUsernameChange === false
 				? setUsernameTimeLimitWarning(true)
-				: navigate("UpdateProfileInput", 
-					{ 
-						inputType: dataType,
-					})
+				: navigate(
+						"UpdateProfileInput", 
+						{ 
+							inputType: dataType,
+						}
+					)
 			}}
 		>
 			<View style={styles.textInputLabelContainer}>
 			{ newInput
 				? <Text style={styles.textInputLabel}>{dataType}</Text>
-				: currentValue && <Text style={styles.textInputLabel}>{dataType}</Text>
+				: {currentValue} && <Text style={styles.textInputLabel}>{dataType}</Text>
 			}
 			</View>
 			<View
@@ -42,8 +44,8 @@ const UserDataEditButtonForm = ({ navigate, newInput, currentValue, dataType, al
 					// New Input
 					? <Text style={styles.blackText}>{newInput}</Text>
 					// User data
-					: currentValue 
-					? <Text style={styles.greyaaaaaaText}>{currentValue}</Text>
+					: {currentValue} 
+					? <Text style={styles.blackText}>{currentValue}</Text>
 					// placeholder
 					: <Text style={styles.usernameInput}>{dataType}</Text>
 				}
@@ -60,10 +62,10 @@ const styles = StyleSheet.create({
 	textInputLabel: {
 		fontSize: RFValue(12),
 		marginTop: RFValue(8),
-		color: color.gray3,
+		color: color.grey3,
 	},
 	inputContainer: {
-		height: RFValue(35),
+		minHeight: RFValue(35),
 		paddingLeft: RFValue(10),
 		justifyContent: 'center',
 	},
@@ -72,12 +74,12 @@ const styles = StyleSheet.create({
 		fontSize: RFValue(17),
 	},
 	greyaaaaaaText: {
-		color: color.gray3,
+		color: color.grey3,
 		fontSize: RFValue(17),
 	},
 	usernameInput: {
 		fontSize: RFValue(17),
-		color: color.gray3,
+		color: color.grey3,
 	},
 });
 

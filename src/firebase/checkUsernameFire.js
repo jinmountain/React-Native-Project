@@ -25,7 +25,7 @@ const checkUniqueUsername = (possibleUsername) => {
 			}
 		})
 		.catch((error) => {
-			console.log("Error getting username: ", error);
+			rej(error);
 		});
 	})
 };

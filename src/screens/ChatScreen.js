@@ -631,7 +631,7 @@ const ChatScreen = ({ route, navigation }) => {
 							            onPress={() => {navigation.navigate('ImageZoomin', 
 							                {
 							                  imageUri: item.uri,
-							                  currentScreen: 'ContentCreate',
+							                  currentScreen: 'Chat',
 							                }
 							              );
 							            }}
