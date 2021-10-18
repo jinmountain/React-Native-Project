@@ -165,6 +165,18 @@ const ChatScreen = ({ route, navigation }) => {
 				if (chatFound) {
 					addChat(chatFound, isMounted)
 					setChatExist(true);
+
+					let chatDeletedAt = false;
+					if (chatFound.firstUserId === user.id) {
+						if (chatFound.firstUserChatDeletedAt) {
+							chatDeletedAt = firstUserChatDeletedAt
+						}
+					} else {
+						if (chatFound.secondUserChatDeletedAt) {
+							chatDeletedAt = secondUserChatDeletedAt
+						}
+					}
+
 					const getMessages = chatGetFire.getMessages(
 		    		chatFound.id, 
 		    		theOtherUser.id, 
@@ -176,6 +188,7 @@ const ChatScreen = ({ route, navigation }) => {
 						messageLast,
 						dateToCompare,
 						addDateToCompare,
+						chatDeletedAt
 		    	);
 		    	if (messageFetchSwitch && messageFetchState === false) {
 		    		setMessageFetchState(true);

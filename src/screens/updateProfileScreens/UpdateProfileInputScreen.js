@@ -51,6 +51,7 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 		cancelProfileUpdate,
 	} = useContext(AuthContext);
 
+	// newInputCheck is going to be added to new inputs and new inputs' json
 	const [newInputCheck, setNewInputCheck] = useState('');
 	const [uniqueUsernameControl, setUniqueUsernameControl] = useState(false);
 	const [rulesUsernameControl, setRulesUsernameControl] = useState(false);
@@ -165,7 +166,7 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 							numberOfLines={30}
 							placeholderValue={"Sign"}
 							multiline={true}
-							customHeight={RFValue(70)}
+							customHeight={RFValue(100)}
 						/>
 		    	: null
 		    }

@@ -25,11 +25,40 @@ const openChat = (theOtherUserId, currentUserId) => {
 				firstUserNotificationCount: 0,
 				secondUserNotificationCount: 0,
 				users: [firstUserId, secondUserId],
-				createdAt: Date.now()
+				createdAt: Date.now(),
+				firstUserChatDeleted: false,
+				secondUserChatDeleted: false,
+				firstUserChatDeletedAt: null,
+				secondUserChatDeletedAt: null
 			};
 			chatsRef
 			.doc(chatId)
-			.set(chatData)
+			.set(chatData);
+
+			// create chat history of the other user
+			// usersRef
+			// .doc(theOtherUserId)
+			// .collection("chatHistory")
+			// .doc(chatId)
+			// .set(
+			// 	{ 
+			// 		deleted: false,
+			// 		deletedAt: null,
+			// 	}, 
+			// 	{ merge: true }
+			// );
+			// create chat history of the current user
+			// usersRef
+			// .doc(currentUserId)
+			// .collection("chatHistory")
+			// .doc(chatId)
+			// .set(
+			// 	{ 
+			// 		deleted: false,
+			// 		deletedAt: null,
+			// 	}, 
+			// 	{ merge: true }
+			// );
 
 			console.log("chatPostFire: openChat: made a new chat room");
 			res({ id: chatId, data: chatData });
@@ -140,6 +169,7 @@ const sendMessageFire = (
 	return new Promise ((res, rej) => {
 		let docId;
 
+		// if the message if a file
 		if (files.length > 0) {
 			getFileURL
 			.then((fileURLs) => {
@@ -166,7 +196,7 @@ const sendMessageFire = (
 				res(true);
 			});
 		} 
-
+		// if the message is a diplay post link
 		if (chosenDisplayPostUrls.length > 0) {
 			var i;
 			for (i = 0; i < chosenDisplayPostUrls.length; i++) {
@@ -186,6 +216,7 @@ const sendMessageFire = (
 			}
 		};
 
+		// if the message is a text
 		if (message.length > 0) {
 			chatsRef
 			.doc(chatId)
@@ -193,13 +224,19 @@ const sendMessageFire = (
 			.add({ text: message, uid: currentUserId, createdAt: now });
 		};
 		
-		// set new last message time and last message on the  chat doc
+		// set new last message time and last message 
+		// and reset firstUserChatDeleted and secondUserChatDeleted on the chat doc
 		// when message exists
 		if (message.length > 0) {
 			chatsRef
 			.doc(chatId)
 			.set(
-				{ lastMessageTime: now, lastMessage: message }, 
+				{ 
+					lastMessageTime: now, 
+					lastMessage: message,
+					firstUserChatDeleted: false,
+					secondUserChatDeleted: false
+				}, 
 				{ merge: true }
 			);
 		// else lastMessage is "Image"
@@ -207,7 +244,12 @@ const sendMessageFire = (
 			chatsRef
 			.doc(chatId)
 			.set(
-				{ lastMessageTime: now, lastMessage: "Image" }, 
+				{ 
+					lastMessageTime: now, 
+					lastMessage: "Image",
+					firstUserChatDeleted: false,
+					secondUserChatDeleted: false
+				}, 
 				{ merge: true }
 			);
 		};
@@ -240,7 +282,6 @@ const sendMessageFire = (
 				docId: chatId,
 				text: message,
 				senderId: currentUserId,
-				senderRef: db.doc('users/' + currentUserId),
 				createdAt: now 
 			});
 		};
@@ -283,4 +324,34 @@ const readChat = (chatId, whichUser) => {
 	}
 };
 
-export default { openChat, sendMessageFire, enterOrLeaveChat, readChat };
+const deleteChat = (chats, userId) => {
+	const numOfChats = chats.length;
+	let chatIndex = 0;
+	for (chatIndex; chatIndex < numOfChats; chatIndex++) {
+		const chat = chats[chatIndex];
+		let firstOrSecond;
+		if (chat.firstUserId === userId) {
+			firstOrSecond = "first";
+		} else {
+			firstOrSecond = "second";
+		};
+		
+		if (firstOrSecond === 'first') {
+			chatsRef
+			.doc(chatId)
+			.set({
+				firstUserChatDeleted: true,
+				firstUserChatDeletedAt: Date.now();
+			})
+		} else {
+			chatsRef
+			.doc(chatId)
+			.set({
+				secondUserChatDeleted: true,
+				secondUserChatDeleted: Date.now();
+			});
+		};
+	};
+};
+
+export default { openChat, sendMessageFire, enterOrLeaveChat, readChat, deleteChat };

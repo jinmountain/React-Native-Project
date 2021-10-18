@@ -7,6 +7,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const dollarSign = (size, color) => {
 	return <FontAwesome name="dollar" size={size} color={color} />
@@ -78,7 +79,16 @@ const antdesignBars = (size, color) => {
 
 const entypoNewMessage = (size, color) => {
 	return <Entypo name="new-message" size={size} color={color} />
-}
+};
+
+// select circle and check circle
+const mcCheckBoxBlankCircle = (size, color) => {
+	return <MaterialCommunityIcons name="checkbox-blank-circle-outline" size={size} color={color} />
+};
+
+const mcCheckCircle = (size, color) => {
+	return <MaterialCommunityIcons name="check-circle" size={size} color={color} />
+};
 
 export default { 
 	dollarSign, 
@@ -98,5 +108,7 @@ export default {
 	antdesignHearto,
 	antdesignHeart,
 	antdesignBars,
-	entypoNewMessage
+	entypoNewMessage,
+	mcCheckBoxBlankCircle,
+	mcCheckCircle
 };

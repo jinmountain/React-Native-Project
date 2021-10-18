@@ -28,6 +28,7 @@ import { Context as SocialContext } from '../context/SocialContext';
 
 // Firebase
 import chatGetFire from '../firebase/chat/chatGetFire';
+import chatPostFire from '../firebase/chat/chatPostFire';
 
 // Designs
 import { Entypo } from '@expo/vector-icons';
@@ -102,12 +103,23 @@ const ChatListScreen = ({ navigation }) => {
 
 	// const [ chats, setChats ] = useState([]);
 	const { state: { user }, accountRefresh } = useContext(AuthContext);
-	const { state: { chatList }, clearChatList, addChatList, updateChatList } = useContext(SocialContext);
+	const { 
+		state: { chatList }, 
+		clearChatList, 
+		addChatList, 
+		updateChatList, 
+		deleteChat 
+	} = useContext(SocialContext);
 
 	// states for getChatsUser
 	const [ chatLast, setChatLast ] = useState(null);
 	const [ chatFetchSwitch, setChatFetchSwitch ] = useState(true);
 	const [ chatFetchState, setChatFetchState ] = useState(false);
+
+	// delete chat states
+	const [ selectChatToDelete, setSelectChatToDelete ] = useState(false);
+	const [ selectedChatIdsToDelete, setSelectedChatIdsToDelete ] = useState([]);
+	const [ selectedChatsToDelete, setSelectedChatsToDelete ] = useState([]);
 
 	useEffect(() => {
 		const now = Date.now();
@@ -159,23 +171,59 @@ const ChatListScreen = ({ navigation }) => {
 			tryGetChats
 			?
 			<View style={styles.mainContainer}>
-				<UserAccountHeaderForm
-					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
-					leftButtonPress={() => { navigation.goBack() }}
-					username={user.username}
-					firstIcon={
-						expoIcons.antdesignBars(RFValue(27), color.black1)
-					}
-					secondIcon={
-						expoIcons.entypoNewMessage(RFValue(27), color.black1)
-					}
-					firstOnPress={
-						null
-					}
-					secondOnPress={
-						null
-					}
-				/>
+				{
+					selectChatToDelete
+					?
+					<View style={styles.deleteChatHeaderContainer}>
+						<View style={styles.deleteChatHeaderInner}>
+							<View style={styles.deleteChatNumSelected}>
+								<Text style={styles.deleteChatNumSelectedText}>{selectedChatIdsToDelete.length} Selected</Text>
+							</View>
+							<View style={styles.deleteChatHeaderButtonContainer}>
+								<TouchableOpacity
+									onPress={() => {
+										deleteChat(selectedChatIdsToDelete);
+										setSelectedChatIdsToDelete([]);
+										setSelectChatToDelete(false);
+
+										chatPostFire.deleteChat(selectedChatsToDelete);
+									}}
+								>
+									<View style={styles.deleteChatButton}>
+										<Text style={styles.deleteChatButtonText}>Delete</Text>
+									</View>
+								</TouchableOpacity>
+								<TouchableOpacity
+									onPress={() => {
+										setSelectChatToDelete(!selectChatToDelete);
+									}}
+								>
+									<View style={styles.deleteChatButton}>
+										<Text style={styles.deleteChatButtonText}>Cancel</Text>
+									</View>
+								</TouchableOpacity>
+							</View>
+						</View>
+					</View>
+					:
+					<UserAccountHeaderForm
+						leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+						leftButtonPress={() => { navigation.goBack() }}
+						username={user.username}
+						firstIcon={
+							expoIcons.antdesignBars(RFValue(27), color.black1)
+						}
+						secondIcon={
+							expoIcons.entypoNewMessage(RFValue(27), color.black1)
+						}
+						firstOnPress={() => {
+							setSelectChatToDelete(!selectChatToDelete);
+						}}
+						secondOnPress={
+							null
+						}
+					/>
+				}
 				<FlatList
           onEndReached={() => {
             if (chatFetchState === false && chatFetchSwitch === true) {
@@ -220,75 +268,105 @@ const ChatListScreen = ({ navigation }) => {
           keyExtractor={(chat, index) => index.toString()}
           renderItem={({ item, index }) => {
             return (
-              <TouchableOpacity 
-                style={styles.chatContainer}
-                onPress={() => {
-                  navigation.navigate('Chat',
-                  {
-                    theOtherUser: item.theOtherUser
-                  });
-                }}
-              >
-                <View style={styles.userPhotoContainer}>
-                  { 
-                  	item.theOtherUser && item.theOtherUser.photoURL
-                  	?
-                    <Image 
-                      source={{uri: item.theOtherUser.photoURL}}
-                      style={styles.userPhoto}
-                    />
-                    :
-                    <DefaultUserPhoto 
-		                  customSizeBorder={RFValue(57)}
-		                  customSizeUserIcon={RFValue(40)}
-		                />
-                  }
-                </View>
-                <View style={styles.chatInfoContainer}>
-                	<View style={styles.upperCompartment}>
-                		<View style={styles.usernameContainer}>
-	                    { item.theOtherUser && 
-	                      <Text 
-		                      numberOfLines={1} 
-		                      style={styles.usernameText}
-		                    >
-	                      	{item.theOtherUser.username}
-	                      </Text>
-	                    }
-	                  </View>
-	                  <View style={styles.lastTimeContainer}>
-	                    { item.lastMessageTime && 
-	                      <Text style={styles.timeText}>{getModifiedTime(item.lastMessageTime)}</Text>
-	                    }
-	                  </View>
-                	</View>
-                	<View style={styles.bottomCompartment}>
-	                  <View style={styles.lastMessageContainer}>
-	                    { 
-	                    	item.lastMessage.length > 0 && 
-	                      <Text 
-	                      	style={styles.lastMessageText}
-	                      	numberOfLines={1}
-	                      >
-	                      	{item.lastMessage}
-	                      </Text>
-	                    }
-	                  </View>
-	                  <View style={styles.notificationCountContainer}>
-	                    { item.notificationCount > 0 && 
-                    		<View style={styles.notificationCount}>
-                      		<Text 
-                      			style={styles.notificationCountText}
-                      			numberOfLines={1}
-                      		>
-                      			{item.notificationCount}
-                      		</Text>
-                      	</View>
-	                    }
-	                  </View>
+              <View style={styles.chatContainer}>
+              	{
+              		selectChatToDelete &&
+              		<View style={styles.selectChatButtonContainer}>
+              			{
+              				selectedChatIdsToDelete.includes(item._id)
+              				?
+		              		<TouchableOpacity
+		              			style={styles.selectChatButton}
+		              			onPress={() => {
+		              				setSelectedChatIdsToDelete([ ...selectedChatIdsToDelete.filter((chatId) => chatId !== item._id) ]);
+		              				setSelectedChatsToDelete([ ...selectedChatsToDelete.filter((chat) => item) ]);
+		              			}}
+		              		>
+		              			{expoIcons.mcCheckCircle(RFValue(27), color.black1)}
+		              		</TouchableOpacity>
+		              		:
+		              		<TouchableOpacity
+		              			style={styles.selectChatButton}
+		              			onPress={() => {
+		              				setSelectedChatIdsToDelete([ ...selectedChatIdsToDelete, item._id ]);
+		              				setSelectedChatsToDelete([ ...selectedChatsToDelete, item ]);
+		              			}}
+		              		>
+		              			{expoIcons.mcCheckBoxBlankCircle(RFValue(27), color.black1)}
+		              		</TouchableOpacity>
+	              		}
+	              	</View>
+              	}
+	              <TouchableOpacity 
+	              	style={styles.enterChatContainer}
+	                onPress={() => {
+	                  navigation.navigate('Chat',
+	                  {
+	                    theOtherUser: item.theOtherUser
+	                  });
+	                }}
+	              >
+	                <View style={styles.userPhotoContainer}>
+	                  { 
+	                  	item.theOtherUser && item.theOtherUser.photoURL
+	                  	?
+	                    <Image 
+	                      source={{uri: item.theOtherUser.photoURL}}
+	                      style={styles.userPhoto}
+	                    />
+	                    :
+	                    <DefaultUserPhoto 
+			                  customSizeBorder={RFValue(57)}
+			                  customSizeUserIcon={RFValue(40)}
+			                />
+	                  }
 	                </View>
-                </View>
-              </TouchableOpacity>
+	                <View style={styles.chatInfoContainer}>
+	                	<View style={styles.upperCompartment}>
+	                		<View style={styles.usernameContainer}>
+		                    { item.theOtherUser && 
+		                      <Text 
+			                      numberOfLines={1} 
+			                      style={styles.usernameText}
+			                    >
+		                      	{item.theOtherUser.username}
+		                      </Text>
+		                    }
+		                  </View>
+		                  <View style={styles.lastTimeContainer}>
+		                    { item.lastMessageTime && 
+		                      <Text style={styles.timeText}>{getModifiedTime(item.lastMessageTime)}</Text>
+		                    }
+		                  </View>
+	                	</View>
+	                	<View style={styles.bottomCompartment}>
+		                  <View style={styles.lastMessageContainer}>
+		                    { 
+		                    	item.lastMessage.length > 0 && 
+		                      <Text 
+		                      	style={styles.lastMessageText}
+		                      	numberOfLines={1}
+		                      >
+		                      	{item.lastMessage}
+		                      </Text>
+		                    }
+		                  </View>
+		                  <View style={styles.notificationCountContainer}>
+		                    { item.notificationCount > 0 && 
+	                    		<View style={styles.notificationCount}>
+	                      		<Text 
+	                      			style={styles.notificationCountText}
+	                      			numberOfLines={1}
+	                      		>
+	                      			{item.notificationCount}
+	                      		</Text>
+	                      	</View>
+		                    }
+		                  </View>
+		                </View>
+	                </View>
+	              </TouchableOpacity>
+	            </View>
             )
           }}
         />
@@ -308,7 +386,20 @@ const styles = StyleSheet.create({
 	chatContainer: {
 		flexDirection: 'row',
 		height: RFValue(77),
-		backgroundColor: color.white2
+		backgroundColor: color.white2,
+	},
+	enterChatContainer: {
+		flexDirection: 'row',
+		flex: 1,
+	},
+	selectChatButtonContainer: {
+		paddingHorizontal: RFValue(15),
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	selectChatButton: {
+		justifyContent: 'center',
+		alignItems: 'center'
 	},
 	userPhotoContainer: {
 		justifyContent: 'center',
@@ -360,6 +451,39 @@ const styles = StyleSheet.create({
 		borderRadius: RFValue(33),
 		justifyContent: 'center',
 		alignItems: 'center',
+	},
+
+	deleteChatHeaderContainer: {
+		justifyContent: 'center',
+    backgroundColor: '#FFF',
+    height: RFValue(70),
+	},
+	deleteChatHeaderInner: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between'
+	},
+	deleteChatNumSelected: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingHorizontal: RFValue(11)
+	},
+	deleteChatNumSelectedText: {
+		fontSize: RFValue(17),
+		fontWeight: 'bold'
+	},
+
+	deleteChatHeaderButtonContainer: {
+		flexDirection: 'row',
+	},
+	deleteChatButton: {
+		paddingHorizontal: RFValue(11),
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	deleteChatButtonText: {
+		fontSize: RFValue(17),
+		fontWeight: 'bold'
 	},
 });
 

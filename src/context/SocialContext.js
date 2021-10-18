@@ -50,6 +50,9 @@ const socialReducer = (state, action) => {
 		case 'update_chat_list':
 			return { ...state, chatList: [ action.payload, ...state.chatList.filter((chat) => chat._id !== action.payload._id) ] }
 
+		case 'delete_chat':
+			return { ...state, chatList: [ ...state.chatList.filter((chat) => !action.payload.includes(chat._id)) ] }
+
 		// Technician and Businesss
 		// Technician Application
 		case 'add_tech_app':
@@ -202,6 +205,15 @@ const updateChatList = dispatch => (chats) => {
 	console.log("chatList >> update");
 };
 
+const deleteChat = dispatch => (chatIds) => {
+	// const numOfChatIds = chatIds.length;
+	// let chatIdIndex = 0;
+	// for (chatIdIndex; chatIdIndex < numOfChatIds; chatIdIndex++) {
+	console.log("delete chats: ", chatIds);
+	dispatch({ type: 'delete_chat', payload: chatIds });
+	// };
+};
+
 // Technician and Businesss
 // Technician Application
 
@@ -250,6 +262,7 @@ export const { Provider, Context } = createDataContext(
 		clearChatList,
 		addChatList,
 		updateChatList,
+		deleteChat,
 
 		// Technician and Business
 		// technician application

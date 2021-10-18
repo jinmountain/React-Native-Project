@@ -93,22 +93,41 @@ const getMessages = (
 	messageLast,
 	dateToCompare,
 	addDateToCompare,
+	chatDeletedAt
 ) => {
 	return new Promise ((res, rej) => {
 		let chatsStartAfterRef;
-		if (messageLast) {
-			chatsStartAfterRef = chatsRef
-			.doc(chatId)
-			.collection('messages')
-			.orderBy("createdAt", "desc")
-			.startAfter(messageLast)
-			console.log("startAfter lastMessage");
+		if (chatDeletedAt) {
+			if (messageLast) {
+				chatsStartAfterRef = chatsRef
+				.doc(chatId)
+				.collection('messages')
+				.where("createdAt", ">", chatDeletedAt)
+				.orderBy("createdAt", "desc")
+				.startAfter(messageLast)
+				console.log("startAfter lastMessage");
+			} else {
+				chatsStartAfterRef = chatsRef
+				.doc(chatId)
+				.collection('messages')
+				.where("createdAt", ">", chatDeletedAt)
+				.orderBy("createdAt", "desc")
+			};
 		} else {
-			chatsStartAfterRef = chatsRef
-			.doc(chatId)
-			.collection('messages')
-			.orderBy("createdAt", "desc")
-		};
+			if (messageLast) {
+				chatsStartAfterRef = chatsRef
+				.doc(chatId)
+				.collection('messages')
+				.orderBy("createdAt", "desc")
+				.startAfter(messageLast)
+				console.log("startAfter lastMessage");
+			} else {
+				chatsStartAfterRef = chatsRef
+				.doc(chatId)
+				.collection('messages')
+				.orderBy("createdAt", "desc")
+			};
+		}
 		const limit = 30;
 		chatsStartAfterRef
 		.limit(limit)
@@ -443,38 +462,53 @@ const getChatsUserIn =
 			    	const docData = chatDoc.data();
 			    	let theOtherUserRef;
 			    	let notificationCount;
+			    	let chatDeleted = false;
 
-			    	// assign user ref to theOtherUser
+			    	// check if user deleted chat
 			    	if (docData.firstUserId === userId) {
-			    		// the current user is the first user so the other user is the second user
-			    		theOtherUserRef = usersRef.doc(docData.secondUserId);
-			    		notificationCount = docData.firstUserNotificationCount;
+			    		if (firstUserDeleted) {
+			    			chatDeleted = true;
+			    		}
 			    	} else {
-			    		theOtherUserRef = usersRef.doc(docData.firstUserId);
-			    		notificationCount = docData.secondUserNotificationCount;
-			    	}
-			    	// get theOtherUser data
-			    	const getTheOtherUserData = await theOtherUserRef.get();
-			    	const theOtherUserData = getTheOtherUserData.data();
+			    		if (secondUserDeleted) {
+			    			chatDeleted = true;
+			    		}
+			    	};
 
-			    	// gather the data to the variable chat
-			    	const chat = { 
-				    	_id: docId, 
-				    	createdAt: docData.createdAt,
-				    	firstUserId: docData.firstUserId,
-				    	secondUserId: docData.secondUserId,
-				    	lastMessageTime: docData.lastMessageTime, 
-				    	lastMessage: docData.lastMessage,
-				    	notificationCount: notificationCount,
-				    	theOtherUser: {
-				    		id: theOtherUserData.id,
-				    		username: theOtherUserData.username,
-				    		photoURL: theOtherUserData.photoURL,
-				    		type: theOtherUserData.type,
+			    	// if deleted don't add to userChats
+			    	if (!chatDeleted) {
+			    		// assign user ref to theOtherUser
+				    	if (docData.firstUserId === userId) {
+				    		// the current user is the first user so the other user is the second user
+				    		theOtherUserRef = usersRef.doc(docData.secondUserId);
+				    		notificationCount = docData.firstUserNotificationCount;
+				    	} else {
+				    		theOtherUserRef = usersRef.doc(docData.firstUserId);
+				    		notificationCount = docData.secondUserNotificationCount;
 				    	}
-				    }
+				    	// get theOtherUser data
+				    	const getTheOtherUserData = await theOtherUserRef.get();
+				    	const theOtherUserData = getTheOtherUserData.data();
 
-			    	userChats.push(chat);
+				    	// gather the data to the variable chat
+				    	const chat = { 
+					    	_id: docId, 
+					    	createdAt: docData.createdAt,
+					    	firstUserId: docData.firstUserId,
+					    	secondUserId: docData.secondUserId,
+					    	lastMessageTime: docData.lastMessageTime, 
+					    	lastMessage: docData.lastMessage,
+					    	notificationCount: notificationCount,
+					    	theOtherUser: {
+					    		id: theOtherUserData.id,
+					    		username: theOtherUserData.username,
+					    		photoURL: theOtherUserData.photoURL,
+					    		type: theOtherUserData.type,
+					    	}
+					    }
+				    	userChats.push(chat);
+			    	}
+			    	
 			    	docIndex += 1;
 			    	if (docIndex === docLength) {
 			    		res(userChats);

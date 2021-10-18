@@ -112,11 +112,14 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 				<KeyboardAwareScrollView >
 					<View style={styles.profilePictureControlContainer}>
 						<TouchableOpacity 
-							onPress={
-								() => navigation.navigate("ImageZoomin", {
+							onPress={() => {
+								user.photoURL
+								?
+								navigation.navigate("ImageZoomin", {
 									file: { type: 'image', url: user.photoURL }
 								})
-							}
+								: null
+							}}
 						>
 							<View style={styles.profilePictureContainer}>
 								{user.photoURL

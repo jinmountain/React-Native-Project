@@ -29,6 +29,7 @@ const UserDataEditButtonForm = ({ navigate, newInput, currentValue, dataType, al
 						}
 					)
 			}}
+			style={styles.buttonContainer}
 		>
 			<View style={styles.textInputLabelContainer}>
 			{ newInput
@@ -50,12 +51,18 @@ const UserDataEditButtonForm = ({ navigate, newInput, currentValue, dataType, al
 					: <Text style={styles.usernameInput}>{dataType}</Text>
 				}
 			</View>
-			<InputFormBottomLine />
 		</TouchableOpacity>
 	)
 };
 
 const styles = StyleSheet.create({
+	buttonContainer: {
+		borderRadius: RFValue(30),
+		backgroundColor: color.grey4,
+		padding: RFValue(7),
+		marginBottom: RFValue(7),
+		backgroundColor: color.white2
+	},
 	textInputLabelContainer: {
 		minHeight: RFValue(25),
 	},
@@ -65,9 +72,10 @@ const styles = StyleSheet.create({
 		color: color.grey3,
 	},
 	inputContainer: {
-		minHeight: RFValue(35),
 		paddingLeft: RFValue(10),
 		justifyContent: 'center',
+		minHeight: RFValue(35),
+		paddingBottom: RFValue(7),
 	},
 	blackText: {
 		color: color.black1,

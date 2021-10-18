@@ -44,25 +44,27 @@ const ProfileInputForm = (
 					: null
 				}
 			</View>
-			<TextInput
-				style={[styles.input, { height: customHeight }]}
-				placeholder={ currentValue
-					? currentValue
-					: placeholderValue
-				}
-				placeholderTextColor={color.gray3}
-				onChangeText={(text) => {
-					setInputCheck(text)
-					setInput(text)
-				}}
-				value={input}
-				maxLength={maxLength}
-				multiline={multiline}
-				underlineColorAndroid="transparent"
-				autoCapitalize="none"
-				numberOfLines={numberOfLines}
-			/>
-			<InputFormBottomLine customStyles={{borderColor: color.gray1}} />
+			<View style={styles.textInputContainer}>
+				<TextInput
+					style={[styles.input, { height: customHeight }]}
+					placeholder={ currentValue
+						? currentValue
+						: placeholderValue
+					}
+					placeholderTextColor={color.grey3}
+					onChangeText={(text) => {
+						setInputCheck(text)
+						setInput(text)
+					}}
+					value={input}
+					maxLength={maxLength}
+					multiline={multiline}
+					underlineColorAndroid="transparent"
+					autoCapitalize="none"
+					numberOfLines={numberOfLines}
+				/>
+			</View>
+			<InputFormBottomLine customStyles={{borderColor: color.grey1}} />
 		</View>
 	)
 };
@@ -71,10 +73,13 @@ const styles = StyleSheet.create({
 	profileInputFormContainer: {
 		zIndex: 1,
 	},
+	textInputContainer: {
+		paddingBottom: RFValue(7)
+	},
 	textInputLabel: {
 		fontSize: RFValue(12),
 		marginTop: RFValue(8),
-		color: color.gray3
+		color: color.grey3
 	},
 	textInputLabelContainer: {
 		minHeight: RFValue(25),
@@ -84,7 +89,6 @@ const styles = StyleSheet.create({
 		fontSize: RFValue(17),
 		height: RFValue(35),
 		overflow: 'hidden',
-		paddingLeft: RFValue(10),
 		// don't put margin or padding bottom 
 		// it increase the gap between the placeholder and the bottom line
 	},
