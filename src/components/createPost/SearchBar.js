@@ -61,7 +61,7 @@ const SearchBar = ({
             clearUserUsernameInput();
             clearSearchUser();
           }}
-          underlayColor={color.gray4}
+          underlayColor={color.grey4}
         >
           <AntDesign name="closecircleo" size={RFValue(27)} color={color.black1} />
         </TouchableHighlight>

@@ -4,7 +4,6 @@ import {
   Image,
   View, 
   Text, 
-  TextInput, 
   StyleSheet, 
   TouchableHighlight,
   Dimensions,
@@ -24,6 +23,7 @@ import THButtonWOBorder from '../../components/buttons/THButtonWOBorder';
 import { InputFormBottomLine } from '../../components/InputFormBottomLine';
 import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
+import VerticalSeperatorLine from '../../components/VerticalSeperatorLine';
 
 // Display Post
 import DisplayPostImage from '../../components/displayPost/DisplayPostImage';
@@ -33,6 +33,7 @@ import DisplayPostLoading from '../../components/displayPost/DisplayPostLoading'
 // Hooks
 import businessGetFire from '../../firebase/businessGetFire';
 // import { navigate } from '../../navigationRef';
+import { kOrNo } from '../../hooks/kOrNo';
 
 // Designs
 import { Ionicons } from '@expo/vector-icons';
@@ -45,7 +46,7 @@ import color from '../../color';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
-const techBoxWidth = windowWidth/3;
+const selectedDisplayAndTechWidth = windowWidth/3;
 
 const SearchUsersForm = ({
   userId,
@@ -141,6 +142,7 @@ const SearchUsersForm = ({
               }
             </View>
           </View>
+          <VerticalSeperatorLine />
           <View style={styles.summaryElementContainer}>
             <View style={styles.summaryLabelContainer}>
               <Text style={styles.summaryLabelText}>
@@ -162,6 +164,7 @@ const SearchUsersForm = ({
               </View>
             </View>
           </View>
+          <VerticalSeperatorLine />
           <View style={styles.summaryElementContainer}>
             <View style={styles.summaryLabelContainer}>
               <Text style={styles.summaryLabelText}>
@@ -230,6 +233,14 @@ const SearchUsersForm = ({
                           url={item.data.files[0].url}
                           imageWidth={windowWidth/2}
                         />
+                        <DisplayPostInfo
+                          containerWidth={windowWidth/2}
+                          taggedCount={kOrNo(item.data.taggedCount)}
+                          title={item.data.title}
+                          likeCount={kOrNo(item.data.likeCount)}
+                          price={item.data.price}
+                          etc={item.data.etc}
+                        />
                         { item.data.files.length > 1
                           ? <MultiplePhotosIndicator
                               size={RFValue(24)}
@@ -249,7 +260,7 @@ const SearchUsersForm = ({
                 }
               </View>
             </View>
-            : selectedDisplayPost 
+            : selectedDisplayPost
             ? 
             <View style={styles.rateAndTagContainer}>
               <View style={styles.selectedDisplayPostContainer}>
@@ -284,7 +295,17 @@ const SearchUsersForm = ({
                   />
                   : null
                 }
+                  <View style={styles.chosenStatus}>
+                    <View style={styles.chosenShadow}>
+                    
+                    </View>
+                    <View style={styles.chosenCheck}>
+                      <AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+                    </View>
+                  </View>
                 </TouchableOpacity>
+              </View>
+              <View style={styles.selectedDisplayPostCheckContainer}>
               </View>
             </View>
             :
@@ -292,7 +313,11 @@ const SearchUsersForm = ({
           }
 
           {
-            selectedDisplayPost && chosenUser && chosenUser.type === "business" && !displayPostTechsState && !rateTech
+            selectedDisplayPost && 
+            chosenUser && 
+            chosenUser.type === "business" && 
+            !displayPostTechsState && 
+            !rateTech
             ?
             <View style={styles.labelContainer}>
               <View style={styles.guideTextContainer}>
@@ -303,7 +328,11 @@ const SearchUsersForm = ({
           }
 
           { // rate
-            selectedDisplayPost && chosenUser && chosenUser.type === "business" && !displayPostTechsState && !rateTech
+            selectedDisplayPost && 
+            chosenUser && 
+            chosenUser.type === "business" && 
+            !displayPostTechsState && 
+            !rateTech
             ? 
             <View style={styles.pickTechContainer}>
               <FlatList
@@ -311,11 +340,12 @@ const SearchUsersForm = ({
                 showsHorizontalScrollIndicator={false}
                 data={displayPostTechs}
                 keyExtractor={(tech, index) => index.toString()}
-                renderItem={({ item }) => {
+                renderItem={({ item, index }) => {
                   return (
-                    <TouchableOpacity 
+                    <TouchableHighlight 
                       onPress={() => { setRateTech(item) }}
                       style={styles.techContainer}
+                      underlayColor={color.grey4}
                     >
                       <View style={styles.techInnerContainer}>
                         { 
@@ -334,7 +364,7 @@ const SearchUsersForm = ({
                           </Text>
                         </View>
                       </View>
-                    </TouchableOpacity>
+                    </TouchableHighlight>
                   )
                 }}
               />
@@ -417,6 +447,9 @@ const styles = StyleSheet.create({
   },
   rateAndTagContainer: {
     backgroundColor: "#fff",
+    minHeight: selectedDisplayAndTechWidth,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   labelContainer: {
     alignItems: 'center',
@@ -456,7 +489,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   postImageContainer: {
-    height: windowWidth/2,
+    height: windowWidth/2 + RFValue(50),
     width: windowWidth/2,
     alignItems: 'center',
     marginRight: 2,
@@ -466,11 +499,12 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: RFValue(7),
+    paddingVertical: RFValue(7),
   },
   selectedPostImageContainer: {
-    width: windowWidth/5,
-    height: windowWidth/5,
+    width: selectedDisplayAndTechWidth,
+    height: selectedDisplayAndTechWidth,
+    justifyContent: 'center',
     alignItems: 'center',
     marginRight: 2,
   },
@@ -481,15 +515,17 @@ const styles = StyleSheet.create({
 
   pickTechContainer: {
     width: '100%',
-    height: techBoxWidth,
+    // height: selectedDisplayAndTechWidth,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: RFValue(15),
   },
   techContainer: {
-    height: techBoxWidth, 
-    width: techBoxWidth, 
+    height: selectedDisplayAndTechWidth, 
+    width: selectedDisplayAndTechWidth, 
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: RFValue(15)
   },
   techImage: {
     height: RFValue(57),
@@ -522,30 +558,30 @@ const styles = StyleSheet.create({
   },
   techsLoadingContainer: {
     width: '100%',
-    height: techBoxWidth,
+    height: selectedDisplayAndTechWidth,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   chosenStatus: {
     flex: 1, 
-    height: techBoxWidth, 
-    width: techBoxWidth, 
-    position: 'absolute', 
+    height: selectedDisplayAndTechWidth, 
+    width: selectedDisplayAndTechWidth, 
+    position: 'absolute',
   },
   chosenShadow: {
     flex: 1, 
-    height: techBoxWidth, 
-    width: techBoxWidth, 
+    height: selectedDisplayAndTechWidth, 
+    width: selectedDisplayAndTechWidth, 
     position: 'absolute', 
     backgroundColor: color.black1, 
-    opacity: 0.1 
+    opacity: 0.1,
   },
-   chosenCheck: {
+  chosenCheck: {
     flex: 1, 
     position: 'absolute', 
-    height: techBoxWidth, 
-    width: techBoxWidth, 
+    height: selectedDisplayAndTechWidth, 
+    width: selectedDisplayAndTechWidth, 
     justifyContent: 'center', 
     alignItems: 'center'
   },

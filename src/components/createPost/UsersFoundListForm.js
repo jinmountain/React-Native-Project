@@ -41,7 +41,7 @@ const UsersFoundListForm = ({ usersFound, clearSearchUser, clearUserUsernameInpu
                 if (item.displayPostCount > 0) {
                   clearSearchUser();
                   clearUserUsernameInput();
-                  console.log("chose the user: ", item.id);
+                  console.log("chose user: ", item.id);
                   chooseUser(item);
                 } else {
                   null

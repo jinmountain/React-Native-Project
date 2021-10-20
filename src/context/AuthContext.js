@@ -260,6 +260,7 @@ const signout = dispatch => async () => {
 		const signOut = authFire.signoutFire();
 		signOut
 		.then(() => {
+			console.log("signout successful");
 			dispatch({ type: 'clear_currentUser' });
 			console.log('state change: user >> null user info is removed from auth context');
 			res(true);

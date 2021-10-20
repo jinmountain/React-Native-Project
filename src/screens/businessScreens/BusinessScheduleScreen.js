@@ -967,7 +967,7 @@ const styles = StyleSheet.create({
   	backgroundColor: color.black1, 
   	opacity: 0.1 
   },
-   chosenCheck: {
+  chosenCheck: {
   	flex: 1, 
   	position: 'absolute', 
   	height: windowWidth/2 + RFValue(50), 

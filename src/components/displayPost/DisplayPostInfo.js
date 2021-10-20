@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
 		paddingVertical: RFValue(3),
 	},
 	infoContainer: {
+		flex: 1,
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginHorizontal: RFValue(3),
-		fontSize: RFValue(14)
+		fontSize: RFValue(15)
 	},
 });
 

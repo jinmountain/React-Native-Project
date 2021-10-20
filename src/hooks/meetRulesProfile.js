@@ -6,7 +6,7 @@ const meetUsernameRules = (possibleUsername, setRulesUsernameControl) => {
 	(
 		!expr.test(possibleUsername) 
 		// username must be longer than 4 characters
-		|| possibleUsername.length < 4 
+		|| possibleUsername.length < 5 
 		// and less or equal to 30 characters
 		|| possibleUsername.length > 30
 	) {

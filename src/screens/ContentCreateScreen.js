@@ -192,7 +192,6 @@ const ContentCreateScreen = ({ route, navigation }) => {
       !cpDisplayPostState
     ) {
       clearFirstAndGetCpDisplayPosts(chosenUser, user.id);
-    console.log("hAHAHAHAH")
     } else {
       return;
     }
@@ -246,17 +245,12 @@ const ContentCreateScreen = ({ route, navigation }) => {
     }
   }, [display]);
 
-  // const [imageZoomModalVisible, setImageZoomModalVisible] = useState(false);
-  // const [ modalImage, setModalImage ] = useState([])
-
   // Progress
   const [ progress, setProgress ] = useState(null);
 
   const changeProgress = useCallback((progress) => {
       setProgress(progress);
-    },
-    []
-  );
+  },[]);
 
   return (
     <MainTemplate>
@@ -660,11 +654,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// ContentCreateScreen.navigationOptions = {
-//   title: "Create Post",
-//   headerShown: true,
-//   headerRight: () => (
-//     <TouchableOpacity><Text>Share</Text></TouchableOpacity>
-//   ),
-// };
 export default ContentCreateScreen;

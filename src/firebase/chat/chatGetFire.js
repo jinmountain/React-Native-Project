@@ -466,11 +466,11 @@ const getChatsUserIn =
 
 			    	// check if user deleted chat
 			    	if (docData.firstUserId === userId) {
-			    		if (firstUserDeleted) {
+			    		if (docData.firstUserDeleted) {
 			    			chatDeleted = true;
 			    		}
 			    	} else {
-			    		if (secondUserDeleted) {
+			    		if (docData.secondUserDeleted) {
 			    			chatDeleted = true;
 			    		}
 			    	};

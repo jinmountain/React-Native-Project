@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { 
 	View, 
 	StyleSheet,
@@ -99,7 +99,7 @@ const ChatListScreen = ({ navigation }) => {
 	const isFocused = useIsFocused();
 
 	// Screen Controls
-	const [ tryGetChats, setTryGetChats ] = useState(false);
+	const [ screenReady, setScreenReady ] = useState(false);
 
 	// const [ chats, setChats ] = useState([]);
 	const { state: { user }, accountRefresh } = useContext(AuthContext);
@@ -118,6 +118,9 @@ const ChatListScreen = ({ navigation }) => {
 
 	// delete chat states
 	const [ selectChatToDelete, setSelectChatToDelete ] = useState(false);
+	// for convenience made two states to delete chats
+	// - ids to remove chats from context
+	// - chat jsons to delete chats from firestore
 	const [ selectedChatIdsToDelete, setSelectedChatIdsToDelete ] = useState([]);
 	const [ selectedChatsToDelete, setSelectedChatsToDelete ] = useState([]);
 
@@ -141,34 +144,68 @@ const ChatListScreen = ({ navigation }) => {
 		};
 	}, [isFocused])
 
- 	useFocusEffect(
-    React.useCallback(() => {
-    	if (chatFetchState === false && chatFetchSwitch === true) {
-    		setChatFetchSwitch(true);
-    		const getChatsUserIn = chatGetFire.getChatsUserIn(
-					user.id, 
-					setChatLast,
-					setChatFetchSwitch,
-					chatLast,  
-					isFocused
-				)
-				getChatsUserIn
-				.then((chatsFetched) => {
-					addChatList(chatsFetched);
-					if (chatsFetched) {
-						setTryGetChats(true);
-					}
-					setChatFetchState(false);
-				})
-    	}
-      return () => clearChatList();
-    }, [])
-  );
+ 	// useFocusEffect(
+  //   useCallback(() => {
+  //   	if (chatFetchState === false && chatFetchSwitch === true) {
+  //   		setChatFetchSwitch(true);
+  //   		const getChatsUserIn = chatGetFire.getChatsUserIn(
+		// 			user.id, 
+		// 			setChatLast,
+		// 			setChatFetchSwitch,
+		// 			chatLast,  
+		// 			isFocused
+		// 		)
+		// 		getChatsUserIn
+		// 		.then((chatsFetched) => {
+		// 			addChatList(chatsFetched);
+		// 			if (chatsFetched) {
+		// 				setScreenReady(true);
+		// 			}
+		// 			setChatFetchState(false);
+		// 		})
+  //   	}
+  //     return () => {
+  //     	clearChatList();
+  //     }
+  //   }, [])
+  // );
+
+  useEffect(() => {
+  	if (chatFetchState === false && chatFetchSwitch === true) {
+  		setChatFetchSwitch(true);
+  		const getChatsUserIn = chatGetFire.getChatsUserIn(
+				user.id, 
+				setChatLast,
+				setChatFetchSwitch,
+				chatLast,  
+				isFocused
+			)
+			getChatsUserIn
+			.then((chatsFetched) => {
+				addChatList(chatsFetched);
+				if (chatsFetched) {
+					setScreenReady(true);
+				}
+				setChatFetchState(false);
+			})
+  	}
+    return () => {
+    	clearChatList();
+    	setScreenReady(false);
+    	setChatLast(null);
+    	setChatFetchSwitch(true);
+    	setChatFetchState(false);
+
+    	setSelectChatToDelete(false);
+    	setSelectedChatIdsToDelete([]);
+    	setSelectedChatsToDelete([]);
+    }
+  }, []);
 
 	return (
 		<MainTemplate>
 		{ 
-			tryGetChats && chatList.length > 0
+			screenReady && chatList.length > 0
 			?
 			<View style={styles.mainContainer}>
 				{
@@ -371,7 +408,7 @@ const ChatListScreen = ({ navigation }) => {
           }}
         />
 			</View>
-			: tryGetChats
+			: screenReady
 			?
 			<View style={styles.mainContainer}>
 				<UserAccountHeaderForm

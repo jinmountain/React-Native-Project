@@ -28,7 +28,7 @@ const StarRating = ({rating, changeRating}) => {
 		<View style={styles.ratingContainer}>
       <View style={styles.actionContainer}>
         <TouchableHighlight 
-          underlayColor={color.gray1}
+          underlayColor={color.grey4}
           style={styles.buttonContainer}
           onPress={() => { changeRating(1) }}
         >
@@ -50,7 +50,7 @@ const StarRating = ({rating, changeRating}) => {
           }
         </TouchableHighlight>
         <TouchableHighlight 
-          underlayColor={color.gray1}
+          underlayColor={color.grey4}
           style={styles.buttonContainer}
           onPress={() => { changeRating(2) }}
         >
@@ -72,7 +72,7 @@ const StarRating = ({rating, changeRating}) => {
           }
         </TouchableHighlight>
         <TouchableHighlight 
-          underlayColor={color.gray1}
+          underlayColor={color.grey4}
           style={styles.buttonContainer}
           onPress={() => { changeRating(3) }}
         >
@@ -94,7 +94,7 @@ const StarRating = ({rating, changeRating}) => {
           }
         </TouchableHighlight>
         <TouchableHighlight 
-          underlayColor={color.gray1}
+          underlayColor={color.grey4}
           style={styles.buttonContainer}
           onPress={() => { changeRating(4) }}
         >
@@ -116,7 +116,7 @@ const StarRating = ({rating, changeRating}) => {
           }
         </TouchableHighlight>
         <TouchableHighlight 
-          underlayColor={color.gray1}
+          underlayColor={color.grey4}
           style={styles.buttonContainer}
           onPress={() => { changeRating(5) }}
         >

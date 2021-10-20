@@ -8,7 +8,7 @@ import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 
 // Stacks
-import UserAccountStack from './UserAccountStack';
+// import UserAccountStack from './UserAccountStack';
 
 const Stack = createStackNavigator();
 
