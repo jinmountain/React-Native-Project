@@ -225,7 +225,7 @@ const AccountScreen = ({ navigation }) => {
 						navigation.navigate("ContentCreate");
 					}}
 					secondOnPress={() => {
-						navigation.navigate("ChatList");
+						navigation.navigate("ChatListStack");
 					}}
 					thirdOnPress={() => {
 						navigation.navigate("AccountManagerStack");
@@ -344,15 +344,26 @@ const AccountScreen = ({ navigation }) => {
 			            horizontal
 			            showsHorizontalScrollIndicator={false}
 			            data={accountDisplayPosts}
-			            keyExtractor={(displayPost) => displayPost.id}
-			            renderItem={({ item }) => {
+			            keyExtractor={(displayPost, index ) => index.toString()}
+			            renderItem={({ item, index }) => {
 			              return (
 			                <TouchableOpacity 
 			                  style={{ ...styles.postImageContainer, ...{ height: windowWidth/2 + RFValue(50), width: windowWidth/2 } }}
 			                  onPress={() => {
-			                  	navigation.navigate('PostDetail', {
-			                  		post: item,
-			                  		postSource: 'account'
+			                  	// navigation.navigate('PostDetail', {
+			                  	// 	post: item,
+			                  	// 	postSource: 'account'
+			                  	// });
+			                  	navigation.navigate('PostsSwipeStack', {
+			                  		screen: 'PostsSwipe',
+			                  		params: {
+			                  			postSource: 'accountDisplay',
+			                  			cardIndex: index,
+			                  			posts: accountDisplayPosts,
+          										postState: accountDisplayPostState,
+															postFetchSwitch: accountDisplayPostFetchSwitch,
+															postLast: accountDisplayPostLast,
+			                  		}
 			                  	});
 			                  }}
 			                >

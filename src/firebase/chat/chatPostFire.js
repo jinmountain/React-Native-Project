@@ -227,53 +227,46 @@ const sendMessageFire = (
 		// set new last message time and last message 
 		// and reset firstUserChatDeleted and secondUserChatDeleted on the chat doc
 		// when message exists
+		let chatDocChange = {};
+
 		if (message.length > 0) {
-			chatsRef
-			.doc(chatId)
-			.set(
-				{ 
+			chatDocChange = { 
+				...chatDocChange,
+				...{ 
 					lastMessageTime: now, 
 					lastMessage: message,
 					firstUserChatDeleted: false,
 					secondUserChatDeleted: false
-				}, 
-				{ merge: true }
-			);
+				}
+			};
 		// else lastMessage is "Image"
 		} else {
-			chatsRef
-			.doc(chatId)
-			.set(
-				{ 
+			chatDocChange = {
+				...chatDocChange,
+				...{
 					lastMessageTime: now, 
 					lastMessage: "Image",
 					firstUserChatDeleted: false,
 					secondUserChatDeleted: false
-				}, 
-				{ merge: true }
-			);
+				}
+			}
 		};
 
-		// send push notification or not
+		// whether send push notification or not
 		// make this into a function and use it whenever add a doc to chatsRef
 		if (theOtherUserActive === false) {
 			const countIncrement = firebase.firestore.FieldValue.increment(1);
 			if (theOtherUserId === firstUserId) {
-				chatsRef
-				.doc(chatId)
-				.set(
-					{ firstUserNotificationCount: countIncrement },
-					{ merge: true }
-				)
+				chatDocChange = { 
+					...chatDocChange, 
+					...{ firstUserNotificationCount: countIncrement } 
+				}
 			} else {
-				chatsRef
-				.doc(chatId)
-				.set(
-					{ secondUserNotificationCount: countIncrement },
-					{ merge: true }
-				)
+				chatDocChange = { 
+					...chatDocChange, 
+					...{ secondUserNotificationCount: countIncrement }
+				}
 			}
-
 			usersRef
 			.doc(theOtherUserId)
 			.collection("notifications")
@@ -285,6 +278,13 @@ const sendMessageFire = (
 				createdAt: now 
 			});
 		};
+		// after finish chatDocChange json and set the chat doc with it
+		chatsRef
+		.doc(chatId)
+		.set(
+			chatDocChange,
+			{ merge: true }
+		)
 
 		res(true);
 	});
@@ -341,14 +341,14 @@ const deleteChat = (chats, userId) => {
 			.doc(chatId)
 			.set({
 				firstUserChatDeleted: true,
-				firstUserChatDeletedAt: Date.now();
+				firstUserChatDeletedAt: Date.now()
 			})
 		} else {
 			chatsRef
 			.doc(chatId)
 			.set({
 				secondUserChatDeleted: true,
-				secondUserChatDeleted: Date.now();
+				secondUserChatDeleted: Date.now()
 			});
 		};
 	};

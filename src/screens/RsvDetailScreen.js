@@ -143,7 +143,7 @@ const RsvDetailScreen = ({ route, navigation }) => {
     <View style={{ flex: 1 }}>
       <HeaderForm 
         leftButtonTitle={null}
-        leftButtonIcon={expoIcons.IoniconsMdArrowBack(RFValue(27), color.black1)}
+        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
         headerTitle={"Reservation Info"} 
         rightButtonTitle={null} 
         rightButtonIcon={expoIcons.featherMoreVertical(RFValue(23), color.grey2)}

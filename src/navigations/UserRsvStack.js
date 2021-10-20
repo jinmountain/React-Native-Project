@@ -72,17 +72,6 @@ const UserRsvStack = () => {
           postServiceType: null
         }}
       />
-      <Stack.Screen 
-        name="PostDetail" 
-        component={PostDetailScreen} 
-      />
-      <Stack.Screen  
-        name="UserAccountStack" 
-        component={UserAccountStack}
-        options={{ 
-          headerShown: false,
-        }}
-      />
     </Stack.Navigator>
   );
 }

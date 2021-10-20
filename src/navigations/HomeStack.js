@@ -42,29 +42,8 @@ const HomeStack = () => {
         }}
       />
       <Stack.Screen  
-        name="UserAccountStack" 
-        component={UserAccountStack}
-        options={{ 
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen  
         name="PostsSwipeStack" 
         component={PostsSwipeStack}
-        options={{ 
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen 
-        name="PostDetail" 
-        component={PostDetailScreen} 
-        options={{ 
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen 
-        name="ImageZoomin" 
-        component={ImageZoominScreen}
         options={{ 
           headerShown: false,
         }}

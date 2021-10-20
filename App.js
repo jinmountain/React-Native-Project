@@ -22,6 +22,12 @@ import CameraScreen from './src/screens/CameraScreen';
 import ImageUploadMethodModal from './src/screens/ImageUploadMethodModal';
 import ImageZoominScreen from './src/screens/ImageZoominScreen';
 import ChatScreen from './src/screens/ChatScreen';
+import PostDetailScreen from './src/screens/PostDetailScreen';
+
+// navigation stacks
+import ChatListStack from './src/navigations/ChatListStack';
+import UserAccountStack from './src/navigations/UserAccountStack';
+import PostsSwipeStack from './src/navigations/PostsSwipeStack';
 
 // Navigations
 import MainBottomTab from './src/navigations/MainBottomTab';
@@ -80,6 +86,28 @@ const MainFlow = () => {
       <Stack.Screen 
         name="Main" 
         component={MainBottomTab}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen  
+        name="UserAccountStack" 
+        component={UserAccountStack}
+        options={{ 
+          headerShown: false,
+        }}
+      />
+    {/* PostDetailScreen is here for Activity Tab's navigation to PostDetailScreen*/}
+      <Stack.Screen 
+        name="PostDetail" 
+        component={PostDetailScreen} 
+        options={{ 
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="ChatListStack" 
+        component={ChatListStack}
         options={{
           headerShown: false,
         }}

@@ -53,9 +53,12 @@ const PostsSwipeStack = () => {
           businessUserSearch: null,
         }}
       />
-      <Stack.Screen  
-        name="UserAccountStack" 
-        component={UserAccountStack}
+      <Stack.Screen 
+        name="PostDetail" 
+        component={PostDetailScreen} 
+        options={{ 
+          headerShown: false,
+        }}
       />
       <Stack.Screen 
         name="PostManager" 

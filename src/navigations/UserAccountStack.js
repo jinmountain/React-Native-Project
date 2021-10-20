@@ -30,6 +30,9 @@ const UserAccountStack = () => {
       <Stack.Screen  
         name="PostsSwipeStack" 
         component={PostsSwipeStack}
+        options={{ 
+          headerShown: false,
+        }}
       />
       <Stack.Screen 
         name="ShopStack" 

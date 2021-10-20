@@ -3,8 +3,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 // Screens
 import AccountScreen from '../screens/AccountScreen';
-import ChatScreen from '../screens/ChatScreen';
-import ChatListScreen from '../screens/ChatListScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
 import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
@@ -29,9 +27,12 @@ const AccountStack = () => {
         name="Account" 
         component={AccountScreen} 
       />
-      <Stack.Screen 
-        name="PostDetail" 
-        component={PostDetailScreen} 
+      <Stack.Screen  
+        name="PostsSwipeStack" 
+        component={PostsSwipeStack}
+        options={{ 
+          headerShown: false,
+        }}
       />
       <Stack.Screen 
         name="PostManager" 
@@ -68,18 +69,6 @@ const AccountStack = () => {
           cusId: null,
           postServiceType: null
         }}
-      />
-      <Stack.Screen 
-        name="UserAccountStack" 
-        component={UserAccountStack} 
-      />
-      <Stack.Screen  
-        name="PostsSwipeStack" 
-        component={PostsSwipeStack}
-      />
-      <Stack.Screen 
-        name="ChatList" 
-        component={ChatListScreen} 
       />
       <Stack.Screen 
         name="UpdateProfileStack" 

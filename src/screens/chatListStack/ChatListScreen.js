@@ -16,33 +16,33 @@ import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Components
-import MainTemplate from '../components/MainTemplate';
-import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
-import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderForm';
-import ChatListDefault from '../components/defaults/ChatListDefault';
-import DefaultUserPhoto from '../components/defaults/DefaultUserPhoto';
+import MainTemplate from '../../components/MainTemplate';
+import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
+import UserAccountHeaderForm from '../../components/profilePage/UserAccountHeaderForm';
+import ChatListDefault from '../../components/defaults/ChatListDefault';
+import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 
 // Context
-import { Context as AuthContext } from '../context/AuthContext';
-import { Context as SocialContext } from '../context/SocialContext';
+import { Context as AuthContext } from '../../context/AuthContext';
+import { Context as SocialContext } from '../../context/SocialContext';
 
 // Firebase
-import chatGetFire from '../firebase/chat/chatGetFire';
-import chatPostFire from '../firebase/chat/chatPostFire';
+import chatGetFire from '../../firebase/chat/chatGetFire';
+import chatPostFire from '../../firebase/chat/chatPostFire';
 
 // Designs
 import { Entypo } from '@expo/vector-icons';
 
 // Color
-import color from '../color';
+import color from '../../color';
 
 // expo icons
-import expoIcons from '../expoIcons';
+import expoIcons from '../../expoIcons';
 
 // Hooks
-import { kOrNo } from '../hooks/kOrNo';
-import { wait } from '../hooks/wait';
-import { isCloseToBottom } from '../hooks/isCloseToBottom';
+import { kOrNo } from '../../hooks/kOrNo';
+import { wait } from '../../hooks/wait';
+import { isCloseToBottom } from '../../hooks/isCloseToBottom';
 import { useIsFocused } from '@react-navigation/native';
 
 const windowWidth = Dimensions.get("window").width;
@@ -168,7 +168,7 @@ const ChatListScreen = ({ navigation }) => {
 	return (
 		<MainTemplate>
 		{ 
-			tryGetChats
+			tryGetChats && chatList.length > 0
 			?
 			<View style={styles.mainContainer}>
 				{
@@ -371,6 +371,42 @@ const ChatListScreen = ({ navigation }) => {
           }}
         />
 			</View>
+			: tryGetChats
+			?
+			<View style={styles.mainContainer}>
+				<UserAccountHeaderForm
+					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonPress={() => { navigation.goBack() }}
+					username={user.username}
+					secondIcon={
+						expoIcons.entypoNewMessage(RFValue(27), color.black1)
+					}
+					secondOnPress={() => {
+						navigation.navigate("WriteNewMessage");
+					}}
+				/>
+				<View style={styles.noChatMainContainer}>
+					<View style={styles.noChatTitleContainer}>
+						<Text style={styles.noChatTitleText}>Send a message,</Text>
+						<Text style={styles.noChatTitleText}>Ask about a design</Text>
+					</View>
+					<View style={styles.noChatMessageContainer}>
+						<Text style={styles.noChatMessageText}>Direct Messages are private converstaions between you and other people on Wonder. Ask about designs and more!</Text>
+					</View>
+					<View style={styles.writeNewMessageButtonContainer}>
+						<TouchableOpacity
+							style={styles.writeNewMessageButton}
+							onPress={() => {
+								navigation.navigate("WriteNewMessage");
+							}}
+						>
+							<View style={styles.writeNewMessageButtonInner}>
+								<Text style={styles.writeNewMessageButtonText}>Write a message</Text>
+							</View>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</View>
 			: 
 			<ChatListDefault />
 		}
@@ -485,6 +521,52 @@ const styles = StyleSheet.create({
 		fontSize: RFValue(17),
 		fontWeight: 'bold'
 	},
+
+	noChatMainContainer: {
+		flex: 1,
+		backgroundColor: color.white1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	noChatTitleContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingHorizontal: RFValue(20),
+		paddingVertical:RFValue(11)
+	},
+	noChatTitleText: {
+		fontSize: RFValue(23),
+		fontWeight: 'bold',
+	},
+	noChatMessageContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingHorizontal: RFValue(25),
+	},
+	noChatMessageText: {
+		fontSize: RFValue(17),
+		color: color.grey3
+	},
+	writeNewMessageButtonContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: RFValue(20),
+	},
+	writeNewMessageButton: {
+		borderRadius: RFValue(30),
+		height: RFValue(50),
+		borderWidth: RFValue(0.5),
+		borderColor: color.black2,
+		backgroundColor: color.black2,
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: RFValue(15)
+	},
+	writeNewMessageButtonText: {
+		color: color.white1,
+		fontSize: RFValue(17),
+		fontWeight: 'bold'
+	}
 });
 
 export default ChatListScreen;
