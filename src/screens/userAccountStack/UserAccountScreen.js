@@ -586,6 +586,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		backgroundColor: color.white2,
 	},
 	managerButtonContainer: {
 		marginHorizontal: 5,

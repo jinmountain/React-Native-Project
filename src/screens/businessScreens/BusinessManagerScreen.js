@@ -33,6 +33,9 @@ import { RatingReadOnly } from '../../components/RatingReadOnly';
 // Color
 import color from '../../color';
 
+// expo icons
+import expoIcons from '../../expoIcons';
+
 const BusinessManager = ({ navigation, isFocused }) => {
 	// Contexts
 	const { state: { user } } = useContext(AuthContext);

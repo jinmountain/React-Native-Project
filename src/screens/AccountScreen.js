@@ -222,7 +222,7 @@ const AccountScreen = ({ navigation }) => {
 					secondIcon={<AntDesign name="message1" size={RFValue(27)} color={color.black1} />}
 					thirdIcon={<Feather name="menu" size={RFValue(27)} color={color.black1} />}
 					firstOnPress={() => {
-						navigation.navigate("ContentCreate");
+						navigation.navigate("ContentCreateTab");
 					}}
 					secondOnPress={() => {
 						navigation.navigate("ChatListStack");
@@ -488,6 +488,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		backgroundColor: color.white2,
 	},
 	managerButtonContainer: {
 		backgroundColor: color.white2,

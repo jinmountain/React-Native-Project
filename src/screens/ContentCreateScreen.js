@@ -160,9 +160,9 @@ const ContentCreateScreen = ({ route, navigation }) => {
   } = useContext(AuthContext);
 
   useEffect(() => {
-    if (files.length === 0) {
-      pickImage('nav');
-    }
+    // if (files.length === 0) {
+    //   pickImage('nav');
+    // }
     return () => {
       setPostTitle(null);
       setPostPrice(null);
@@ -173,6 +173,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
     }
   }, [])
 
+  // user search
   useEffect(() => {
     if (userUsernameInput.length >= 1) {
       console.log("length: ", userUsernameInput.length, " input: ", userUsernameInput);

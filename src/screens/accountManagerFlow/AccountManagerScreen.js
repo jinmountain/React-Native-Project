@@ -32,6 +32,9 @@ import HeaderBottomLine from '../../components/HeaderBottomLine';
 // Color
 import color from '../../color';
 
+// expo icons
+import expoIcons from '../../expoIcons';
+
 const { width, height } = Dimensions.get("window");
 const buttonSize = width/3 - 8; // borderWidth + marginHorizontal * 2 = 8
 const oneThirdWidth = width / 3
@@ -74,6 +77,13 @@ const AccountManagerScreen = ({ navigation }) => {
 							}}
 							icon={<AntDesign name="creditcard" size={RFValue(27)} color={color.black1} />}
 							text={"Payment"}
+						/>
+						<KitkatButton
+							onPress={() => {
+								navigation.navigate("SetPhoneNumber");
+							}}
+							icon={expoIcons.phoneIcon(RFValue(27), color.black1)}
+							text={"Phone number"}
 						/>
 						<HeaderBottomLine />
 					</View>

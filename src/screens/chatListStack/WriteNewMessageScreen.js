@@ -8,6 +8,7 @@ import {
   TouchableHighlight,
   FlatList,
   Dimensions,
+  Image,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -43,8 +44,20 @@ const WriteNewMessageScreen = ({ navigation }) => {
   useEffect(() => {
     let mounted = true;
     // username must be longer than 4 characters
-    if (usernameTextInput.length > 4) {
+    if (usernameTextInput.length >= 1) {
       const trimmedInput = usernameTextInput.trim();
+      const searchUsers = usersGetFire.getSearchUsersFire(trimmedInput, 'all');
+      searchUsers
+      .then((usersFound) => {
+        setUsersFound(usersFound);
+      })
+      .catch((error) => {
+        console.log("error: searchUsers: ", error);
+      });
+    } else {
+      // clear when the input length became 0 from 1
+      setUsernameTextInput('');
+      setUsersFound([]);
     }
 
     return () => {
@@ -106,7 +119,7 @@ const WriteNewMessageScreen = ({ navigation }) => {
                     setUsersFound([]);
                     setUsernameTextInput('');
                     console.log("chose user: ", item.id);
-                    navigation.navigate("ChatScreen", {
+                    navigation.navigate("Chat", {
                       theOtherUser: item
                     });
                   }} 
@@ -120,7 +133,7 @@ const WriteNewMessageScreen = ({ navigation }) => {
                     }
                   </View>
                   <View style={styles.userInfoContainer}>
-                    <Text style={styles.usernameText}>{item.username}</Text>
+                    <Text style={styles.usernameText}>@{item.username}</Text>
                   </View>
                 </TouchableOpacity>
               )

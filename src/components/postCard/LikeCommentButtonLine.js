@@ -26,7 +26,14 @@ import color from '../../color';
 import THButtonWOBorder from '../buttons/THButtonWOBorder';
 import TagLine from '../TagLine';
 
-const PostLikeCommentTimeInfo = ({ countRating, youLike, postId, uid, tags, likeCount }) => {
+const PostLikeCommentTimeInfo = ({ 
+  countRating, 
+  youLike, 
+  postId, 
+  uid, 
+  tags, 
+  likeCount 
+}) => {
   const [ likeCountState, setLikeCountState ] = useState(likeCount);
   const [liked, setLiked] = useState(youLike);
   return (
@@ -148,6 +155,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingVertical: RFValue(3),
+    height: RFValue(40),
+    alignItems: 'center'
   },
   buttonContainer: {
     flexDirection: 'row',

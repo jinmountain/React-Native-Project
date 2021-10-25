@@ -31,11 +31,24 @@ const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, set
 		  		<View 
 		  			key={index} 
 		  			style={
-		  				item.thisMonth && !item.today
-		  				? styles.dateBox
-		  				: item.thisMonth && item.today
+		  				item.past && !item.today
+		  				?	[styles.dateBox, { opacity: 0.3 }]
+		  				: !item.thisMonth
+		  				? [styles.dateBox, { backgroundColor: color.grey1 }]
+		  				: item.today && !item.past
 		  				? [styles.dateBox, { backgroundColor: color.blue1 }]
-		  				: [styles.dateBox, { backgroundColor: color.gray1 }]
+		  				: item.today && item.past
+		  				? [styles.dateBox, { backgroundColor: color.blue1, opacity: 0.3 }]
+		  				: styles.dateBox
+		  				// item.thisMonth && !item.today
+		  				// ? styles.dateBox
+		  				// : item.thisMonth && item.today
+		  				// ? [styles.dateBox, { backgroundColor: color.blue1 }]
+		  				// : item.thisMonth && item.today && !item.past
+		  				// ?	[styles.dateBox, { backgroundColor: color.red1 }]
+		  				// : item.past
+		  				// ? [styles.dateBox, { backgroundColor: color.red1 }]
+		  				// : [styles.dateBox, { backgroundColor: color.grey1 }]
 		  			}
 		  		>
 						<TouchableOpacity
@@ -52,6 +65,7 @@ const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, set
 								<Text>{item.time.date}</Text>
 								<Text>{item.time.month}</Text>
 								<Text>{item.time.day}</Text>
+								<Text>{item.past ? 'past' : null}</Text>
 							</View>
 						</TouchableOpacity>
 					</View>

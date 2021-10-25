@@ -9,6 +9,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Screens
 import UserLikeScreen from '../screens/UserLikeScreen';
+import UserBookScreen from '../screens/UserBookScreen';
 
 // Stacks
 import UserRsvStack from './UserRsvStack';
@@ -56,6 +57,29 @@ const ActivityTopTab = () => {
 	      				<View style={styles.tabIconContainer}>
 	      					{
 	      						expoIcons.featherShoppingBack(RFValue(19), color.black1)
+	      					}
+	      				</View>
+	      			)
+						}
+	      	}}
+	      />
+	      <Tab.Screen 
+	      	name="UserBook" 
+	      	component={UserBookScreen}
+	      	options={{
+	      		tabBarIcon: ({ focused }) => {
+	      			return (
+	      				focused
+	      				? 
+	      				<View style={styles.tabIconContainer}>
+	      					{
+	      						expoIcons.featherBookmark(RFValue(19), color.red2)
+	      					}
+	      				</View>
+	      				: 
+	      				<View style={styles.tabIconContainer}>
+	      					{
+	      						expoIcons.antdesignBook(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)

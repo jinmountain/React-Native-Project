@@ -31,6 +31,7 @@ export default () => {
 	}, []);
 
 	const pickImage = async (screen, currentUser) => {
+
 		let result 
 		if (screen === "profile") {
 			result = await ImagePicker.launchImageLibraryAsync({
@@ -52,6 +53,7 @@ export default () => {
 
 		try {
 			if(!result.cancelled) {
+				console.log(result);
 				console.log('file uri: ', result.uri);
 				let lastIndexOfDash = result.uri.lastIndexOf('/');
 				let lastIndexOfDot = result.uri.lastIndexOf(".") - lastIndexOfDash;
@@ -59,21 +61,25 @@ export default () => {
 				let id = result.uri.substr(lastIndexOfDash+1, lastIndexOfDot-1).concat('-' + Date.now());
 				console.log('file id: ', id);
 				console.log('file type: ', result.type);
-				if (screen === 'profile') {
-					updateProfilePhotoFire(result.uri, currentUser);
-				}
+				if (result.type === 'video' && result.duration < 5000) {
+					if (screen === 'profile') {
+						updateProfilePhotoFire(result.uri, currentUser);
+					}
 
-				if (screen === 'post') {
-					addFile(id, result.type, result.uri);
-				}
+					if (screen === 'post') {
+						addFile(id, result.type, result.uri);
+					}
 
-				if (screen === 'nav') {
-					addFile(id, result.type, result.uri);
-					navigation.navigate('ContentCreate');
-				}
+					if (screen === 'nav') {
+						addFile(id, result.type, result.uri);
+						navigation.navigate('ContentCreate');
+					}
 
-				if (screen === 'chat') {
-					addFileChat(id, result.type, result.uri);
+					if (screen === 'chat') {
+						addFileChat(id, result.type, result.uri);
+					}
+				} else {
+					console.log("video is longer than 5 sec");
 				}
 			}
 		} catch (error) {

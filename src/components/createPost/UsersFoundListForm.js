@@ -57,7 +57,7 @@ const UsersFoundListForm = ({ usersFound, clearSearchUser, clearUserUsernameInpu
                 }
               </View>
               <View style={styles.userInfoContainer}>
-                <Text style={styles.usernameText}>{item.username}</Text>
+                <Text style={styles.usernameText}>@{item.username}</Text>
               </View>
             </TouchableOpacity>
           )

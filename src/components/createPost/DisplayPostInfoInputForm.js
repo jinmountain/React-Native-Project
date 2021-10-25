@@ -52,7 +52,7 @@ const VerticalScrollModalButton = ({ label, value, onPress, setModalVisible }) =
         onPress(value);
         setModalVisible(false);
       }}
-      underlayColor={color.gray4}
+      underlayColor={color.grey4}
     >
       <View style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
@@ -175,7 +175,7 @@ const DisplayPostInfoInputForm = ({
           style={styles.titleInput}
           value={postTitle} 
           onChangeText={setPostTitle} 
-          placeholderTextColor={color.gray3}
+          placeholderTextColor={color.grey3}
           placeholder="Title"
           multiline={false}
           maxLength={50}
@@ -201,7 +201,7 @@ const DisplayPostInfoInputForm = ({
             style={styles.priceInput}
             value={postPrice}
             onChangeText={setPostPrice}
-            placeholderTextColor={color.gray3}
+            placeholderTextColor={color.grey3}
             placeholder={"Price"}
             spellCheck={false}
             multiline={false}
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     width: RFValue(57),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: color.gray1,
+    backgroundColor: color.grey1,
   },
 
   pickTechContainerOuter: {
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   },
   textInputLabelText: {
     fontSize: RFValue(13),
-    color: color.gray3,
+    color: color.grey3,
   },
   titleInput: {
     fontSize: RFValue(17),

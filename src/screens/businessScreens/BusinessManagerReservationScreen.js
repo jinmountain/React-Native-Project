@@ -9,6 +9,7 @@ import {
 	Image,
 	TouchableOpacity,
 	TouchableHighlight,
+	Dimensions,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { Video, AVPlaybackStatus } from 'expo-av';
@@ -40,6 +41,9 @@ import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 
 // Color
 import color from '../../color';
+
+// icons
+import expoIcons from '../../expoIcons';
 
 const RsvInfoCompartment = ({ rsv, borderLineTop }) => {
 	// item object structure
@@ -164,7 +168,10 @@ const RsvInfoCompartment = ({ rsv, borderLineTop }) => {
 	)
 }
 
-const BusinessManager = ({ navigation, isFocused }) => {
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
+
+const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 	// Contexts
 	const { state: { user } } = useContext(AuthContext);
 	
@@ -318,381 +325,411 @@ const BusinessManager = ({ navigation, isFocused }) => {
   }, []);
 
 	return (
-		<ScrollView 
-			style={styles.managerContainer}
-			refreshControl={
-        <RefreshControl 
-        	refreshing={refreshing} 
-        	onRefresh={() => {
-	        	onRefresh(daysFromToday, reservationDate, user.id) 
-		      }}
-		    />
-		  }
-		>
-			<View style={styles.controllerContainer}>
-				<View style={styles.topControllerContainer}>
-					<View style={styles.topControllerLeftCompartment}>
-						<TouchableHighlight
-							onPress={() => {
-								setReservationDate(reservationDate - dayInMs);
-								setDaysFromToday(daysFromToday - 1);
-							}}
-							style={styles.controllerButtonTHContainer}
-							underlayColor={color.grey1}
-						>
-							<View style={styles.controllerButtonContainer}>
-								<FontAwesome name="calendar-minus-o" size={RFValue(23)} color="black" />
-							</View>
-						</TouchableHighlight>
-					</View>
-					<View style={styles.topControllerMiddleCompartment}>
-						<View style={{ justifyContent: 'center', alignItems: 'center' }}>
+		<View style={{ flex: 1, backgroundColor: color.white2 }}>
+			<ScrollView 
+				style={styles.managerContainer}
+				refreshControl={
+	        <RefreshControl 
+	        	refreshing={refreshing} 
+	        	onRefresh={() => {
+		        	onRefresh(daysFromToday, reservationDate, user.id) 
+			      }}
+			    />
+			  }
+			>
+				<View style={styles.controllerContainer}>
+					<View style={styles.topControllerContainer}>
+						<View style={styles.topControllerLeftCompartment}>
+							<TouchableHighlight
+								onPress={() => {
+									setReservationDate(reservationDate - dayInMs);
+									setDaysFromToday(daysFromToday - 1);
+								}}
+								style={styles.controllerButtonTHContainer}
+								underlayColor={color.grey1}
+							>
+								<View style={styles.controllerButtonContainer}>
+									{expoIcons.featherMinus(RFValue(23), color.black1)}
+								</View>
+							</TouchableHighlight>
+						</View>
+						<View style={styles.topControllerMiddleCompartment}>
 							<View style={{ justifyContent: 'center', alignItems: 'center' }}>
-								<FontAwesome name="calendar" size={RFValue(23)} color="black" />
-							</View>
-							<View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-								<View style={{ paddingRight: RFValue(7) }}>
-									<Text style={styles.middleCompartmentText}>
-										{useConvertTime.convertToMDD(reservationDate)}
-									</Text>
+								<View style={{ justifyContent: 'center', alignItems: 'center' }}>
+									<FontAwesome name="calendar" size={RFValue(23)} color="black" />
 								</View>
-								<View>
-									{
-										daysFromToday === 0
-										?	null
-										: daysFromToday > 0
-										? <Text style={styles.middleCompartmentText}>( +{daysFromToday} )</Text>
-										: <Text style={styles.middleCompartmentText}>( -{daysFromToday} )</Text>
-									}
+								<View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+									<View style={{ paddingRight: RFValue(7) }}>
+										<Text style={styles.middleCompartmentText}>
+											{useConvertTime.convertToMDD(reservationDate)}
+										</Text>
+									</View>
+									<View>
+										{
+											daysFromToday === 0
+											?	null
+											: daysFromToday > 0
+											? <Text style={styles.middleCompartmentText}>( +{daysFromToday} )</Text>
+											: <Text style={styles.middleCompartmentText}>( -{daysFromToday} )</Text>
+										}
+									</View>
 								</View>
 							</View>
 						</View>
-					</View>
-					<View style={styles.topControllerRightCompartment}>
-						<TouchableHighlight
-							onPress={() => {
-								setReservationDate(reservationDate + dayInMs);
-								setDaysFromToday(daysFromToday + 1);
-							}}
-							style={styles.controllerButtonTHContainer}
-							underlayColor={color.grey1}
-						>
-							<View style={styles.controllerButtonContainer}>
-								<FontAwesome name="calendar-plus-o" size={RFValue(23)} color="black" />
-							</View>
-						</TouchableHighlight>
+						<View style={styles.topControllerRightCompartment}>
+							<TouchableHighlight
+								onPress={() => {
+									setReservationDate(reservationDate + dayInMs);
+									setDaysFromToday(daysFromToday + 1);
+								}}
+								style={styles.controllerButtonTHContainer}
+								underlayColor={color.grey1}
+							>
+								<View style={styles.controllerButtonContainer}>
+									{expoIcons.featherPlus(RFValue(23), color.black1)}
+								</View>
+							</TouchableHighlight>
+						</View>
 					</View>
 				</View>
-			</View>
-			
-			<View style={styles.contentContainer}>
-				{ daysFromToday >= 0
-					?
-					<View>
-						<HeaderBottomLine />
-						<View style={styles.labelContainer}>
-							<Text style={styles.labelText}>Upcoming</Text>
-						</View>
-						<HeaderBottomLine />
-						{ 
-							upcomingRsvs.length > 0
-							?
-							upcomingRsvs.map(( item, index ) => (
-								<TouchableOpacity
-									key={index}
-									style={styles.rsvContainer}
-									delayPressIn={700}
-									onPressIn={() => { 
-										console.log("longPress");
-										setLongPressed(true);
-									}}
-									onPressOut={() => {
-										setLongPressed(false);
-									}}
-								>
-									<RsvInfoCompartment 
-										rsv={item} 
-										borderLineTop={index > 0}
+				
+				<View style={styles.contentContainer}>
+					{ daysFromToday >= 0
+						?
+						<View>
+							<HeaderBottomLine />
+							<View style={styles.labelContainer}>
+								<Text style={styles.labelText}>{upcomingRsvs.length} Upcoming</Text>
+							</View>
+							<HeaderBottomLine />
+							{ 
+								upcomingRsvs.length > 0
+								?
+								upcomingRsvs.map(( item, index ) => (
+									<TouchableOpacity
+										key={index}
+										style={styles.rsvContainer}
+										delayPressIn={700}
+										onPressIn={() => { 
+											console.log("longPress");
+											setLongPressed(true);
+										}}
+										onPressOut={() => {
+											setLongPressed(false);
+										}}
+									>
+										<RsvInfoCompartment 
+											rsv={item} 
+											borderLineTop={index > 0}
+										/>
+									</TouchableOpacity>
+								))
+								: getUpcomingRsvsState
+								?
+								<View style={styles.messageContainer}>
+									<SpinnerFromActivityIndicator 
+										customColor={color.grey1}
 									/>
-								</TouchableOpacity>
-							))
-							: getUpcomingRsvsState
-							?
-							<View style={styles.messageContainer}>
-								<SpinnerFromActivityIndicator 
-									customColor={color.grey1}
-								/>
-							</View>
-							:
-							<View style={styles.messageContainer}>
-								<Text> Reservations not found</Text>
-							</View>
-						}
-					</View>
-					:
-					null
-				}
-				{
-					daysFromToday <= 0
-					?
-					<View>
-						<HeaderBottomLine />
-						<View style={styles.labelContainer}>
-							<Text style={styles.labelText}>Uncompleted</Text>
+								</View>
+								:
+								<View style={styles.messageContainer}>
+									<Text> Reservations not found</Text>
+								</View>
+							}
 						</View>
-						<HeaderBottomLine />
-						{ 
-							uncompletedRsvs.length > 0 && daysFromToday <= 0
-							?
-							uncompletedRsvs.map(( item, index ) => (
-								<TouchableOpacity
-									key={index}
-									delayPressIn={700}
-									onPressIn={() => { 
-										console.log("longPress");
-										setLongPressed(true);
-									}}
-									onPressOut={() => {
-										setLongPressed(false);
-									}}
-								>
-									{
-										index > 0
-										&& <HeaderBottomLine />
-									}
-									<View style={styles.rsvContainer}>
-										<RsvInfoCompartment rsv={item}/>
-										<View style={styles.actionContainer}>
-						  				<TouchableHighlight
-							  				onPress={() => {
-							  					// send the reservation to the completed list
-							  					item.rsv.completed = true
-							  					const completedRsvsLen = completedRsvs.length;
-							  					let i;
-							  					
-							  					if (completedRsvs.length === 0) {
-							  						setCompletedRsvs([ item ]);
-							  					} 
-							  					else if (completedRsvs.length === 1) {
-							  						if (completedRsvs[0].rsv.startAt < item.rsv.startAt) {
-							  							setCompletedRsvs([ item, ...completedRsvs]);
-							  						} else {
-							  							setCompletedRsvs([ ...completedRsvs, item]);
-							  						}
-							  					}
-							  					else {
-							  						let smallerRsvIndex = completedRsvsLen - 1;
-							  						for (i = 0; i < completedRsvsLen; i++) {
-								  						if (completedRsvs[i].rsv.startAt < item.rsv.startAt) {
-								  							smallerRsvIndex = i;
-								  							break;
+						:
+						null
+					}
+					{
+						daysFromToday <= 0
+						?
+						<View>
+							<HeaderBottomLine />
+							<View style={styles.labelContainer}>
+								<Text style={styles.labelText}>{uncompletedRsvs.length} Uncompleted</Text>
+							</View>
+							<HeaderBottomLine />
+							{ 
+								uncompletedRsvs.length > 0 && daysFromToday <= 0
+								?
+								uncompletedRsvs.map(( item, index ) => (
+									<TouchableOpacity
+										key={index}
+										delayPressIn={700}
+										onPressIn={() => { 
+											console.log("longPress");
+											setLongPressed(true);
+										}}
+										onPressOut={() => {
+											setLongPressed(false);
+										}}
+									>
+										{
+											index > 0
+											&& <HeaderBottomLine />
+										}
+										<View style={styles.rsvContainer}>
+											<RsvInfoCompartment rsv={item}/>
+											<View style={styles.actionContainer}>
+							  				<TouchableHighlight
+								  				onPress={() => {
+								  					// send the reservation to the completed list
+								  					item.rsv.completed = true
+								  					const completedRsvsLen = completedRsvs.length;
+								  					let i;
+								  					
+								  					if (completedRsvs.length === 0) {
+								  						setCompletedRsvs([ item ]);
+								  					} 
+								  					else if (completedRsvs.length === 1) {
+								  						if (completedRsvs[0].rsv.startAt < item.rsv.startAt) {
+								  							setCompletedRsvs([ item, ...completedRsvs]);
+								  						} else {
+								  							setCompletedRsvs([ ...completedRsvs, item]);
 								  						}
 								  					}
-						  							setCompletedRsvs([
-						  								...completedRsvs.slice(0, smallerRsvIndex),
-							  							item,
-							  							...completedRsvs.slice(smallerRsvIndex, completedRsvsLen)
-							  						])
-							  					}
-							  					// set a new list of uncompleted reservations
-							  					const filteredRsvs = uncompletedRsvs.filter((rsv, index, arr) => {
-							  						return ( rsv.id !== item.id )
-							  					});
-							  					setUncompletedRsvs(filteredRsvs);
+								  					else {
+								  						let smallerRsvIndex = completedRsvsLen - 1;
+								  						for (i = 0; i < completedRsvsLen; i++) {
+									  						if (completedRsvs[i].rsv.startAt < item.rsv.startAt) {
+									  							smallerRsvIndex = i;
+									  							break;
+									  						}
+									  					}
+							  							setCompletedRsvs([
+							  								...completedRsvs.slice(0, smallerRsvIndex),
+								  							item,
+								  							...completedRsvs.slice(smallerRsvIndex, completedRsvsLen)
+								  						])
+								  					}
+								  					// set a new list of uncompleted reservations
+								  					const filteredRsvs = uncompletedRsvs.filter((rsv, index, arr) => {
+								  						return ( rsv.id !== item.id )
+								  					});
+								  					setUncompletedRsvs(filteredRsvs);
 
-							  					//	change on the firestore 
-							  					//	completedReservation(
-							  					//		rsvId: string, 
-							  					//		busId: string, 
-							  					//		cusId: string,
-							  					//		busLocationType: string,
-							  					//		busLocality: string,
-							  					//		reservationStartAt: number,
-							  					//	)
-							  					const completeRsv = businessPostFire.completeReservation(
-							  						item.id, 
-							  						item.rsv.busId, 
-							  						item.rsv.cusId, 
-							  						user.locationType, 
-							  						user.locality, 
-							  						item.rsv.startAt,
-							  						item.post.tags,
-							  						item.post.service,
-							  					);
-							  					completeRsv
-							  					.then(() => {
-							  						console.log("completed a reservation: ", item.id);
-							  					})
-							  					.catch(() => {
-							  						console.log("Error occured: BusinessManagerReservationScreen: completeRsv: ", error);
-							  					})
-							  				}}
-							  				underlayColor={color.grey1}
-							  				style={styles.actionButtonContainer}
-							  			>
-						  					<View style={styles.actionButtonInnerContainer}>
-						  						<View style={styles.actionButtonIconContainer}>
-						  							<AntDesign name="check" size={RFValue(27)} color={color.back1} />
-						  						</View>
-						  						<View style={styles.actionButtonTextContainer}>
-						  							<Text style={styles.actionButtonText}>Complete</Text>
-						  						</View>
-						  					</View>
-							  			</TouchableHighlight>
-							  		</View>
-							  	</View>
-								</TouchableOpacity>
-							))
-							: getUncompletedRsvsState
-							?
-							<View style={styles.messageContainer}>
-								<SpinnerFromActivityIndicator 
-									customColor={color.grey1}
-								/>
-							</View>
-							:
-							<View style={styles.messageContainer}>
-								<Text> Reservations not found</Text>
-							</View>
-						}
-					</View>
-					: null
-				}
-
-				{
-					daysFromToday <= 0
-					?
-					<View>
-						<HeaderBottomLine />
-						<View style={styles.labelContainer}>
-							<Text style={styles.labelText}>Completed</Text>
+								  					//	change on the firestore 
+								  					//	completedReservation(
+								  					//		rsvId: string, 
+								  					//		busId: string, 
+								  					//		cusId: string,
+								  					//		busLocationType: string,
+								  					//		busLocality: string,
+								  					//		reservationStartAt: number,
+								  					//	)
+								  					const completeRsv = businessPostFire.completeReservation(
+								  						item.id, 
+								  						item.rsv.busId, 
+								  						item.rsv.cusId, 
+								  						user.locationType, 
+								  						user.locality, 
+								  						item.rsv.startAt,
+								  						item.post.tags,
+								  						item.post.service,
+								  					);
+								  					completeRsv
+								  					.then(() => {
+								  						console.log("completed a reservation: ", item.id);
+								  					})
+								  					.catch(() => {
+								  						console.log("Error occured: BusinessManagerReservationScreen: completeRsv: ", error);
+								  					})
+								  				}}
+								  				underlayColor={color.grey1}
+								  				style={styles.actionButtonContainer}
+								  			>
+							  					<View style={styles.actionButtonInnerContainer}>
+							  						<View style={styles.actionButtonIconContainer}>
+							  							<AntDesign name="check" size={RFValue(27)} color={color.back1} />
+							  						</View>
+							  						<View style={styles.actionButtonTextContainer}>
+							  							<Text style={styles.actionButtonText}>Complete</Text>
+							  						</View>
+							  					</View>
+								  			</TouchableHighlight>
+								  		</View>
+								  	</View>
+									</TouchableOpacity>
+								))
+								: getUncompletedRsvsState
+								?
+								<View style={styles.messageContainer}>
+									<SpinnerFromActivityIndicator 
+										customColor={color.grey1}
+									/>
+								</View>
+								:
+								<View style={styles.messageContainer}>
+									<Text> Reservations not found</Text>
+								</View>
+							}
 						</View>
-						<HeaderBottomLine />
-						{ 
-							completedRsvs.length > 0 && daysFromToday <= 0
-							?
-							completedRsvs.map(( item, index ) => (
-								<TouchableOpacity
-									key={index}
-									delayPressIn={700}
-									onPressIn={() => { 
-										console.log("longPress");
-										setLongPressed(true);
-									}}
-									onPressOut={() => {
-										setLongPressed(false);
-									}}
-								>
-									{
-										index > 0
-										&& <HeaderBottomLine />
-									}
-									<View style={styles.rsvContainer}>
-										<RsvInfoCompartment rsv={item}/>
-										<View style={styles.actionContainer}>
-						  				<TouchableHighlight
-							  				onPress={() => {
-							  					// send the reservation to the uncompleted list 
-							  					item.rsv.completed = false
-							  					const uncompletedRsvsLen = uncompletedRsvs.length;
-							  					let i;
-							  					
-							  					if (uncompletedRsvs.length === 0) {
-							  						setCompletedRsvs([ item ]);
-							  					} 
-							  					else if (uncompletedRsvs.length === 1) {
-							  						if (uncompletedRsvs[0].rsv.startAt > item.rsv.startAt) {
-							  							setCompletedRsvs([ item, ...completedRsvs]);
-							  						} else {
-							  							setCompletedRsvs([ ...completedRsvs, item]);
-							  						}
-							  					}
-							  					else {
-							  						let smallerRsvIndex = uncompletedRsvsLen - 1;
-							  						for (i = 0; i < uncompletedRsvsLen; i++) {
-								  						if (completedRsvs[i].rsv.startAt < item.rsv.startAt) {
-								  							smallerRsvIndex = i;
-								  							break;
+						: null
+					}
+
+					{
+						daysFromToday <= 0
+						?
+						<View>
+							<HeaderBottomLine />
+							<View style={styles.labelContainer}>
+								<Text style={styles.labelText}>{completedRsvs.length} Completed</Text>
+							</View>
+							<HeaderBottomLine />
+							{ 
+								completedRsvs.length > 0 && daysFromToday <= 0
+								?
+								completedRsvs.map(( item, index ) => (
+									<TouchableOpacity
+										key={index}
+										delayPressIn={700}
+										onPressIn={() => { 
+											console.log("longPress");
+											setLongPressed(true);
+										}}
+										onPressOut={() => {
+											setLongPressed(false);
+										}}
+									>
+										{
+											index > 0
+											&& <HeaderBottomLine />
+										}
+										<View style={styles.rsvContainer}>
+											<RsvInfoCompartment rsv={item}/>
+											<View style={styles.actionContainer}>
+							  				<TouchableHighlight
+								  				onPress={() => {
+								  					// send the reservation to the uncompleted list 
+								  					item.rsv.completed = false
+								  					const uncompletedRsvsLen = uncompletedRsvs.length;
+								  					let i;
+								  					
+								  					if (uncompletedRsvs.length === 0) {
+								  						setCompletedRsvs([ item ]);
+								  					} 
+								  					else if (uncompletedRsvs.length === 1) {
+								  						if (uncompletedRsvs[0].rsv.startAt > item.rsv.startAt) {
+								  							setCompletedRsvs([ item, ...completedRsvs]);
+								  						} else {
+								  							setCompletedRsvs([ ...completedRsvs, item]);
 								  						}
 								  					}
-						  							setCompletedRsvs([
-						  								...completedRsvs.slice(0, smallerRsvIndex),
-							  							item,
-							  							...completedRsvs.slice(smallerRsvIndex, completedRsvsLen)
-							  						])
-							  					}
+								  					else {
+								  						let smallerRsvIndex = uncompletedRsvsLen - 1;
+								  						for (i = 0; i < uncompletedRsvsLen; i++) {
+									  						if (completedRsvs[i].rsv.startAt < item.rsv.startAt) {
+									  							smallerRsvIndex = i;
+									  							break;
+									  						}
+									  					}
+							  							setCompletedRsvs([
+							  								...completedRsvs.slice(0, smallerRsvIndex),
+								  							item,
+								  							...completedRsvs.slice(smallerRsvIndex, completedRsvsLen)
+								  						])
+								  					}
 
-							  					// set a new list of completed reservations
-							  					const filteredRsvs = completedRsvs.filter((rsv, index, arr) => {
-							  						return ( rsv.id !== item.id )
-							  					});
-							  					setCompletedRsvs(filteredRsvs);
+								  					// set a new list of completed reservations
+								  					const filteredRsvs = completedRsvs.filter((rsv, index, arr) => {
+								  						return ( rsv.id !== item.id )
+								  					});
+								  					setCompletedRsvs(filteredRsvs);
 
-							  					// change firestore 
-							  					const uncompleteRsv = businessPostFire.uncompleteReservation(item.id);
-							  					uncompleteRsv
-							  					.then(() => {
-							  						console.log("uncompleted a reservation: ", item.id);
-							  					})
-							  					.catch(() => {
-							  						console.log("Error occured: BusinessManagerReservationScreen: uncompleteRsv: ", error);
-							  					})
-							  				}}
-							  				underlayColor={color.grey1}
-							  				style={styles.actionButtonContainer}
-							  			>
-						  					<View style={styles.actionButtonInnerContainer}>
-						  						<View style={styles.actionButtonIconContainer}>
-						  							<AntDesign name="check" size={RFValue(27)} color={color.blue1} />
-						  						</View>
-						  						<View style={styles.actionButtonTextContainer}>
-						  							<Text style={styles.actionButtonText}>Cancel</Text>
-						  						</View>
-						  					</View>
-							  			</TouchableHighlight>
-							  		</View>
-							  	</View>
-								</TouchableOpacity>
-							))
-							: getCompletedRsvsState
-							?
-							<View style={styles.messageContainer}>
-								<SpinnerFromActivityIndicator 
-									customColor={color.grey1}
-								/>
-							</View>
-							:
-							<View style={styles.messageContainer}>
-								<Text> Reservations not found</Text>
-							</View>
-						}
-					</View>
-					: null
-				}
-			</View>
-			{
-				longPressed
-				?
-				<View style={{
-					position: 'absolute',
-					width: '100%',
-					height: '100%',
-					justifyContent: 'center',
-					alignItems: 'center',
-				}}>
-					<View style={{
-						width: '90%',
-						height: '90%',
-						backgroundColor: '#fff',
-						borderWidth: 1,
-					}}>
-
-					</View>
+								  					// change firestore 
+								  					const uncompleteRsv = businessPostFire.uncompleteReservation(item.id);
+								  					uncompleteRsv
+								  					.then(() => {
+								  						console.log("uncompleted a reservation: ", item.id);
+								  					})
+								  					.catch(() => {
+								  						console.log("Error occured: BusinessManagerReservationScreen: uncompleteRsv: ", error);
+								  					})
+								  				}}
+								  				underlayColor={color.grey1}
+								  				style={styles.actionButtonContainer}
+								  			>
+							  					<View style={styles.actionButtonInnerContainer}>
+							  						<View style={styles.actionButtonIconContainer}>
+							  							<AntDesign name="check" size={RFValue(27)} color={color.blue1} />
+							  						</View>
+							  						<View style={styles.actionButtonTextContainer}>
+							  							<Text style={styles.actionButtonText}>Cancel</Text>
+							  						</View>
+							  					</View>
+								  			</TouchableHighlight>
+								  		</View>
+								  	</View>
+									</TouchableOpacity>
+								))
+								: getCompletedRsvsState
+								?
+								<View style={styles.messageContainer}>
+									<SpinnerFromActivityIndicator 
+										customColor={color.grey1}
+									/>
+								</View>
+								:
+								<View style={styles.messageContainer}>
+									<Text> Reservations not found</Text>
+								</View>
+							}
+						</View>
+						: null
+					}
 				</View>
-				: null
-			}
-		</ScrollView>
-		
+				{
+					longPressed
+					?
+					<View style={{
+						position: 'absolute',
+						width: '100%',
+						height: '100%',
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}>
+						<View style={{
+							width: '90%',
+							height: '90%',
+							backgroundColor: '#fff',
+							borderWidth: 1,
+						}}>
+
+						</View>
+					</View>
+					: null
+				}
+			</ScrollView>
+			<TouchableOpacity
+  			style={{ 
+  				position: 'absolute', 
+  				backgroundColor: color.red1,
+  				height: RFValue(70), 
+  				width: RFValue(70), 
+  				borderRadius: RFValue(100),
+  				justifyContent: 'center',
+  				alignItems: 'center',
+  				marginTop: windowHeight*0.7,
+  				marginLeft: windowWidth*0.75,
+          shadowOffset: {
+            width: 1,
+            height: -15
+          },
+          shadowOpacity: 0.75,
+          shadowRadius: 16,
+          elevation: 5
+  			}}
+  		>
+  			<View 
+  				style={{ 
+  					flex: 1, 
+  					justifyContent: 'center',
+  					alignItems: 'center',
+  				}}>
+  					<FontAwesome name="calendar-plus-o" size={RFValue(23)} color={color.white2} />
+  			</View>	
+  		</TouchableOpacity>
+		</View>
   );
 };
 
@@ -830,6 +867,10 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
+	middleCompartmentText: {
+		fontSize: RFValue(19),
+		fontWeight: 'bold'
+	},
 });
 
-export default BusinessManager;
+export default BusinessManagerReservationScreen;

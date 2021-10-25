@@ -37,8 +37,8 @@ const getSearchUsersFire = (username, type) => {
       });
       res(users);
     })
-    .catch(function(error) {
-      console.log("Error occured during fetching business users: ", error);
+    .catch((error) => {
+      rej(error);
     });
 	});
 };

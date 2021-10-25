@@ -36,7 +36,7 @@ const UpdateBusinessScreen = ({ navigation }) => {
 		<SafeAreaView style={styles.updateBusinessScreenContainer}>
 			<HeaderForm 
         leftButtonTitle={null}
-        leftButtonIcon={expoIcons.IoniconsMdArrowBack(RFValue(27), color.black1)}
+        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
         headerTitle={"Update Business Information"} 
         rightButtonTitle={null} 
         leftButtonPress={() => {

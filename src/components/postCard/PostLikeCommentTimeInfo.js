@@ -28,7 +28,7 @@ const likeOrLikes = (likeCount) => {
 const PostLikeCommentTimeInfo = ({likeCount, commentCount, postTimestamp}) => {
   return (
     <View style={styles.additionalTextContainer}>
-      <View style={styles.likeCommentContainer}>
+      {/*<View style={styles.likeCommentContainer}>
         <View style={styles.likesContainer}>
           <Text style={styles.likesText}>
             {kOrNo(likeCount)} {likeOrLikes(likeCount)}
@@ -37,7 +37,7 @@ const PostLikeCommentTimeInfo = ({likeCount, commentCount, postTimestamp}) => {
         <View style={styles.commentsContainer}>
           <Text style={styles.commentsText}>0 comment</Text>
         </View>
-      </View>
+      </View>*/}
       <View style={styles.timeContainer}>
         <Text style={styles.timeText}>
           {timeDifference(Date.now(), postTimestamp)}

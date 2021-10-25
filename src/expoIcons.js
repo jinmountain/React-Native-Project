@@ -90,6 +90,26 @@ const mcCheckCircle = (size, color) => {
 	return <MaterialCommunityIcons name="check-circle" size={size} color={color} />
 };
 
+const antdesignBook = (size, color) => {
+	return <AntDesign name="book" size={size} color={color} />
+};
+
+const featherBookmark = (size, color) => {
+	return <Feather name="bookmark" size={size} color={color} />
+};
+
+const featherMinus = (size, color) => {
+	return <Feather name="minus" size={size} color={color} />
+};
+
+const featherPlus = (size, color) => {
+	return <Feather name="plus" size={size} color={color} />
+};
+
+const phoneIcon = (size, color) => {
+	return <AntDesign name="phone" size={size} color={color} />
+};
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -110,5 +130,10 @@ export default {
 	antdesignBars,
 	entypoNewMessage,
 	mcCheckBoxBlankCircle,
-	mcCheckCircle
+	mcCheckCircle,
+	antdesignBook,
+	featherBookmark,
+	featherMinus,
+	featherPlus,
+	phoneIcon
 };

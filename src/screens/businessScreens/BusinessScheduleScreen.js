@@ -288,19 +288,43 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			const dateInMonthTime = useConvertTime.convertToTime(dateInMonthTimestamp);
 			// date is in the month and same as today and the current time is bigger than the end time
 			if (dateInMonthTimestamp === dateNowInMs && dateNow > dateNowEndTime) {
-				datesInMonth.push({ dateInMS: dateInMonthTimestamp, time: dateInMonthTime, thisMonth: true, past: true, today: true });
+				datesInMonth.push({ 
+					dateInMS: dateInMonthTimestamp, 
+					time: dateInMonthTime, 
+					thisMonth: true, 
+					past: true, 
+					today: true 
+				});
 			} 
 			// date is in the month but less than today
 			else if (dateInMonthTimestamp < dateNowInMs) {
-				datesInMonth.push({ dateInMS: dateInMonthTimestamp, time: dateInMonthTime, thisMonth: true, past: true, today: false });
+				datesInMonth.push({ 
+					dateInMS: dateInMonthTimestamp, 
+					time: dateInMonthTime, 
+					thisMonth: true, 
+					past: true, 
+					today: false 
+				});
 			}
 			// date is in the month and same as today and the current time is less than the end time
 			else if (dateInMonthTimestamp === dateNowInMs && dateNow < dateNowEndTime) {
-				datesInMonth.push({ dateInMS: dateInMonthTimestamp, time: dateInMonthTime, thisMonth: true, past: false, today: true });
+				datesInMonth.push({ 
+					dateInMS: dateInMonthTimestamp, 
+					time: dateInMonthTime, 
+					thisMonth: true, 
+					past: false, 
+					today: true 
+				});
 			}
 			// date is in the month and bigger than today
 			else {
-				datesInMonth.push({ dateInMS: dateInMonthTimestamp, time: dateInMonthTime, thisMonth: true, past: false, today: false });
+				datesInMonth.push({ 
+					dateInMS: dateInMonthTimestamp, 
+					time: dateInMonthTime, 
+					thisMonth: true, 
+					past: false, 
+					today: false 
+				});
 			}
 		};
 
@@ -308,8 +332,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		let lastDateTimestamp = useConvertTime.getDateTimestamp(time.year, monthIndex, numOfDaysInMonth);
 		let lastDayIndex = useConvertTime.getDayIndex(time.year, monthIndex, numOfDaysInMonth);
 		
-
-		if (lastDayIndex !== 0) {
+		// if lastDayIndex is not 6 which is saturday
+		if (lastDayIndex !== 6) {
 			let daysLeftInWeek = 6 - lastDayIndex;
 			let dayInNextMonthIndex
 			for (dayInNextMonthIndex = 1; dayInNextMonthIndex < daysLeftInWeek + 1; dayInNextMonthIndex++) {
@@ -417,11 +441,11 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			>
 				<View style={styles.labelContainer}>
 					<View style={styles.labelInnerContainer}>
-						<View style={styles.labelIcon}>
+						{/*<View style={styles.labelIcon}>
 							<MaterialCommunityIcons name="numeric-1-circle-outline" size={RFValue(17)} color="black" />
-						</View>
-						<View style={styles.labelText}>
-							<Text>Pick a Design</Text>
+						</View>*/}
+						<View style={styles.labelTextContainer}>
+							<Text style={styles.labelText}>Pick a Design</Text>
 						</View>
 					</View>
 					<HeaderBottomLine />
@@ -544,11 +568,11 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				<View style={styles.labelContainer}>
 					<HeaderBottomLine />
 					<View style={styles.labelInnerContainer}>
-						<View style={styles.labelIcon}>
+						{/*<View style={styles.labelIcon}>
 							<MaterialCommunityIcons name="numeric-2-circle-outline" size={RFValue(17)} color="black" />
-						</View>
-						<View style={styles.labelText}>
-							<Text>Pick a Technician</Text>
+						</View>*/}
+						<View style={styles.labelTextContainer}>
+							<Text style={styles.labelText}>Pick a Technician</Text>
 						</View>
 					</View>
 					<HeaderBottomLine />
@@ -671,11 +695,11 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				<View style={styles.labelContainer}>
 					<HeaderBottomLine />
 					<View style={styles.labelInnerContainer}>
-						<View style={styles.labelIcon}>
+						{/*<View style={styles.labelIcon}>
 							<MaterialCommunityIcons name="numeric-3-circle-outline" size={RFValue(17)} color="black" />
-						</View>
-						<View style={styles.labelText}>
-							<Text>Select Time</Text>
+						</View>*/}
+						<View style={styles.labelTextContainer}>
+							<Text style={styles.labelText}>Select Time</Text>
 						</View>
 					</View>
 					<HeaderBottomLine />
@@ -933,9 +957,13 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingHorizontal: RFValue(7),
 	},
-	labelText: {
+	labelTextContainer: {
 		justifyContent: 'center',
 		alignItems: 'center',
+	},
+	labelText: {
+		fontSize: RFValue(19),
+		fontWeight: 'bold'
 	},
 
 	displayPostsContainer: {

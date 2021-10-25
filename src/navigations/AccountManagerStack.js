@@ -7,6 +7,7 @@ import RegisterBusinessScreen from '../screens/accountManagerFlow/RegisterBusine
 import DeregisterBusinessScreen from '../screens/accountManagerFlow/DeregisterBusinessScreen';
 import RegisterTechnicianScreen from '../screens/accountManagerFlow/RegisterTechnicianScreen';
 import DeregisterTechnicianScreen from '../screens/accountManagerFlow/DeregisterTechnicianScreen';
+import SetPhoneNumberScreen from '../screens/accountManagerFlow/SetPhoneNumberScreen';
 
 // Stacks
 import UpdateBusinessStack from './UpdateBusinessStack';
@@ -24,6 +25,10 @@ const AccountManagerStack = () => {
       <Stack.Screen 
         name="AccountManager" 
         component={AccountManagerScreen}
+      />
+      <Stack.Screen 
+        name="SetPhoneNumber" 
+        component={SetPhoneNumberScreen}
       />
       <Stack.Screen 
         name="UpdateBusinessStack" 

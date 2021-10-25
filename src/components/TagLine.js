@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
   // Tags
   tagBoxContainer: {
     justifyContent: 'center',
-    marginVertical: RFValue(1),
   },
   unitContainer: {
     borderWidth: 0.5,
