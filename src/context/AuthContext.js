@@ -75,9 +75,9 @@ const localSignin = dispatch => async (navigate, screen) => {
 		try {
 			const userData = await authFire.localSigninFire();
 			if (userData) {
-				console.log('localSignin: userData: ', userData.id);
+				console.log('localSignin: userData >> ', userData.id);
 			} else {
-				console.log('localSignin: false');
+				console.log('localSignin: current user data does not exist');
 			}
 			dispatch({ type: 'add_currentUser', payload: userData});
 			if (screen) {

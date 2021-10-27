@@ -106,7 +106,7 @@ const localSigninFire = () => {
     const usersRef = Firebase.firestore().collection('users');
     Firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        console.log("Found a signed in user: ", user.email, " Email Verified: ", user.emailVerified);
+        console.log("found a signed in user: ", user.email, " email Verified: ", user.emailVerified);
         // if (user.emailVerified === true) {
           usersRef
           .doc(user.uid)
@@ -119,7 +119,7 @@ const localSigninFire = () => {
             if (userData && userData.coordinates) {
               delete userData['coordinates']
             }
-            console.log("Local Signed in the following user : ", userData.email);
+            console.log("fetched the current user's data: ", userData.email);
             // update last login to the current time and the user data before updated is pulled and use it
             usersRef.doc(userData.id).update({ 
               lastLogin: Date.now()

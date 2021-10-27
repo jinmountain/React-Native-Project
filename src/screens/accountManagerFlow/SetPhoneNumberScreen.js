@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -9,6 +9,8 @@ import {
   Dimensions
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -31,6 +33,8 @@ import CryptoJS from "react-native-crypto-js";
 const aesSecretKey = "secretkey123"
 
 const SetPhoneNumberScreen = ({ navigation }) => {
+  const isFocused = useIsFocused();
+
   // screen control
   const [ numberVerificationRequest, setNumberVerificationRequest ] = useState(false);
   
@@ -45,55 +49,51 @@ const SetPhoneNumberScreen = ({ navigation }) => {
 
   useEffect(() => {
     return () => {
+      console.log("left SetPhoneNumberScreen");
       setNumberVerificationRequest(false);
       setValidCodeTimeLeft(180);
       setAesEncryptedNumber(null);
       setPhoneNumber(null);
       setUserCodeInput('');
-
-      clearInterval(timerInterval);
     }
   }, []);
 
-  // valid code timer
   useEffect(() => {
     let isMounted = true;
-    // reset timer
-    // isMounted && setValidCodeTimeLeft(180);
-    // isMounted && setValidCodeTimeStartAt(Date.now());
-    // if (numberVerificationRequest) {
-    //   // start the valid code counter
-    //   // var start = Date.now();
-    //   // let timeLeft = 180;
-    //   // while (timeLeft > 0) {
-    //   //   console.log("now: ", Date.now(), "start at: ", validCodeTimeStartAt);
-    //   //   var delta = Date.now() - validCodeTimeStartAt; // milliseconds elapsed since start
-    //   //   const inSecond = Math.floor(delta / 1000);
-
-    //   //   timeLeft = timeLeft - inSecond;
-    //   //   setValidCodeTimeLeft(timeLeft);
-    //   // }
-
-    //   const refreshIntervalId = setInterval(() => {
-    //     console.log("now: ", Date.now(), "start at: ", validCodeTimeStartAt);
-    //     var delta = Date.now() - validCodeTimeStartAt; // milliseconds elapsed since start
-    //     const inSecond = Math.floor(delta / 1000); // in seconds
-    //     // // alternatively just show wall clock time:
-    //     // output(new Date().toUTCString());
-    //     if( validCodeTimeLeft > 0 ) {
-    //       isMounted && setValidCodeTimeLeft(validCodeTimeLeft - inSecond);
-    //     } else {
-    //       console.log("code time out");
-    //     }
-    //   }, 1000);
-    //   setTimerInterval(refreshIntervalId);
-    // }
+    if (numberVerificationRequest) {
+      const codeTimerStartAt = Date.now();
+      const refreshIntervalId = setInterval(() => {
+        console.log("now: ", Date.now(), "start at: ", codeTimerStartAt);
+        var delta = Date.now() - codeTimerStartAt; // milliseconds elapsed since start
+        const inSecond = Math.floor(delta / 1000); // in seconds
+        // // alternatively just show wall clock time:
+        // output(new Date().toUTCString());
+        if( validCodeTimeLeft > 0 ) {
+          isMounted && setValidCodeTimeLeft(validCodeTimeLeft - inSecond);
+        } else {
+          console.log("code time out");
+        }
+      }, 1000);
+      isMounted && setTimerInterval(refreshIntervalId);
+    }
 
     return () => {
       isMounted = false;
+      console.log('clear timerInterval');
       clearInterval(timerInterval);
     }
-  }, [ numberVerificationRequest ])
+  }, [numberVerificationRequest])
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("focused");
+
+      return () => {
+        // clearInterval(timerInterval);
+        console.log("not focused");
+      }
+    }, [])
+  );
 
   // phone number
   const [ phoneNumber, setPhoneNumber ] = useState(null);
@@ -129,8 +129,8 @@ const SetPhoneNumberScreen = ({ navigation }) => {
                 
                 // send text message
                 const sendCode = new Promise((res, rej) => {
-                  setValidCodeTimeLeft(180);
-                  setValidCodeTimeStartAt(Date.now());
+                  // setValidCodeTimeLeft(180);
+                  // setValidCodeTimeStartAt(Date.now());
                   console.log("code sent");
                   res(true);
                 });
@@ -138,23 +138,20 @@ const SetPhoneNumberScreen = ({ navigation }) => {
                 sendCode
                 .then(() => {
                   setNumberVerificationRequest(true);
-                  
-                  setValidCodeTimeLeft(180);
-                  setValidCodeTimeStartAt(Date.now());
-
-                  const refreshIntervalId = setInterval(() => {
-                    console.log("now: ", Date.now(), "start at: ", validCodeTimeStartAt);
-                    var delta = Date.now() - validCodeTimeStartAt; // milliseconds elapsed since start
-                    const inSecond = Math.floor(delta / 1000); // in seconds
-                    // // alternatively just show wall clock time:
-                    // output(new Date().toUTCString());
-                    if( validCodeTimeLeft > 0 ) {
-                      setValidCodeTimeLeft(validCodeTimeLeft - inSecond);
-                    } else {
-                      console.log("code time out");
-                    }
-                  }, 1000);
-                  setTimerInterval(refreshIntervalId);
+                  // const codeTimerStartAt = Date.now();
+                  // const refreshIntervalId = setInterval(() => {
+                  //   console.log("now: ", Date.now(), "start at: ", codeTimerStartAt);
+                  //   var delta = Date.now() - codeTimerStartAt; // milliseconds elapsed since start
+                  //   const inSecond = Math.floor(delta / 1000); // in seconds
+                  //   // // alternatively just show wall clock time:
+                  //   // output(new Date().toUTCString());
+                  //   if( validCodeTimeLeft > 0 ) {
+                  //     setValidCodeTimeLeft(validCodeTimeLeft - inSecond);
+                  //   } else {
+                  //     console.log("code time out");
+                  //   }
+                  // }, 1000);
+                  // setTimerInterval(refreshIntervalId);
                 })
                 .catch((error) => {
                   console.log("error: sendCode: ", error);
@@ -207,6 +204,15 @@ const SetPhoneNumberScreen = ({ navigation }) => {
               <View>
                 <Text>Submit Code</Text>
               </View>
+            </TouchableOpacity>
+          </View>
+          <View>
+            <TouchableOpacity
+              onPress={() => {
+                clearInterval(timerInterval);
+              }}
+            >
+              <Text>CLEAR</Text>
             </TouchableOpacity>
           </View>
         </View>

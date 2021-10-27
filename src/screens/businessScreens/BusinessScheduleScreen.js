@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useContext, useCallback } from 'react';
 import { 
 	Text, 
 	View, 
@@ -10,6 +10,7 @@ import {
 	FlatList,
 	Dimensions,
 	Image,
+	Animated,
 } from 'react-native';
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -52,8 +53,14 @@ import DisplayPostsDefault from '../../components/defaults/DisplayPostsDefault';
 import color from '../../color';
 
 const windowWidth = Dimensions.get("window").width;
+// const pressedLabelWidth = windowWidth * 0.77;
+const pressedLabelWidth = 0;
+const stretchedLabelWidth = windowWidth;
 const windowHeight = Dimensions.get("window").height;
 const techBoxWidth = windowWidth/3;
+
+// animation
+import { useCardAnimation } from '@react-navigation/stack';
 
 const convertEtcToHourMin = (etc) => {
 	if (etc >= 60) {
@@ -77,7 +84,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	const [ rsvDate, setRsvDate ] = useState( useConvertTime.convertToDateInMs( Date.now() ));
 	const [ dateMoveFromToday, setDateMoveFromToday ] = useState(0);
 	// calendar 
-	const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToDateInMs(Date.now()));
+	const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
 	const [ calendarMove, setCalendarMove ] = useState(0);
 
 	// screen controls
@@ -111,6 +118,87 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	const [ userAccountDisplayPostFetchSwitch, setUserAccountDisplayPostFetchSwtich ] = useState(true);
 	const [ userAccountDisplayPostState, setUserAccountDisplayPostState ] = useState(false);
 
+	// animation
+	const { current } = useCardAnimation();
+
+	const firstLabelWidthAnim = useRef(new Animated.Value(pressedLabelWidth)).current;
+	const firstLabelHeightAnim = useRef(new Animated.Value(0)).current;
+	const firstLabelBorderRadiusAnim = useRef(new Animated.Value(RFValue(100))).current;
+
+	const secondLabelWidthAnim = useRef(new Animated.Value(pressedLabelWidth)).current;
+	const secondLabelHeightAnim = useRef(new Animated.Value(0)).current;
+	const secondLabelBorderRadiusAnim = useRef(new Animated.Value(RFValue(100))).current;
+
+	const thirdLabelWidthAnim = useRef(new Animated.Value(pressedLabelWidth)).current;
+	const thirdLabelHeightAnim = useRef(new Animated.Value(0)).current;
+	const thirdLabelBorderRadiusAnim = useRef(new Animated.Value(RFValue(100))).current;
+
+	const stretchLabelWidth = (widthAnim) => {
+		return new Promise((res, rej) => {
+	    Animated.timing(widthAnim, {
+	      toValue: stretchedLabelWidth,
+	      duration: 300,
+	      useNativeDriver: false
+	    }).start();
+	    res(true);
+		});
+  };
+
+  const stretchLabelHeight = (heightAnim) => {
+		return new Promise((res, rej) => {
+	    Animated.timing(heightAnim, {
+	      toValue: RFValue(70),
+	      duration: 300,
+	      useNativeDriver: false
+	    }).start();
+	    res(true);
+		});
+  };
+
+  const pressLabelWidth = (widthAnim) => {
+		return new Promise((res, rej) => {
+	    Animated.timing(widthAnim, {
+	      toValue: pressedLabelWidth,
+	      duration: 300,
+	      useNativeDriver: false
+	    }).start();
+	    res(true);
+		});
+  };
+
+  const pressLabelHeight = (heightAnim) => {
+		return new Promise((res, rej) => {
+	    Animated.timing(heightAnim, {
+	      toValue: 0,
+	      duration: 300,
+	      useNativeDriver: false
+	    }).start();
+	    res(true);
+		});
+  };
+
+  const unfoldLabelBorder = (radiusAnim) => {
+		return new Promise((res, rej) => {
+	    Animated.timing(radiusAnim, {
+	      toValue: 0,
+	      duration: 300,
+	      useNativeDriver: false
+	    }).start();
+	    res(true);
+		});
+  };
+
+  const foldLabelBorder = (radiusAnim) => {
+  	return new Promise((res, rej) => {
+	    Animated.timing(radiusAnim, {
+	      toValue: 100,
+	      duration: 300,
+	      useNativeDriver: false
+	    }).start();
+	    res(true);
+		});
+  };
+
 	const onRefresh = useCallback(() => {
   	let mounted = true;
     setRefreshing(true);
@@ -131,7 +219,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 			setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
 			setDateMoveFromToday(0);
-			setCalendarDate(useConvertTime.convertToDateInMs(Date.now() ));
+			setCalendarDate(useConvertTime.convertToMonthInMs(Date.now() ));
 			setCalendarMove(0);
 
 			setPickedDisplayPost(null);
@@ -141,6 +229,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 			setChartGridsState(false);
 			setChartGrids([]);
+
+			showCalendar(false);
 
 			res(true);
     });
@@ -194,7 +284,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 			setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
 			setDateMoveFromToday(0);
-			setCalendarDate(useConvertTime.convertToDateInMs(Date.now() ));
+			setCalendarDate(useConvertTime.convertToMonthInMs(Date.now() ));
 			setCalendarMove(0);
 
 			setPickedDisplayPost(null);
@@ -245,6 +335,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			setUserAccountDisplayPostLast(null);
 			setUserAccountDisplayPostFetchSwtich(true);
 			setUserAccountDisplayPostState(false);
+
+			setShowCalendar(false);
 		}
 	}, [businessUser]);
 
@@ -376,7 +468,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 					var gridTimestamp = startTimeTimestamp + (gridIndex * 5 * 60 *1000) // + 5mins
 					var gridEndTimestamp = gridTimestamp + (displayPostEtc - 5) * 60 * 1000;
-					// displayPostEtc-5 because it is grid like 1:05 - 1:10
+					// displayPostEtc - 5 because it is grid like 1:05 - 1:10
 
 					var gridStartTime = useConvertTime.convertToTime(gridTimestamp);
 
@@ -406,7 +498,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 					}
 			  };
 			  mounted && setChartGridsState(false);
-			  mounted && setChartGrids(grids);
+			  // mounted && setChartGrids(grids);
 	  	})
 	  	.catch((error) => {
 	  		console.log("BusinessScheduleScreen: getRsvsStartAtOfTech: ", error);
@@ -422,7 +514,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
       }
 			<HeaderForm 
         leftButtonTitle={null}
-        leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.black1} />}
+        leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.white2} />}
         headerTitle={'Scheduler'} 
         rightButtonTitle={null} 
         leftButtonPress={() => {
@@ -431,6 +523,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
         rightButtonPress={() => {
        		null
        	}}
+       	customBackgroundColor={color.red2}
+       	customTextColor={color.white2}
       />
 			<ScrollView 
 				style={styles.scheduleContainer}
@@ -444,11 +538,20 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						{/*<View style={styles.labelIcon}>
 							<MaterialCommunityIcons name="numeric-1-circle-outline" size={RFValue(17)} color="black" />
 						</View>*/}
-						<View style={styles.labelTextContainer}>
+						<Animated.View style={[
+							styles.labelTextContainer,
+							{
+								// width: `${firstLabelWidthAnim}%`,
+								minWidth: firstLabelWidthAnim,
+								minHeight: firstLabelHeightAnim,
+								borderRadius: firstLabelBorderRadiusAnim
+							},
+							{ backgroundColor: color.red2 }
+						]}>
 							<Text style={styles.labelText}>Pick a Design</Text>
-						</View>
+						</Animated.View>
 					</View>
-					<HeaderBottomLine />
+					{/*<HeaderBottomLine />*/}
 				</View>
 				<View>
 					{ 
@@ -491,6 +594,10 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		                  		setDisplayPostTechs([]);
 		                  		setPickedDisplayPost(null);
 		                  		setSelectedTech(null);
+		                  		// animate
+		                  		pressLabelWidth(firstLabelWidthAnim);
+		                  		pressLabelHeight(firstLabelHeightAnim);
+		                  		foldLabelBorder(firstLabelBorderRadiusAnim);
 		                  	} else {
 			                  	if (!displayPostTechsState) {
 			                  		// new pickedDisplayPost reset selctedTech
@@ -509,6 +616,10 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 															console.log("Error occured: BusinessScheduleScreen: getDisplayPostTechs: ", error);
 															setDisplayPostTechsState(false);
 														})
+														// animate
+			                  		stretchLabelWidth(firstLabelWidthAnim);
+			                  		stretchLabelHeight(firstLabelHeightAnim);
+			                  		unfoldLabelBorder(firstLabelBorderRadiusAnim);
 													}
 		                  	}
 		                  }}
@@ -540,7 +651,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				                	
 					                </View>
 					                <View style={styles.chosenCheck}>
-					                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+					                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
 					                </View>
 					              </View>
 					              : null
@@ -567,15 +678,35 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				</View>
 				<View style={styles.labelContainer}>
 					<HeaderBottomLine />
-					<View style={styles.labelInnerContainer}>
+					<View style={
+						pickedDisplayPost
+						?
+						styles.labelInnerContainer
+						:
+						[
+							styles.labelInnerContainer,
+							{ opacity: 0.3 }
+						]
+					}>
 						{/*<View style={styles.labelIcon}>
 							<MaterialCommunityIcons name="numeric-2-circle-outline" size={RFValue(17)} color="black" />
 						</View>*/}
-						<View style={styles.labelTextContainer}>
+						<Animated.View style={[
+							pickedDisplayPost
+							?
+							{ ...styles.labelTextContainer, ...{ backgroundColor: color.red2 }}
+							:
+							{ ...styles.labelTextContainer, ...{ backgroundColor: color.black2 }},
+							{
+								minWidth: secondLabelWidthAnim,
+								minHeight: secondLabelHeightAnim,
+								borderRadius: secondLabelBorderRadiusAnim
+							}
+						]}>
 							<Text style={styles.labelText}>Pick a Technician</Text>
-						</View>
+						</Animated.View>
 					</View>
-					<HeaderBottomLine />
+					{/*<HeaderBottomLine />*/}
 				</View>
 				<View style={styles.pickTechContainerOuter}>
 					{
@@ -594,8 +725,16 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                  if (selectedTech && selectedTech.id === item.techData.id) {
 			                    setSelectedTech(null)
 			                    setChartGrids([]);
+			                    // animate
+		                  		pressLabelWidth(secondLabelWidthAnim);
+		                  		pressLabelHeight(secondLabelHeightAnim)
+		                  		foldLabelBorder(secondLabelBorderRadiusAnim);
 			                  } else {
 			                    setSelectedTech({ id: item.techData.id, photoURL: item.techData.photoURL, username: item.techData.username });
+			                  	// animate
+		                  		stretchLabelWidth(secondLabelWidthAnim);
+		                  		stretchLabelHeight(secondLabelHeightAnim);
+		                  		unfoldLabelBorder(secondLabelBorderRadiusAnim);
 			                  }
 			                }}
 			                style={styles.techContainer}
@@ -671,7 +810,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                    
 			                    </View>
 			                    <View style={styles.chosenTechCheck}>
-			                      <AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+			                      <AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
 			                    </View>
 			                  </View>
 			                  : null
@@ -694,15 +833,35 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				</View>
 				<View style={styles.labelContainer}>
 					<HeaderBottomLine />
-					<View style={styles.labelInnerContainer}>
+					<View style={
+						selectedTech
+						?
+						styles.labelInnerContainer
+						:
+						[
+							styles.labelInnerContainer,
+							{ opacity: 0.3 }
+						]
+					}>
 						{/*<View style={styles.labelIcon}>
 							<MaterialCommunityIcons name="numeric-3-circle-outline" size={RFValue(17)} color="black" />
 						</View>*/}
-						<View style={styles.labelTextContainer}>
+						<Animated.View style={[
+							selectedTech
+							?
+							{ ...styles.labelTextContainer, ...{ backgroundColor: color.red2 }}
+							:
+							{ ...styles.labelTextContainer, ...{ backgroundColor: color.black2 }},
+							{
+								minWidth: thirdLabelWidthAnim,
+								minHeight: thirdLabelHeightAnim,
+								borderRadius: thirdLabelBorderRadiusAnim
+							}
+						]}>
 							<Text style={styles.labelText}>Select Time</Text>
-						</View>
+						</Animated.View>
 					</View>
-					<HeaderBottomLine />
+					{/*<HeaderBottomLine />*/}
 				</View>
 				{
 					pickedDisplayPost && selectedTech &&
@@ -714,11 +873,11 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									?
 									<TouchableOpacity
 										onPress={() => {
-											setCalendarDate(calendarDate - 30 * 24 * 60 * 60 * 1000 );
+											setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, -1));
 											setCalendarMove(calendarMove - 1);
 										}}
 									>
-										<AntDesign name="leftcircleo" size={24} color="black" />
+										<AntDesign name="leftcircleo" size={RFValue(27)} color="black" />
 									</TouchableOpacity>
 									: dateMoveFromToday > 0
 									?
@@ -728,9 +887,13 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 											setDateMoveFromToday(dateMoveFromToday - 1);
 										}}
 									>
-										<AntDesign name="leftcircleo" size={24} color="black" />
+										<AntDesign name="leftcircleo" size={RFValue(27)} color="black" />
 									</TouchableOpacity>
-									: null
+									:
+									<View
+									>
+										<AntDesign name="leftcircleo" size={RFValue(27)} color={color.grey1} />
+									</View>
 								}
 							</View>
 							<View style={styles.calendarControllerCenterCompartment}>
@@ -740,9 +903,16 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									}}
 								>
 									<Text style={styles.rsvDateText}>
-										{useConvertTime.convertToMDD(rsvDate)}
+										{ showCalendar
+											?
+											useConvertTime.convertToMonthly(calendarDate)
+											:
+											useConvertTime.convertToMDD(rsvDate)
+										}
 									</Text>
 								</TouchableOpacity>
+								<View style={{ minHeight: 2, maxHeight: 1, backgroundColor: color.black2, width: '77%', marginTop: RFValue(7) }}>
+								</View>
 							</View>
 							<View style={styles.topControllerRightCompartment}>
 								<TouchableOpacity
@@ -750,7 +920,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 										showCalendar
 										?
 										(
-											setCalendarDate(calendarDate + 30 * 24 * 60 * 60 * 1000),
+											setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, +1)),
 											setCalendarMove(calendarMove + 1)
 										)
 										:
@@ -761,7 +931,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 									}}
 								>
-									<AntDesign name="rightcircleo" size={24} color="black" />
+									<AntDesign name="rightcircleo" size={RFValue(27)} color="black" />
 								</TouchableOpacity>
 							</View>
 						</View>
@@ -784,7 +954,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				}
 				
 				{
-					!showCalendar && pickedDisplayPost && selectedTech
+					!showCalendar && pickedDisplayPost && selectedTech && chartGrids.length > 0
 					?
 					chartGrids.map((gridRow, index) => (
 						<View 
@@ -809,39 +979,57 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						      					pickedDisplayPost && selectedTech
 						      					?
 				    								(
-				    									navigation.navigate('ReservationRequest', {
-								      					businessUserId: businessUser.id,
-								      					businessUserUsername: businessUser.username,
-								      					businessUserPhotoURL: businessUser.photoURL,
-								      					businessUserLocationType: businessUser.locationType,
-								      					businessUserLocality: businessUser.locality,
+				    									// animate
+				                  		stretchLabelWidth(thirdLabelWidthAnim),
+				                  		stretchLabelHeight(thirdLabelHeightAnim),
+				                  		unfoldLabelBorder(thirdLabelBorderRadiusAnim),
 
-								      					businessGooglemapsUrl: businessUser.googlemapsUrl,
-								      					businessLocationCoord: { 
-								      						latitude: businessUser.geometry.location.lat, 
-								      						longitude: businessUser.geometry.location.lng 
-								      					},
+				    									setTimeout(() => { 
+				    										navigation.navigate('ReservationRequest', {
+									      					businessUserId: businessUser.id,
+									      					businessUserUsername: businessUser.username,
+									      					businessUserPhotoURL: businessUser.photoURL,
+									      					businessUserLocationType: businessUser.locationType,
+									      					businessUserLocality: businessUser.locality,
 
-								      					selectedTechId: selectedTech.id,
-																selectedTechUsername: selectedTech.username,
-																selectedTechPhotoURL: selectedTech.photoURL,
+									      					businessGooglemapsUrl: businessUser.googlemapsUrl,
+									      					businessLocationCoord: { 
+									      						latitude: businessUser.geometry.location.lat, 
+									      						longitude: businessUser.geometry.location.lng 
+									      					},
 
-																userId: user.id,
-																pickedDisplayPost: pickedDisplayPost,
-																gridTime: item.gridStartTime,
-								      				}),
-				    									setRsvDate(useConvertTime.convertToDateInMs( Date.now() )),
-															setDateMoveFromToday(0),
-															setCalendarDate(useConvertTime.convertToDateInMs(Date.now() )),
-															setCalendarMove(0),
+									      					selectedTechId: selectedTech.id,
+																	selectedTechUsername: selectedTech.username,
+																	selectedTechPhotoURL: selectedTech.photoURL,
 
-															setPickedDisplayPost(null),
-															setDisplayPostTechs([]),
-															setDisplayPostTechsState(false),
-															setSelectedTech(null),
+																	userId: user.id,
+																	pickedDisplayPost: pickedDisplayPost,
+																	gridTime: item.gridStartTime,
+									      				});
+									      				setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
+																setDateMoveFromToday(0);
+																setCalendarDate(useConvertTime.convertToDateInMs(Date.now() ));
+																setCalendarMove(0);
 
-															setChartGridsState(false),
-															setChartGrids([])
+																setPickedDisplayPost(null);
+																setDisplayPostTechs([]);
+																setDisplayPostTechsState(false);
+																setSelectedTech(null);
+
+																setChartGridsState(false);
+																setChartGrids([]);
+
+																// animate back to default
+																pressLabelWidth(firstLabelWidthAnim);
+																pressLabelHeight(firstLabelHeightAnim);
+																foldLabelBorder(firstLabelBorderRadiusAnim);
+																pressLabelWidth(secondLabelWidthAnim);
+																pressLabelHeight(secondLabelWidthAnim);
+																foldLabelBorder(secondLabelBorderRadiusAnim);
+																pressLabelWidth(thirdLabelWidthAnim);
+																pressLabelHeight(thirdLabelHeightAnim);
+																foldLabelBorder(thirdLabelBorderRadiusAnim);
+									      			}, 700)
 				    								)
 						      					: console.log("not ready yet")
 						      				}
@@ -859,7 +1047,13 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	      			</ScrollView>
       			</View>
 	      	))
-	      	: null
+	      	: !showCalendar && pickedDisplayPost && selectedTech
+	      	? 
+	      	<View style={styles.emptyGridContainer}>
+	      		<Text style={styles.emptyGridText}> No Empty Spots on The Date</Text>
+	      	</View>
+	      	: 
+	      	null
 	      }
 			</ScrollView>
       { 
@@ -882,7 +1076,7 @@ const styles = StyleSheet.create({
 	},
 	// Controller
 	controllerContainer: {
-		backgroundColor: '#fff',
+		backgroundColor: color.white2,
 	},
 	topControllerContainer: {
 		flex: 1,
@@ -897,14 +1091,12 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	topControllerLeftCompartment: {
-		flex: 1,
-		paddingLeft: RFValue(11),
+		padding: RFValue(15),
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
 	topControllerRightCompartment: {
-		flex: 1,
-		paddingRight: RFValue(11),
+		padding: RFValue(15),
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
@@ -920,6 +1112,7 @@ const styles = StyleSheet.create({
 		marginHorizontal: RFValue(7),
 		borderWidth: 0.5,
 		borderRadius: RFValue(7),
+		backgroundColor: color.white1,
 	},
 	gridRow: {
 		justifyContent: 'center',
@@ -939,14 +1132,17 @@ const styles = StyleSheet.create({
 
 	// Label
 	labelContainer: {
-		backgroundColor: '#fff',
+		height: RFValue(70),
+		backgroundColor: color.white2,
+		alignItems: 'center',
+		justifyContent: 'center'
 		// shadowColor: "#000",
 	  //   shadowOffset: { width: 0, height: -2 },
 	  //   shadowOpacity: 0.3,
 	  //   shadowRadius: 3,
 	},
 	labelInnerContainer: {
-		flex: 1,
+		height: RFValue(70),
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -958,12 +1154,16 @@ const styles = StyleSheet.create({
 		paddingHorizontal: RFValue(7),
 	},
 	labelTextContainer: {
+		alignSelf: 'center',
 		justifyContent: 'center',
 		alignItems: 'center',
+		paddingHorizontal: RFValue(15),
+		paddingVertical: RFValue(7),
 	},
 	labelText: {
 		fontSize: RFValue(19),
-		fontWeight: 'bold'
+		fontWeight: 'bold',
+		color: color.white2
 	},
 
 	displayPostsContainer: {
@@ -1085,6 +1285,16 @@ const styles = StyleSheet.create({
   	fontSize: RFValue(21),
   	fontWeight: 'bold'
   },
+
+  emptyGridContainer: {
+  	justifyContent: 'center',
+  	alignItems: 'center',
+  	paddingVertical: RFValue(30),
+  },
+  emptyGridText: {
+  	fontSize: RFValue(20),
+  	fontWeight: 'bold',
+  }
 });
 
 export default BusinessScheduleScreen;

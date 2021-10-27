@@ -41,11 +41,21 @@ const HeaderForm = (
     rightButtonIcon,
     leftButtonPress,
     rightButtonPress,
+    customBackgroundColor,
+    customTextColor
   }
 ) => {
 
   return (
-    <View style={styles.headerContainer}>
+    <View 
+      style={
+        customBackgroundColor
+        ?
+        [styles.headerContainer, { backgroundColor: customBackgroundColor }]
+        :
+        styles.headerContainer
+      }
+    >
       <View style={styles.compartmentOuter}>
         <View style={styles.leftCompartmentContainer}>
           <View style={styles.leftCompartmentInnerContainer}>
@@ -81,7 +91,17 @@ const HeaderForm = (
           <View
             style={styles.headerCompartmentContainer}
           >
-            <Text style={styles.headerTitle}>{headerTitle}</Text>
+            <Text 
+              style={
+                customTextColor
+                ?
+                [ styles.headerTitle, { color: customTextColor }]
+                :
+                styles.headerTitle
+              }
+            >
+              {headerTitle}
+            </Text>
           </View>
         </View>
         <View style={styles.rightCompartmentContainer}>
@@ -118,7 +138,6 @@ const styles = StyleSheet.create({
   headerContainer: {
     height: RFValue(70),
     justifyContent: "center",
-    backgroundColor: "#FFF",
     // ...Platform.select({
     //   android: {
     //     marginTop: '7%',

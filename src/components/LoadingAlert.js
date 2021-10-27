@@ -50,7 +50,7 @@ const LoadingAlert = ({ progress }) => {
 					<MaterialCommunityIcons name="alpha-g" size={RFValue(23)} color={color.grey3} />*/}
 				</View>
 				<View style={styles.spinnerContainer}>
-					<SpinnerFromActivityIndicator />
+					<SpinnerFromActivityIndicator customColor={color.red2}/>
 				</View>
 			</View>
 		</View>
@@ -104,7 +104,8 @@ const styles = StyleSheet.create({
 	progressbar: {
 		position: 'absolute',
 		height: RFValue(30),
-		backgroundColor: color.black2
+		backgroundColor: color.red2,
+		borderRadius: RFValue(100),
 	},
 	progressText: {
 		color: color.white2,

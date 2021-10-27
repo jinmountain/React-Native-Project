@@ -145,6 +145,18 @@ const convertToMonthInMs = (timestamp) => {
 	return monthTimestamp;
 };
 
+const moveMonthInMs = (timestamp, steps) => {
+	// timestamp: number
+	// return number
+	const numSteps = Number(steps);
+	var getTime = new Date(timestamp);
+	var year = getTime.getFullYear();
+	var monthIndex = getTime.getMonth();
+	var monthTimestamp = new Date( year, monthIndex+numSteps, 1).getTime();
+
+	return monthTimestamp;
+};
+
 const convertToYearInMs = (timestamp) => {
 	// timestamp: number
 	// return number
@@ -182,7 +194,8 @@ export default {
 	convertToNormHourMin, 
 	convertEtcToHourMin, 
 	convertToWeekInMs, 
-	convertToMonthInMs, 
+	convertToMonthInMs,
+	moveMonthInMs, 
 	convertToYearInMs, 
 	convertToMonthly,
 	getDaysInMonth
