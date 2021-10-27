@@ -8,6 +8,9 @@ import {
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
+// components
+import HeaderBottomLine from '../HeaderBottomLine';
+
 // Color
 import color from '../../color';
 
@@ -22,32 +25,45 @@ const windowHeight = Dimensions.get("window").height;
 
 const dateBoxWidth = windowWidth/7;
 
-const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, setDateMoveFromToday }) => {
+const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, setDateMoveFromToday, setCalendarMove }) => {
 	return (
 		<View >
 			<View style={styles.weekContainer}>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Sun</Text>
 				</View>
+				<View style={styles.verticalSeperator}>
+				</View>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Mon</Text>
+				</View>
+				<View style={styles.verticalSeperator}>
 				</View>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Tue</Text>
 				</View>
+				<View style={styles.verticalSeperator}>
+				</View>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Wed</Text>
+				</View>
+				<View style={styles.verticalSeperator}>
 				</View>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Thu</Text>
 				</View>
+				<View style={styles.verticalSeperator}>
+				</View>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Fri</Text>
+				</View>
+				<View style={styles.verticalSeperator}>
 				</View>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Sat</Text>
 				</View>
 			</View>
+			<HeaderBottomLine />
 			<View style={styles.dateBoxContainer}>
 				{
 					datesOnCalendar.map((item, index) => 
@@ -62,17 +78,8 @@ const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, set
 			  				: item.today && !item.past
 			  				? [styles.dateBox, { backgroundColor: color.blue1 }]
 			  				: item.today && item.past
-			  				? [styles.dateBox, { backgroundColor: color.blue1, opacity: 0.3, color: color.white2 }]
+			  				? [styles.dateBox, { backgroundColor: color.blue1, opacity: 0.3 }]
 			  				: styles.dateBox
-			  				// item.thisMonth && !item.today
-			  				// ? styles.dateBox
-			  				// : item.thisMonth && item.today
-			  				// ? [styles.dateBox, { backgroundColor: color.blue1 }]
-			  				// : item.thisMonth && item.today && !item.past
-			  				// ?	[styles.dateBox, { backgroundColor: color.red1 }]
-			  				// : item.past
-			  				// ? [styles.dateBox, { backgroundColor: color.red1 }]
-			  				// : [styles.dateBox, { backgroundColor: color.grey1 }]
 			  			}
 			  		>
 							<TouchableOpacity
@@ -83,13 +90,21 @@ const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, set
 									setDate(item.time.timestamp);
 									setShowCalendar(false);
 									setDateMoveFromToday(dateMove);
+									setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
 								}}
 							>
-								<View>
-									<Text>{item.time.date}</Text>
-									<Text>{item.time.month}</Text>
-									<Text>{item.time.day}</Text>
-									<Text>{item.past ? 'past' : null}</Text>
+								<View style={styles.dateBoxTextContainer}>
+									<Text 
+										style={
+											item.today
+											?
+											[styles.dateBoxText, { color: color.white2 }]
+											:
+											styles.dateBoxText
+										}
+									>
+										{item.time.date}
+									</Text>
 								</View>
 							</TouchableOpacity>
 						</View>
@@ -119,13 +134,32 @@ const styles = StyleSheet.create({
 		maxWidth: dateBoxWidth,
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: color.red3,
 		paddingVertical: RFValue(7),
 	},
 	dayText: {
-		color: color.white2,
+		color: color.black1,
+		fontWeight: 'bold',
 		fontSize: RFValue(17),
 	},
+
+	dateBoxTextContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingVertical: RFValue(10)
+	},
+	dateBoxText: {
+		fontSize: RFValue(17),
+		fontWeight: 'bold'
+	},
+
+	verticalSeperator: { 
+		height: '50%', 
+		minWidth: 1, 
+		maxWidth: 1, 
+		backgroundColor: color.black1, 
+		alignSelf: 'center' 
+	}
+
 });
 
 export default MonthCalendar;

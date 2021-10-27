@@ -38,6 +38,8 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import { RatingReadOnly } from '../../components/RatingReadOnly';
 import HeaderBottomLine from '../../components/HeaderBottomLine';
 import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
+// Calendar
+import MonthCalendar from '../../components/businessSchedule/MonthCalendar';
 
 // Color
 import color from '../../color';
@@ -181,8 +183,14 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 
 	// reservation date state
 	const dayInMs = 86400000;
-	const [ reservationDate, setReservationDate ] = useState(Date.now());
-	const [ daysFromToday, setDaysFromToday ] = useState(0);
+	const [ dateNow, setDateNow ] = useState(Date.now());
+
+	const [ rsvDate, setRsvDate ] = useState( useConvertTime.convertToDateInMs( Date.now() ));
+	const [ dateMoveFromToday, setDateMoveFromToday ] = useState(0);
+
+	// calendar 
+	const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
+	const [ calendarMove, setCalendarMove ] = useState(0);
 
 	// reservation states
 	const [ upcomingRsvs, setUpcomingRsvs ] = useState([]);
@@ -198,9 +206,9 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 
 	useEffect(() => {
 		let isMounted = true;
-		if ( isMounted && !getUpcomingRsvsState && daysFromToday >= 0 ) {
+		if ( isMounted && !getUpcomingRsvsState && dateMoveFromToday >= 0 ) {
 			setGetUpcomingRsvsState(true);
-			const getUpcomingRsvs = businessGetFire.getUpcomingRsvsOfBus(user.id, reservationDate, daysFromToday);
+			const getUpcomingRsvs = businessGetFire.getUpcomingRsvsOfBus(user.id, dateNow, dateMoveFromToday);
 
 			getUpcomingRsvs
 			.then((rsvs) => {
@@ -212,9 +220,9 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 			});
 		}
 
-		if ( isMounted && !getUncompletedRsvsState && daysFromToday <= 0) {
+		if ( isMounted && !getUncompletedRsvsState && dateMoveFromToday <= 0) {
 			setGetUncompletedRsvsState(true);
-			const getUncompletedRsvs = businessGetFire.getPreviousRsvsOfBus(user.id, reservationDate, daysFromToday, false);
+			const getUncompletedRsvs = businessGetFire.getPreviousRsvsOfBus(user.id, dateNow, dateMoveFromToday, false);
 
 			getUncompletedRsvs
 			.then((rsvs) => {
@@ -226,9 +234,9 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 			});
 		}
 
-		if ( isMounted && !getCompletedRsvsState && daysFromToday <= 0) {
+		if ( isMounted && !getCompletedRsvsState && dateMoveFromToday <= 0) {
 			setGetCompletedRsvsState(true);
-			const getCompletedRsvs = businessGetFire.getPreviousRsvsOfBus(user.id, reservationDate, daysFromToday, true);
+			const getCompletedRsvs = businessGetFire.getPreviousRsvsOfBus(user.id, dateNow, dateMoveFromToday, true);
 
 			getCompletedRsvs
 			.then((rsvs) => {
@@ -251,11 +259,11 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 			setCompletedRsvs([]);
 			setGetCompletedRsvsState(false);
 		}
-	}, [reservationDate]);
+	}, [rsvDate]);
 
 	const [refreshing, setRefreshing] = useState(false);
 
-	const onRefresh = useCallback((daysFromToday, reservationDate, userId) => {
+	const onRefresh = useCallback((dateMoveFromToday, dateNow, userId) => {
   	let isMounted = true;
     setRefreshing(true);
 
@@ -274,9 +282,9 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 
     clearState
     .then(() => {
-    	if ( isMounted && !getUpcomingRsvsState && daysFromToday >= 0 ) {
+    	if ( isMounted && !getUpcomingRsvsState && dateMoveFromToday >= 0 ) {
 				setGetUpcomingRsvsState(true);
-				const getUpcomingRsvs = businessGetFire.getUpcomingRsvsOfBus(userId, reservationDate, daysFromToday);
+				const getUpcomingRsvs = businessGetFire.getUpcomingRsvsOfBus(userId, dateNow, dateMoveFromToday);
 
 				getUpcomingRsvs
 				.then((rsvs) => {
@@ -288,10 +296,10 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 				});
 			}
 
-			if ( isMounted && !getUncompletedRsvsState && daysFromToday <= 0) {
-				console.log(daysFromToday);
+			if ( isMounted && !getUncompletedRsvsState && dateMoveFromToday <= 0) {
+				console.log(dateMoveFromToday);
 				setGetUncompletedRsvsState(true);
-				const getUncompletedRsvs = businessGetFire.getPreviousRsvsOfBus(userId, reservationDate, daysFromToday, false);
+				const getUncompletedRsvs = businessGetFire.getPreviousRsvsOfBus(userId, dateNow, dateMoveFromToday, false);
 
 				getUncompletedRsvs
 				.then((rsvs) => {
@@ -303,9 +311,9 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 				});
 			}
 
-			if ( isMounted && !getCompletedRsvsState && daysFromToday <= 0) {
+			if ( isMounted && !getCompletedRsvsState && dateMoveFromToday <= 0) {
 				setGetCompletedRsvsState(true);
-				const getCompletedRsvs = businessGetFire.getPreviousRsvsOfBus(userId, reservationDate, daysFromToday, true);
+				const getCompletedRsvs = businessGetFire.getPreviousRsvsOfBus(userId, dateNow, dateMoveFromToday, true);
 
 				getCompletedRsvs
 				.then((rsvs) => {
@@ -325,6 +333,16 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
   }, []);
 
 	return (
+		showCalendar
+		?
+		<MonthCalendar 
+			dateNow={dateNow}
+			datesOnCalendar={datesOnCalendar}
+			setDate={setRsvDate}
+			setShowCalendar={setShowCalendar}
+      setDateMoveFromToday={setDateMoveFromToday}
+		/>
+		:
 		<View style={{ flex: 1, backgroundColor: color.white2 }}>
 			<ScrollView 
 				style={styles.managerContainer}
@@ -332,7 +350,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 	        <RefreshControl 
 	        	refreshing={refreshing} 
 	        	onRefresh={() => {
-		        	onRefresh(daysFromToday, reservationDate, user.id) 
+		        	onRefresh(dateMoveFromToday, dateNow, user.id) 
 			      }}
 			    />
 			  }
@@ -342,8 +360,8 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 						<View style={styles.topControllerLeftCompartment}>
 							<TouchableHighlight
 								onPress={() => {
-									setReservationDate(reservationDate - dayInMs);
-									setDaysFromToday(daysFromToday - 1);
+									setRsvDate(rsvDate - dayInMs);
+									setDateMoveFromToday(dateMoveFromToday - 1);
 								}}
 								style={styles.controllerButtonTHContainer}
 								underlayColor={color.grey1}
@@ -361,16 +379,16 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 								<View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
 									<View style={{ paddingRight: RFValue(7) }}>
 										<Text style={styles.middleCompartmentText}>
-											{useConvertTime.convertToMDD(reservationDate)}
+											{useConvertTime.convertToMDD(rsvDate)}
 										</Text>
 									</View>
 									<View>
 										{
-											daysFromToday === 0
+											dateMoveFromToday === 0
 											?	null
-											: daysFromToday > 0
-											? <Text style={styles.middleCompartmentText}>( +{daysFromToday} )</Text>
-											: <Text style={styles.middleCompartmentText}>( -{daysFromToday} )</Text>
+											: dateMoveFromToday > 0
+											? <Text style={styles.middleCompartmentText}>( +{dateMoveFromToday} )</Text>
+											: <Text style={styles.middleCompartmentText}>( -{dateMoveFromToday} )</Text>
 										}
 									</View>
 								</View>
@@ -379,8 +397,8 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 						<View style={styles.topControllerRightCompartment}>
 							<TouchableHighlight
 								onPress={() => {
-									setReservationDate(reservationDate + dayInMs);
-									setDaysFromToday(daysFromToday + 1);
+									setRsvDate(rsvDate + dayInMs);
+									setDateMoveFromToday(dateMoveFromToday + 1);
 								}}
 								style={styles.controllerButtonTHContainer}
 								underlayColor={color.grey1}
@@ -394,7 +412,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 				</View>
 				
 				<View style={styles.contentContainer}>
-					{ daysFromToday >= 0
+					{ dateMoveFromToday >= 0
 						?
 						<View>
 							<HeaderBottomLine />
@@ -441,7 +459,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 						null
 					}
 					{
-						daysFromToday <= 0
+						dateMoveFromToday <= 0
 						?
 						<View>
 							<HeaderBottomLine />
@@ -450,7 +468,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 							</View>
 							<HeaderBottomLine />
 							{ 
-								uncompletedRsvs.length > 0 && daysFromToday <= 0
+								uncompletedRsvs.length > 0 && dateMoveFromToday <= 0
 								?
 								uncompletedRsvs.map(( item, index ) => (
 									<TouchableOpacity
@@ -568,7 +586,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 					}
 
 					{
-						daysFromToday <= 0
+						dateMoveFromToday <= 0
 						?
 						<View>
 							<HeaderBottomLine />
@@ -577,7 +595,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 							</View>
 							<HeaderBottomLine />
 							{ 
-								completedRsvs.length > 0 && daysFromToday <= 0
+								completedRsvs.length > 0 && dateMoveFromToday <= 0
 								?
 								completedRsvs.map(( item, index ) => (
 									<TouchableOpacity

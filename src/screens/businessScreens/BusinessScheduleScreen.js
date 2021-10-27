@@ -32,6 +32,7 @@ import useConvertTime from '../../hooks/useConvertTime';
 import businessGetFire from '../../firebase/businessGetFire';
 import businessPostFire from '../../firebase/businessPostFire';
 import contentGetFire from '../../firebase/contentGetFire';
+import { getCalendarDates } from '../../hooks/getCalendarDates';
 
 // Components
 import AlertBoxTop from '../../components/AlertBoxTop'; 
@@ -107,7 +108,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 	// schedule chart state
 	const [ chartGridsState, setChartGridsState ] = useState(false);
-	const [ chartGrids, setChartGrids ] = useState([]);
+	const [ chartGrids, setChartGrids ] = useState([[]]);
 
 	// User pick states
 	// selected tech 
@@ -293,7 +294,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			setSelectedTech(null);
 
 			setChartGridsState(false);
-			setChartGrids([]);
+			setChartGrids([[]]);
 		}
 	}, []);
 
@@ -340,10 +341,11 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		}
 	}, [businessUser]);
 
-	// Calculate 
-	// - Calander Dates 
-	// - Dates Left In The Month  
-	// - Dates of The Following Month in The Last Week of The Month
+	// // Calculate 
+	// // - Calander Dates 
+	// // - Dates Left In The Month  
+	// // - Dates of The Following Month in The Last Week of The Month
+	// getCalendarDates(calendarDate, dateNow, endTime, setDatesOnCalendar);
 	useEffect(() => {
 		let mounted = true;
 		const monthInMs = useConvertTime.convertToMonthInMs(calendarDate);
@@ -448,7 +450,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		let mounted = true;
 		if (pickedDisplayPost && selectedTech) {
 			setChartGridsState(true);
-	  	setChartGrids([]);
+	  	setChartGrids([[]]);
 	  	const getRsvsStartAtOfTech = businessGetFire.getRsvTimestampsOfTech(businessUser.id, selectedTech.id, rsvDate, startTime, endTime);
 	  	getRsvsStartAtOfTech
 	  	.then((rsvTimestamps) => {
@@ -498,7 +500,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 					}
 			  };
 			  mounted && setChartGridsState(false);
-			  // mounted && setChartGrids(grids);
+			  mounted && setChartGrids(grids);
 	  	})
 	  	.catch((error) => {
 	  		console.log("BusinessScheduleScreen: getRsvsStartAtOfTech: ", error);
@@ -724,7 +726,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                onPress={() => {
 			                  if (selectedTech && selectedTech.id === item.techData.id) {
 			                    setSelectedTech(null)
-			                    setChartGrids([]);
+			                    setChartGrids([[]]);
 			                    // animate
 		                  		pressLabelWidth(secondLabelWidthAnim);
 		                  		pressLabelHeight(secondLabelHeightAnim)
@@ -873,8 +875,13 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									?
 									<TouchableOpacity
 										onPress={() => {
-											setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, -1));
-											setCalendarMove(calendarMove - 1);
+											const dateNowMonthInMs = useConvertTime.convertToMonthInMs(dateNow);
+											const newCalendarDate = useConvertTime.moveMonthInMs(calendarDate, -1);
+											console.log("dateNowMonthInMs: ", dateNowMonthInMs, "newCalendarDate: ", newCalendarDate);
+											if (dateNowMonthInMs <= newCalendarDate) {
+												setCalendarDate(newCalendarDate);
+												setCalendarMove(calendarMove - 1);
+											}
 										}}
 									>
 										<AntDesign name="leftcircleo" size={RFValue(27)} color="black" />
@@ -883,15 +890,18 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									?
 									<TouchableOpacity
 										onPress={() => {
-											setRsvDate(useConvertTime.convertToDateInMs(rsvDate - 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000));
-											setDateMoveFromToday(dateMoveFromToday - 1);
+											const dateNowDateInMs = useConvertTime.convertToDateInMs(dateNow);
+											const newRsvDate = useConvertTime.convertToDateInMs(rsvDate - 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
+											if (dateNowDateInMs <= newRsvDate) {
+												setRsvDate(newRsvDate);
+												setDateMoveFromToday(dateMoveFromToday - 1);
+											}
 										}}
 									>
 										<AntDesign name="leftcircleo" size={RFValue(27)} color="black" />
 									</TouchableOpacity>
 									:
-									<View
-									>
+									<View>
 										<AntDesign name="leftcircleo" size={RFValue(27)} color={color.grey1} />
 									</View>
 								}
@@ -949,12 +959,13 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						setDate={setRsvDate}
 						setShowCalendar={setShowCalendar}
 	          setDateMoveFromToday={setDateMoveFromToday}
+	          setCalendarMove={setCalendarMove}
 					/>
 					: null
 				}
 				
 				{
-					!showCalendar && pickedDisplayPost && selectedTech && chartGrids.length > 0
+					!showCalendar && pickedDisplayPost && selectedTech
 					?
 					chartGrids.map((gridRow, index) => (
 						<View 
@@ -980,56 +991,47 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						      					?
 				    								(
 				    									// animate
-				                  		stretchLabelWidth(thirdLabelWidthAnim),
-				                  		stretchLabelHeight(thirdLabelHeightAnim),
-				                  		unfoldLabelBorder(thirdLabelBorderRadiusAnim),
+			    										navigation.navigate('ReservationRequest', {
+								      					businessUserId: businessUser.id,
+								      					businessUserUsername: businessUser.username,
+								      					businessUserPhotoURL: businessUser.photoURL,
+								      					businessUserLocationType: businessUser.locationType,
+								      					businessUserLocality: businessUser.locality,
 
-				    									setTimeout(() => { 
-				    										navigation.navigate('ReservationRequest', {
-									      					businessUserId: businessUser.id,
-									      					businessUserUsername: businessUser.username,
-									      					businessUserPhotoURL: businessUser.photoURL,
-									      					businessUserLocationType: businessUser.locationType,
-									      					businessUserLocality: businessUser.locality,
+								      					businessGooglemapsUrl: businessUser.googlemapsUrl,
+								      					businessLocationCoord: { 
+								      						latitude: businessUser.geometry.location.lat, 
+								      						longitude: businessUser.geometry.location.lng 
+								      					},
 
-									      					businessGooglemapsUrl: businessUser.googlemapsUrl,
-									      					businessLocationCoord: { 
-									      						latitude: businessUser.geometry.location.lat, 
-									      						longitude: businessUser.geometry.location.lng 
-									      					},
+								      					selectedTechId: selectedTech.id,
+																selectedTechUsername: selectedTech.username,
+																selectedTechPhotoURL: selectedTech.photoURL,
 
-									      					selectedTechId: selectedTech.id,
-																	selectedTechUsername: selectedTech.username,
-																	selectedTechPhotoURL: selectedTech.photoURL,
+																userId: user.id,
+																pickedDisplayPost: pickedDisplayPost,
+																gridTime: item.gridStartTime,
+								      				}),
+								      				setRsvDate(useConvertTime.convertToDateInMs( Date.now() )),
+															setDateMoveFromToday(0),
+															setCalendarDate(useConvertTime.convertToDateInMs(Date.now() )),
+															setCalendarMove(0),
 
-																	userId: user.id,
-																	pickedDisplayPost: pickedDisplayPost,
-																	gridTime: item.gridStartTime,
-									      				});
-									      				setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
-																setDateMoveFromToday(0);
-																setCalendarDate(useConvertTime.convertToDateInMs(Date.now() ));
-																setCalendarMove(0);
+															setPickedDisplayPost(null),
+															setDisplayPostTechs([]),
+															setDisplayPostTechsState(false),
+															setSelectedTech(null),
 
-																setPickedDisplayPost(null);
-																setDisplayPostTechs([]);
-																setDisplayPostTechsState(false);
-																setSelectedTech(null);
+															setChartGridsState(false),
+															setChartGrids([[]]),
 
-																setChartGridsState(false);
-																setChartGrids([]);
-
-																// animate back to default
-																pressLabelWidth(firstLabelWidthAnim);
-																pressLabelHeight(firstLabelHeightAnim);
-																foldLabelBorder(firstLabelBorderRadiusAnim);
-																pressLabelWidth(secondLabelWidthAnim);
-																pressLabelHeight(secondLabelWidthAnim);
-																foldLabelBorder(secondLabelBorderRadiusAnim);
-																pressLabelWidth(thirdLabelWidthAnim);
-																pressLabelHeight(thirdLabelHeightAnim);
-																foldLabelBorder(thirdLabelBorderRadiusAnim);
-									      			}, 700)
+															// animate back to default
+															pressLabelWidth(firstLabelWidthAnim),
+															pressLabelHeight(firstLabelHeightAnim),
+															foldLabelBorder(firstLabelBorderRadiusAnim),
+															pressLabelWidth(secondLabelWidthAnim),
+															pressLabelHeight(secondLabelWidthAnim),
+															foldLabelBorder(secondLabelBorderRadiusAnim)
 				    								)
 						      					: console.log("not ready yet")
 						      				}
@@ -1047,13 +1049,16 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	      			</ScrollView>
       			</View>
 	      	))
-	      	: !showCalendar && pickedDisplayPost && selectedTech
+	      	: 
+	      	null
+	      }
+	      {
+	      	!showCalendar && pickedDisplayPost && selectedTech && chartGrids && chartGrids[0].length === 0
 	      	? 
 	      	<View style={styles.emptyGridContainer}>
 	      		<Text style={styles.emptyGridText}> No Empty Spots on The Date</Text>
 	      	</View>
-	      	: 
-	      	null
+	      	: null
 	      }
 			</ScrollView>
       { 

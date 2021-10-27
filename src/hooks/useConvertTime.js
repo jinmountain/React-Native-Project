@@ -178,6 +178,32 @@ const convertToMonthly = (timestamp) => {
 	var day = days[getTime.getDay()];
 
 	return month + ", " + abbreviatedYear
+};
+
+const getMonthMovesBtwDateNowAndThis = (dateNow, ThisDate) => {
+	var getTimeDateNow = new Date(dateNow);
+	var dateNowYear = getTimeDateNow.getFullYear();
+	var dateNowMonthIndex = getTimeDateNow.getMonth() + 1; // normalize month index (jan is 0 so + 1)
+
+	var getTimeThisDate = new Date(ThisDate);
+	var thisDateYear = getTimeCalendarDate.getFullYear();
+	var thisDateMonthIndex = getTimeCalendarDate.getMonth() + 1; // normalize month index (jan is 0 so + 1) 
+
+	var yearsBtw = thisDateYear - dateNowYear;
+	var yearsBtwInMonths = yearsBtw * 12;
+
+	let monthsBtw;
+	if (thisDateMonthIndex > dateNowMonthIndex) {
+		monthsBtw = thisDateMonthIndex - dateNowMonthIndex;
+	} else {
+		const a = 12 - dateNowMonthIndex;
+		const b = thisDateMonthIndex;
+		const c = a + b;
+		monthsBtw = c;
+	}
+
+	const totalMonths = yearsBtwInMonths + monthsBtw
+	return totalMonths;
 }
 
 var getDaysInMonth = (month, year) => {
