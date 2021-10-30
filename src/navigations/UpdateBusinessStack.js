@@ -1,12 +1,18 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 
+// stacks
+import UBSetBusinessHoursStack from './UBSetBusinessHoursStack';
+
 // Screens
 import UpdateBusinessScreen from '../screens/accountManagerFlow/UpdateBusinessScreen';
+// location
 import UBLocationAddressScreen from '../screens/accountManagerFlow/UBLocationAddressScreen';
 import UBMobileLocationScreen from '../screens/accountManagerFlow/UBMobileLocationScreen';
 import UBInStoreMobileScreen from '../screens/accountManagerFlow/UBInStoreMobileScreen';
 import UBInStoreLocationAddressScreen from '../screens/accountManagerFlow/UBInStoreLocationAddressScreen';
+// business hours
+import UBSetBusinessHoursScreen from '../screens/accountManagerFlow/UBSetBusinessHoursScreen';
 
 const Stack = createStackNavigator();
 
@@ -37,6 +43,10 @@ const UpdateBusinessStack = () => {
       <Stack.Screen 
         name="UBMobileLocation" 
         component={UBMobileLocationScreen}
+      />
+      <Stack.Screen 
+        name="UBSetBusinessHoursStack" 
+        component={UBSetBusinessHoursStack}
       />
     </Stack.Navigator>
   )

@@ -192,6 +192,9 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 	const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
 	const [ calendarMove, setCalendarMove ] = useState(0);
 
+	const [ datesOnCalendar, setDatesOnCalendar ] = useState([]);
+	const [ showCalendar, setShowCalendar ] = useState(false);
+
 	// reservation states
 	const [ upcomingRsvs, setUpcomingRsvs ] = useState([]);
 	const [ getUpcomingRsvsState, setGetUpcomingRsvsState ] = useState(false);

@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     height: RFValue(70),
     justifyContent: "center",
+    backgroundColor: color.white2,
     // ...Platform.select({
     //   android: {
     //     marginTop: '7%',
@@ -208,8 +209,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    width: RFValue(50),
-    height: RFValue(50),
+    width: RFValue(70),
+    height: RFValue(70),
     borderRadius: RFValue(100),
   },
   headerTitle: {

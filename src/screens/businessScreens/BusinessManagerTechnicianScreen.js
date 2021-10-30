@@ -97,15 +97,20 @@ const BusinessManagerTechnicianScreen = ({ navigation, isFocused }) => {
 				  keyExtractor={(tech, index) => index.toString()}
 				  renderItem={({ item }) => {
 				 	// id: docId,
-		    	// 	techData: {
-		    	// 		username: techData.username,
-		    	// 		photoURL: techData.photoURL,
-		    	// 		countRating: techData.countRating,
-		    	// 		totalRating: techData.totalRating
-		    	// 	} 
+		    	// techData: {
+		    	// 	username: techData.username,
+		    	// 	photoURL: techData.photoURL,
+		    	// 	countRating: techData.countRating,
+		    	// 	totalRating: techData.totalRating
+		    	// } 
 				  	return (
 				  		<TouchableOpacity
 				  			style={styles.techAppContainer}
+				  			onPress={() => {
+				  				navigation.navigate("BusinessManagerManageTechnician", {
+				  					techId: item.id
+				  				});
+				  			}}
 				  		>
 				  			<View style={styles.techApp}>
 				  				<View style={styles.techPhotoContainer}>

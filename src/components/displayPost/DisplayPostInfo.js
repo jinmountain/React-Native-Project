@@ -16,6 +16,9 @@ import { Feather } from '@expo/vector-icons';
 // Color
 import color from '../../color';
 
+// icon
+import expoIcons from '../../expoIcons';
+
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -40,7 +43,7 @@ const DisplayPostInfo = ({ containerWidth, title, taggedCount, likeCount, etc, p
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
-			  	<AntDesign name="clockcircleo" size={RFValue(11)} color={color.black1} />
+					{expoIcons.clockIcon(RFValue(11), color.black1)}
 			  	<Text style={styles.infoText} numberOfLines={1}>
 						{etc}
 			  	</Text>

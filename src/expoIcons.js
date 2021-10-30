@@ -110,6 +110,14 @@ const phoneIcon = (size, color) => {
 	return <AntDesign name="phone" size={size} color={color} />
 };
 
+const setting = (size, color) => {
+	return <Feather name="settings" size={size} color={color} />
+};
+
+const clockIcon = (size, color) => {
+	return <MaterialCommunityIcons name="clock-outline" size={size} color={color} />
+};
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -135,5 +143,7 @@ export default {
 	featherBookmark,
 	featherMinus,
 	featherPlus,
-	phoneIcon
+	phoneIcon,
+	setting,
+	clockIcon
 };

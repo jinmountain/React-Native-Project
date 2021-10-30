@@ -33,7 +33,7 @@ import { RatingReadOnly } from '../../components/RatingReadOnly';
 // Color
 import color from '../../color';
 
-const BusinessManagerApplicationScreen = ({ navigation, isFocused }) => {
+const BusinessManagerTechApplicationScreen = ({ navigation, isFocused }) => {
 	// Contexts
 	const { state: { user } } = useContext(AuthContext);
 	const { state: { techApps }, addTechApp, removeTechApp, clearTechApp } = useContext(SocialContext);
@@ -245,4 +245,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default BusinessManagerApplicationScreen;
+export default BusinessManagerTechApplicationScreen;

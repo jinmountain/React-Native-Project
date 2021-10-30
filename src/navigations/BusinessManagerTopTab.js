@@ -2,17 +2,21 @@ import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 // Screens
-import BusinessManagerTechnicianScreen from '../screens/businessScreens/BusinessManagerTechnicianScreen';
-import BusinessManagerReservationScreen from '../screens/businessScreens/BusinessManagerReservationScreen';
-import BusinessManagerApplicationScreen from '../screens/businessScreens/BusinessManagerApplicationScreen';
 // import BusinessManagerScreen from '../screens/businessScreens/BusinessManagerScreen';
 // import BusinessAnalyticsScreen from '../screens/businessScreens/BusinessAnalyticsScreen';
 
 // stacks
 import BusinessManagerReservationStack from './BusinessManagerReservationStack';
+import BusinessManagerTechnicianStack from './BusinessManagerTechnicianStack';
 
 // Components
 import MainTemplate from '../components/MainTemplate';
+
+// color
+import color from '../color';
+
+// icon
+import expoIcons from '../expoIcons';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -21,16 +25,30 @@ const BusinessManagerTopTab = () => {
   	<MainTemplate>
 	    <Tab.Navigator
 	    	backBehavior="history"
+	    	screenOptions={({ route }) => ({
+			    tabBarLabelStyle: { color: color.black1 },
+			    tabBarStyle: { backgroundColor: color.white2 },
+			    tabBarIndicatorStyle: {
+			    	backgroundColor: color.black1
+			    },
+			  })}
 	    >
 	    	<Tab.Screen 
-	    		name="Reservations"
+	    		name="BusinessManagerReservationStack"
 	    		component={BusinessManagerReservationStack}
 	    		options={{
+	    			tabBarLabel: "Reservations",
 	          headerShown: true,
 	        }}
 	    	/>
-	      <Tab.Screen name="Technicians" component={BusinessManagerTechnicianScreen} />
-	      <Tab.Screen name="Applications" component={BusinessManagerApplicationScreen} />
+	      <Tab.Screen 
+	      	name="BusinessManagerTechnicianStack" 
+	      	component={BusinessManagerTechnicianStack} 
+	      	options={{
+	    			tabBarLabel: "Technicians",
+	          headerShown: true,
+	        }}
+	      />
 	    </Tab.Navigator>
 		</MainTemplate>
   );

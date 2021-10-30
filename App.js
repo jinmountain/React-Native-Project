@@ -8,7 +8,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 // import { createBottomTabNavigator } from 'react-navigation-tabs';
-// import { SafeAreaProvider } from 'react-native-safe-area-context';
 // import * as ScreenOrientation from 'expo-screen-orientation';
 // import { createStackNavigator } from 'react-navigation-stack';
 
@@ -269,16 +268,14 @@ const App = () => {
 
 export default () => {
   return (
-  //  <SafeAreaProvider>
-      <SocialProvider>
-        <PostProvider>
-          <LocationProvider>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </LocationProvider>
-        </PostProvider>
-      </SocialProvider>
-  //  </SafeAreaProvider>
+    <SocialProvider>
+      <PostProvider>
+        <LocationProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </LocationProvider>
+      </PostProvider>
+    </SocialProvider>
   );
 };
