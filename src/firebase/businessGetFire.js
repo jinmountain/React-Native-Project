@@ -178,6 +178,8 @@ const getTechsRating = (techs, busId, postId) => {
 		    			id: techData.id,
 		    			username: techData.username,
 		    			photoURL: techData.photoURL,
+		    			businessHours: techData.business_hours,
+		    			specialHours: techData.special_hours
 		    		},
 		    		techRatingBus: {
 		    			countRating: techRatingBus.countRating,

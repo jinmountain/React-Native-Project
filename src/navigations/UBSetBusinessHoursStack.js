@@ -19,6 +19,10 @@ const UBSetBusinessHoursStack = () => {
       <Stack.Screen 
         name="UBSetBusinessHours" 
         component={UBSetBusinessHoursScreen}
+        initialParams={{ 
+          newHours: null,
+          dayType: null
+        }}
       />
       <Stack.Screen 
         name="UBSetHours" 

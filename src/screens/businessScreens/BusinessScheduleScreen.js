@@ -480,10 +480,14 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 					// conditions that exclude grid timestamp
 					const conflictingGrids = rsvTimestamps.filter(rsv => rsv < gridEndTimestamp && rsv > gridTimestamp)
 					// - there is a existing rsv collapsing the new rsv
+					// check 
+					// a grid timestamp OR 
+					// post's estimated timestamp are in the unavailable timestamps OR 
+					// a design can be finished before the business closes
 					if (rsvTimestamps.includes(gridTimestamp) || rsvTimestamps.includes(gridEndTimestamp) || gridTimestamp > lastTimestamp) {
 						continue;
 					} 
-					// - there is a existing rsv btw the new rsv
+					// - there is a existing rsv btw the start and the end of new rsv
 					else if (conflictingGrids.length > 0) {
 						continue;
 					}
@@ -732,7 +736,13 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		                  		pressLabelHeight(secondLabelHeightAnim)
 		                  		foldLabelBorder(secondLabelBorderRadiusAnim);
 			                  } else {
-			                    setSelectedTech({ id: item.techData.id, photoURL: item.techData.photoURL, username: item.techData.username });
+			                    setSelectedTech({ 
+			                    	id: item.techData.id, 
+			                    	photoURL: item.techData.photoURL, 
+			                    	username: item.techData.username,
+			                    	businessHours: item.techData.businessHours,
+			                    	specialHours: item.techData.specialHours
+			                    });
 			                  	// animate
 		                  		stretchLabelWidth(secondLabelWidthAnim);
 		                  		stretchLabelHeight(secondLabelHeightAnim);

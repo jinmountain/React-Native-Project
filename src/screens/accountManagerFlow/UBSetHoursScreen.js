@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View,
@@ -25,6 +25,58 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
+const checkOpensEarlierThanCloses = (opens, closes) => {
+  return new Promise ((res, rej) => {
+    // covert to military hour
+    let opensHour;
+    let closesHour;
+
+    if (opens.meridiem === 'PM') {
+      if (opens.hour === 12) {
+        opensHour = 12;
+      } else {
+        opensHour = opens.hour + 12;
+      }
+    } 
+    if (opens.meridiem === 'AM') {
+      if (opens.hour === 12) {
+        opensHour = 0;
+      } else {
+        opensHour = opens.hour;
+      }
+    }
+
+    if (closes.meridiem === 'PM') {
+      if (closes.hour === 12) {
+        closesHour = 12;
+      } else {
+        closesHour = closes.hour + 12;
+      }
+    } 
+    if (closes.meridiem === 'AM') {
+      if (closes.hour === 12) {
+        closesHour = 0;
+      } else {
+        closesHour = closes.hour;
+      }
+    }
+
+    console.log("closesHour: ", closesHour, "opensHour: ", opensHour);
+
+    if (closesHour > opensHour) {
+      res(true);
+    };
+
+    if (closes.hour === opens.hour) {
+      if (closes.min > opens.min) {
+        res(true);
+      } else {
+        res(false);
+      }
+    }
+  });
+}
+
 const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) => {
   return (
     <TouchableHighlight
@@ -39,7 +91,9 @@ const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) 
       underlayColor={color.grey4}
     >
       <View style={styles.buttonTextContainer}>
-        <Text style={styles.buttonText}>
+        <Text style={
+          styles.buttonText
+        }>
           {buttonText}
         </Text>
       </View>
@@ -50,13 +104,45 @@ const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) 
 const UBSetHoursScreen = ({ navigation, route }) => {
   const { dayType } = route.params;
 
-  const [ startHour, setStartHour ] = useState(0);
-  const [ startMin, setStartMin ] = useState(0);
-  const [ startMeridiem, setStartMeridiem ] = useState(null);
+  const [ startHour, setStartHour ] = useState(null);
+  const [ startMin, setStartMin ] = useState(null);
+  const [ startMeridiem, setStartMeridiem ] = useState('AM');
 
-  const [ endHour, setEndHour ] = useState(0);
-  const [ endMin, setEndMin ] = useState(0);
-  const [ endMeridiem, setEndMeridiem ] = useState(null);
+  const [ endHour, setEndHour ] = useState(null);
+  const [ endMin, setEndMin ] = useState(null);
+  const [ endMeridiem, setEndMeridiem ] = useState('PM');
+
+  const [ hoursReady, setHoursReady ] = useState(false);
+
+  useEffect(() => {
+    if (
+      startHour &&
+      startMin !== null &&
+      startMeridiem &&
+      endHour &&
+      endMin !== null &&
+      endMeridiem
+    ) {
+      const startHours = {
+        hour: startHour,
+        min: startMin,
+        meridiem: startMeridiem
+      };
+
+      const endHours = {
+        hour: endHour,
+        min: endMin,
+        meridiem: endMeridiem
+      };
+
+      checkOpensEarlierThanCloses(startHours, endHours)
+      .then((result) => {
+        // result is true when its opens is earlier
+        console.log(result);
+        setHoursReady(result);
+      })
+    }
+  }, [startHour, startMin, startMeridiem, endHour, endMin, endMeridiem]);
 
   return (
     <MainTemplate>
@@ -74,13 +160,18 @@ const UBSetHoursScreen = ({ navigation, route }) => {
           }}
         />
         <View style={styles.timeContainer}>
-          <View>
-            <View>
-              <Text>Opens</Text>
+          <View style={styles.labelContainer}>
+            <View style={styles.labelTitleContainer}>
+              <Text style={styles.labelText}>Opens</Text>
             </View>
-            <View>
-              <Text>{startHour} : {startMin < 10 ? `0${startMin}` : startMin} {startMeridiem}</Text>
-            </View>
+            {
+              startHour && startMin !== null && startMeridiem
+              ?
+              <View style={styles.labelTimeContainer}>
+                <Text style={styles.labelTimeText}>{startHour} : {startMin < 10 ? `0${startMin}` : startMin} {startMeridiem}</Text>
+              </View>
+              : null
+            }
           </View>
           <View style={styles.startTimeContainer}>
             <View style={styles.hourContainer}>
@@ -243,13 +334,20 @@ const UBSetHoursScreen = ({ navigation, route }) => {
               </ScrollView>
             </View>
           </View>
-          <View>
-            <View>
-              <Text>Closes</Text>
+          <View style={styles.labelContainer}>
+            <View style={styles.labelTimeContainer}>
+              <Text style={styles.labelText}>Closes</Text>
             </View>
-            <View>
-              <Text>{endHour} : {endMin < 10 ? `0${endMin}` : endMin} {endMeridiem}</Text>
-            </View>
+            {
+              endHour && endMin !== null && endMeridiem
+              ?
+              <View style={styles.labelTimeContainer}>
+                <Text style={styles.labelTimeText}>
+                  {endHour} : {endMin < 10 ? `0${endMin}` : endMin} {endMeridiem}
+                </Text>
+              </View>
+              : null
+            }
           </View>
           <View style={styles.endTimeContainer}>
             <View style={styles.hourContainer}>
@@ -410,14 +508,62 @@ const UBSetHoursScreen = ({ navigation, route }) => {
             </View>
           </View>
         </View>
+        <TouchableHighlight
+          style={
+            hoursReady
+            ?
+            [ styles.saveHourButtonContainer, { backgroundColor: color.red2 }]
+            : styles.saveHourButtonContainer
+          }
+          underlayColor={color.grey4}
+          onPress={() => {
+            if (hoursReady) {
+              let militaryStartHour;
+              let militaryEndHour;
+
+              if (startMeridiem === 'AM') {
+                if (startHour === 12) {
+                  militaryStartHour = 0
+                } else {
+                  militaryStartHour = startHour
+                }
+              }
+              if (startMeridiem === 'PM') {
+                militaryStartHour = startHour + 12
+              }
+
+              if (endMeridiem === 'AM') {
+                if (endHour === 12) {
+                  militaryEndHour = 0
+                } else {
+                  militaryEndHour = endHour;
+                }
+              } 
+              if (endMeridiem === 'PM') {
+                militaryEndHour = endHour + 12;
+              }
+              console.log(militaryEndHour);
+              navigation.navigate('UBSetBusinessHours', {
+                newHours: {
+                  opens: {
+                    hour: militaryStartHour,
+                    min: startMin
+                  },
+                  closes: {
+                    hour: militaryEndHour,
+                    min:  endMin
+                  }
+                },
+                dayType: dayType
+              })
+            }
+          }}
+        >
+          <View style={styles.saveTextContainer}>
+            <Text style={styles.saveText}>Save</Text>
+          </View>
+        </TouchableHighlight>
       </View>
-      <TouchableHighlight
-        style={styles.saveHourButtonContainer}
-      >
-        <View>
-          <Text>Save</Text>
-        </View>
-      </TouchableHighlight>
     </MainTemplate>
   )
 };
@@ -430,13 +576,34 @@ const styles = StyleSheet.create({
 
   timeContainer: {
     flex: 1,
-    borderWidth: 1,
+  },
+
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: RFValue(30),
+    paddingLeft: RFValue(15),
+    justifyContent: 'space-between'
+  },
+  labelTitleContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    fontSize: RFValue(20),
+  },
+  labelTimeContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingRight: RFValue(30)
+  },
+  labelTimeText: {
+    fontSize: RFValue(20),
   },
 
   startTimeContainer: {
     flexDirection: 'row',
     flex: 1,
-    borderWidth: 1,
   },
   endTimeContainer: {
     flexDirection: 'row',
@@ -450,16 +617,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   meridiemContainer: {
-
+    width: RFValue(70)
   },
 
   setHourButtonContainer: {
     height: RFValue(57),
-    borderWidth: 1
   },
   saveHourButtonContainer: {
-    borderWidth: 1,
-    height: RFValue(70)
+    borderRadius: RFValue(30),
+    backgroundColor: color.grey1,
+    height: RFValue(50),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveTextContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveText: {
+    color: color.white2,
+    fontSize: RFValue(25),
+    fontWeight: 'bold'
   },
 
   buttonTextContainer: {

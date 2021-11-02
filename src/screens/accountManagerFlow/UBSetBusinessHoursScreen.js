@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View,
@@ -57,9 +57,22 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
         dayOpen &&
         <View style={styles.settingBottomContainer}>
           {
+            // newHours: {
+            //  opens: {
+            //    hour: militaryStartHour,
+            //    min: startMin
+            //  },
+            //  closes: {
+            //    hour: militaryEndHour,
+            //    min:  endMin
+            //  }
+            // }
             hours.map(( item, index ) => {
               return (
-                <View style={styles.addNewHoursContainer}>
+                <View 
+                  key={index}
+                  style={styles.addNewHoursContainer}
+                >
                   <View style={styles.startContainer}>
                     <TouchableOpacity
                       onPress={() => {
@@ -74,7 +87,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                       <View style={styles.timeContainer}>
                         <View>
                           <Text>
-                            Hour
+                            {item.opens.hour}
                           </Text>
                         </View>
                         <View>
@@ -84,7 +97,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                         </View>
                         <View>
                           <Text>
-                            Min
+                            {item.opens.min}
                           </Text>
                         </View>
                       </View>
@@ -104,7 +117,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                       <View style={styles.timeContainer}>
                         <View>
                           <Text>
-                            Hour
+                            {item.closes.hour}
                           </Text>
                         </View><View>
                           <Text>
@@ -113,7 +126,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                         </View>
                         <View>
                           <Text>
-                            Min
+                            {item.closes.min}
                           </Text>
                         </View>
                       </View>
@@ -158,7 +171,8 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
   )
 }
 
-const UBSetBusinessHoursScreen = ({ navigation }) => {
+const UBSetBusinessHoursScreen = ({ route, navigation }) => {
+  const [ businessHours, setBusinessHours ] = useState(null); // business user's business hours
   const [ sunOpen, setSunOpen ] = useState(false);
   const [ sunHours, setSunHours ] = useState([]);
   const [ monOpen, setMonOpen ] = useState(false);
@@ -168,6 +182,32 @@ const UBSetBusinessHoursScreen = ({ navigation }) => {
   const [ thuOpen, setThuOpen ] = useState(false);
   const [ friOpen, setFriOpen ] = useState(false);
   const [ satOpen, setSatOpen ] = useState(false);
+
+  const [ readyToSave, setReadyToSave ] = useState(false);
+
+  const { 
+    newHours,
+    dayType
+  } = route.params;
+
+  useEffect(() => {
+    if (newHours && dayType) {
+      if (dayType === 'sun') {
+        setSunHours([ ...sunHours, newHours ]);
+        navigation.setParams({ 
+          newHours: null, 
+          dayType: null, 
+        });
+      }
+    }
+  }, [newHours]);
+
+  // detect hours change and set readyToSave to true
+  useEffect(() => {
+    if (businessHours === [sunHours, monHours]) {
+      setReadyToSave(true);
+    }
+  }, [sunHours, monHours]);
 
   return (
     <MainTemplate>
