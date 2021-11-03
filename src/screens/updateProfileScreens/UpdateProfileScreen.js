@@ -190,11 +190,7 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 							setUsernameTimeLimitWarning={setUsernameTimeLimitWarning}
 						/>
 					</View>
-					<InputFormBottomLine 
-						customStyles={{
-							marginTop: RFValue(25),
-						}}
-					/>
+					<InputFormBottomLine />
 				</KeyboardAwareScrollView>
 			</View>
 		</SafeAreaView>

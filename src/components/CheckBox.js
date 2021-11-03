@@ -18,7 +18,7 @@ const CheckBox = ({ value, onValueChange }) => {
 		<TouchableHighlight
 			style={styles.buttonContainer}
 			onPress={onValueChange}
-    	underlayColor={color.gray4}
+    	underlayColor={color.grey4}
 		>
 			{ 
 				value

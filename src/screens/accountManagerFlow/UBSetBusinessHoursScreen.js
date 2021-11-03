@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   StyleSheet, 
   View,
@@ -17,6 +17,12 @@ import { HeaderForm } from '../../components/HeaderForm';
 
 // Design
 
+// firebase
+import businessUpdateFire from '../../firebase/businessUpdateFire';
+
+// Context
+import { Context as AuthContext } from '../../context/AuthContext';
+
 // Hooks
 import useConvertTime from '../../hooks/useConvertTime';
 
@@ -26,7 +32,7 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, dayType }) => {
+const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, dayType, setHours }) => {
   return (
     <View style={styles.settingContainer}>
       <View style={styles.settingTopContainer}>
@@ -70,58 +76,56 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
             // }
             hours.map(( item, index ) => {
               return (
-                <View 
-                  key={index}
-                  style={styles.addNewHoursContainer}
-                >
-                  <View style={styles.startContainer}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setShowStartTimePicker(!showStartTimePicker);
-                      }}
-                    >
-                      <View>
-                        <Text>
+
+                  <View 
+                    key={index}
+                    style={styles.addNewHoursContainer}
+                  >
+                    <View style={styles.startContainer}>
+                      <View style={styles.timeLabelContainer}>
+                        <Text style={styles.timelabelText}>
                           Opens
                         </Text>
                       </View>
                       <View style={styles.timeContainer}>
-                        <Text>
+                        <Text style={styles.timeText}>
                           {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
                         </Text>
                       </View>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.endContainer}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setShowEndTimePicker(!showEndTimePicker);
-                      }}
-                    >
-                      <View>
-                        <Text>
+                    </View>
+                    <View style={styles.crossContainer}>
+                      <View 
+                        style={[styles.cross, { transform: [{ rotate: "-25deg" }], marginTop: RFValue(1.5) }]} 
+                      />
+                      <View
+                        style={[styles.cross, { transform: [{ rotate: "25deg" }], marginTop: RFValue(26.5) }]}
+                      />
+                    </View>
+                    <View style={styles.endContainer}>
+                      <View style={styles.timeLabelContainer}>
+                        <Text style={styles.timelabelText}>
                           Closes
                         </Text>
                       </View>
                       <View style={styles.timeContainer}>
-                        <Text>
+                        <Text style={styles.timeText}>
                           {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
                         </Text>
                       </View>
-                    </TouchableOpacity>
-                  </View>
-                  <TouchableHighlight
-                    style={styles.deleteHoursButton}
-                    onPress={() => {
-                      console.log('delete');
-                    }}
-                    underlayColor={color.grey4}
-                  >
-                    <View style={styles.addButtonTextContainer}>
-                      <Text style={styles.addButtonText}>Delete</Text>
                     </View>
-                  </TouchableHighlight>
-                </View>
+                    <TouchableHighlight
+                      style={styles.deleteHoursButton}
+                      onPress={() => {
+                        console.log('delete');
+                        setHours([ ...hours.filter((hour) => hour !== item ) ]) 
+                      }}
+                      underlayColor={color.grey4}
+                    >
+                      <View style={styles.addButtonTextContainer}>
+                        <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
+                      </View>
+                    </TouchableHighlight>
+                  </View>
               )
             })
           }
@@ -150,16 +154,41 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
 }
 
 const UBSetBusinessHoursScreen = ({ route, navigation }) => {
-  const [ businessHours, setBusinessHours ] = useState(null); // business user's business hours
+  const { 
+    state: {
+      user
+    }
+  } = useContext(AuthContext);
+  const [ businessHours, setBusinessHours ] = useState(user.business_hours ? user.business_hours : []); // business user's business hours
+  // businessHours structure
+  // [
+  //   [ boolean, boolean, ... ] all the days
+  //   // sun
+  //   [ 
+  //     hour: number,
+  //     min: number
+  //   ],
+  //   [
+  //   // mon
+  //     hour: number,
+  //     min: number
+  //   ],
+  //   // ...
+  // ]
   const [ sunOpen, setSunOpen ] = useState(false);
   const [ sunHours, setSunHours ] = useState([]);
   const [ monOpen, setMonOpen ] = useState(false);
   const [ monHours, setMonHours ] = useState([]);
   const [ tueOpen, setTueOpen ] = useState(false);
+  const [ tueHours, setTueHours ] = useState([]);
   const [ wedOpen, setWedOpen ] = useState(false);
+  const [ wedHours, setWedHours ] = useState([]);
   const [ thuOpen, setThuOpen ] = useState(false);
+  const [ thuHours, setThuHours ] = useState([]);
   const [ friOpen, setFriOpen ] = useState(false);
+  const [ friHours, setFriHours ] = useState([]);
   const [ satOpen, setSatOpen ] = useState(false);
+  const [ satHours, setSatHours ] = useState([]);
 
   const [ readyToSave, setReadyToSave ] = useState(false);
 
@@ -181,11 +210,11 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
   }, [newHours]);
 
   // detect hours change and set readyToSave to true
-  useEffect(() => {
-    if (businessHours === [sunHours, monHours]) {
-      setReadyToSave(true);
-    }
-  }, [sunHours, monHours]);
+  // useEffect(() => {
+  //   if (businessHours === [sunHours, monHours]) {
+  //     setReadyToSave(true);
+  //   }
+  // }, [sunHours, monHours]);
 
   return (
     <MainTemplate>
@@ -199,7 +228,25 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             navigation.goBack();
           }}
           rightButtonPress={() => {
-            console.log("save");
+            const newBusinessHours = [
+              [ sunOpen, monOpen, tueOpen, wedOpen, thuOpen, friOpen, satOpen ],
+              sunHours, 
+              monHours,
+              tueHours,
+              wedHours,
+              thuHours,
+              friHours,
+              satHours,
+            ];
+
+            if (businessHours === newBusinessHours) {
+              console.log('nothing to save');
+            } else {
+              businessUpdateFire.busUserUpdate({
+                business_hours: newBusinessHours
+              });
+              console.log("ready to save");
+            }
           }}
         />
         <ScrollView>
@@ -210,6 +257,7 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             setDayOpen={setSunOpen}
             hours={sunHours}
             dayType={'sun'}
+            setHours={setSunHours}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -218,6 +266,52 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             setDayOpen={setMonOpen}
             hours={monHours}
             dayType={'mon'}
+            setHours={setMonHours}
+          />
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Tuesday"}
+            dayOpen={tueOpen}
+            setDayOpen={setTueOpen}
+            hours={tueHours}
+            dayType={'tue'}
+            setHours={setTueHours}
+          />
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Wednesday"}
+            dayOpen={wedOpen}
+            setDayOpen={setWedOpen}
+            hours={wedHours}
+            dayType={'wed'}
+            setHours={setWedHours}
+          />
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Thursday"}
+            dayOpen={thuOpen}
+            setDayOpen={setThuOpen}
+            hours={thuHours}
+            dayType={'thu'}
+            setHours={setThuHours}
+          />
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Friday"}
+            dayOpen={friOpen}
+            setDayOpen={setFriOpen}
+            hours={friHours}
+            dayType={'fri'}
+            setHours={setFriHours}
+          />
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Saturday"}
+            dayOpen={satOpen}
+            setDayOpen={setSatOpen}
+            hours={satHours}
+            dayType={'sat'}
+            setHours={setSatHours}
           />
         </ScrollView>
       </View>
@@ -303,7 +397,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: RFValue(50),
     flexDirection: 'row',
-    borderWidth: 1
   },
   startContainer: {
     flex: 1,
@@ -315,10 +408,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  timeLabelContainer: {
+    justifyContent: 'center'
+  },
+  timeLabelText: {
+    fontSize: RFValue(17)
+  },
+  timeText: {
+    fontSize: RFValue(19)
+  },
 
   deleteHoursButton: {
     height: RFValue(57),
-    width: RFValue(70),
+    width: RFValue(57),
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -327,11 +429,22 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   addButtonText: {
-    fontSize: RFValue(19)
+    fontSize: RFValue(17)
   },
 
   setHoursContainer: {
     position: 'absolute'
+  },
+  crossContainer: {
+    width: RFValue(57),
+    height: RFValue(57),
+    alignItems: "center",
+  },
+  cross: {
+    position: 'absolute',
+    width: RFValue(1),
+    height: RFValue(28.5),
+    backgroundColor: color.black1,
   },
 });
 

@@ -24,7 +24,7 @@ const profileUpdateFire = (userId, type, newProfile) => {
 		try {
 			if (newProfile.username) {
 				const checkUsernameUnique = checkUsernameFire.checkUniqueUsername(newProfile.username);
-				checkUsernameFire
+				checkUsernameUnique
 				.then((result) => {
 					if (result) {
 						firestoreUsersUpdate(userId, newProfile);

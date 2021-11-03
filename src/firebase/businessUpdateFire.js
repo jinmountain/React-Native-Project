@@ -19,6 +19,25 @@ const usersRef = Firebase.firestore().collection('users');
 const countIncrementByOne = firebase.firestore.FieldValue.increment(1);
 const countDecrementByOne = firebase.firestore.FieldValue.increment(-1);
 
+const busUserUpdate = (newBusData) => {
+	return new Promise ((res, rej) => {
+		const authCheck = authFire.authCheck();
+		authCheck
+		.then((currentUser) => {
+			usersRef
+			.doc(currentUser.uid)
+			.set(
+				newBusData,
+				{ merge: true }
+			);
+			res(true);
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+};
+
 const businessUpdateLocation = (newLocation, userLocality, userService) => {
 	return new Promise ((res, rej) => {
 		const authCheck = authFire.authCheck();
@@ -122,7 +141,13 @@ const businessRegister = (businessServiceType) => {
 		.then((currentUser) => {
 			usersRef
 			.doc(currentUser.uid)
-			.set({ type: "business", service: businessServiceType, businessRegistered: Date.now(), techs: [] }, { merge: true })
+			.set({ 
+				type: "business", 
+				service: businessServiceType, 
+				businessRegistered: Date.now(), 
+				techs: [],
+				business_hours: [],
+			}, { merge: true })
 			.then(() => {
 				console.log("Registered a new business user.");
 				res();
@@ -169,6 +194,7 @@ const businessDeregister = () => {
 		  		locationType: firebase.firestore.FieldValue.delete(),
 		  		url: firebase.firestore.FieldValue.delete(),
 		  		locality: firebase.firestore.FieldValue.delete(),
+		  		business_hours: firebase.firestore.FieldValue.delete()
 		  	});
 		  	
 		  	deregisterBusiness
@@ -239,4 +265,4 @@ const technicianDeregister = () => {
 	});
 };
 
-export default { businessUpdateLocation, businessRegister, businessDeregister, technicianRegister, technicianDeregister }
+export default { busUserUpdate, businessUpdateLocation, businessRegister, businessDeregister, technicianRegister, technicianDeregister }

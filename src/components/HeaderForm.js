@@ -196,12 +196,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   leftCompartmentInnerContainer: {
-    paddingLeft: RFValue(65),
+    paddingLeft: RFValue(70),
     justifyContent: 'center',
     alignItems: 'center',
   },
   rightCompartmentInnerContainer: {
-    paddingRight: RFValue(65),
+    paddingRight: RFValue(70),
     justifyContent: 'center',
     alignItems: 'center',
   },

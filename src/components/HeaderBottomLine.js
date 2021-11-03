@@ -8,8 +8,8 @@ import color from '../color';
 const HeaderBottomLine = ({customStyles}) => {
 	const defaultStyles = {
     backgroundColor: color.black1,
-    height: 0.35,
-    minHeight: 0.35,
+    maxHeight: 0.5,
+    minHeight: 0.5,
     opacity: 0.3,
     width: '100%',
   }

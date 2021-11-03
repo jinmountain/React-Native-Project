@@ -95,10 +95,10 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
 	    		<Text style={styles.text}>
 	    			{alertText}
 	    		</Text>
-	    		<View style={styles.signContainer}>
-	    			{expoIcons.evilIconsClose(RFValue(27), color.white2)}
-	    		</View>
 	    	</View>
+	    	<View style={styles.signContainer}>
+    			{expoIcons.evilIconsClose(RFValue(27), color.white2)}
+    		</View>
     	</TouchableOpacity>
     </Animated.View>
 	)
@@ -125,20 +125,19 @@ const styles = StyleSheet.create({
     	width: 0,
 			height: 5, 
 		},
-		height: RFValue(50),
 		width: RFValue(330),
 		borderRadius: RFValue(10),
+		paddingVertical: RFValue(10),
+		flexDirection: 'row',
   },
   warningInnerContainer: {
     flex: 1,
-  	flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingLeft: RFValue(20),
   },
   signContainer: {
-  	flex: 1,
-  	padding: RFValue(3),
+  	padding: RFValue(10),
   	alignItems: 'center',
   	justifyContent: 'center',
   },

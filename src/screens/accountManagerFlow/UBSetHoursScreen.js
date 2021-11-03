@@ -512,7 +512,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
           style={
             hoursReady
             ?
-            [ styles.saveHourButtonContainer, { backgroundColor: color.red2 }]
+            [ styles.saveHourButtonContainer, { backgroundColor: color.black2 }]
             : styles.saveHourButtonContainer
           }
           underlayColor={color.grey4}

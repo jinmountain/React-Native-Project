@@ -23,7 +23,7 @@ import { Context as AuthContext } from '../../context/AuthContext';
 
 const RegisterBusinessScreen = ({ navigation }) => {
 	const { state: { user }, localSignin } = useContext(AuthContext);
-	const [ businessService, setBusinessService ] = useState(["nail"]); // nail for now 
+	const [ businessServiceType, setBusinessServiceType ] = useState(["nail"]); // nail for now 
 	const [ isChecked, setChecked ] = useState(false);
 	const [ registering, setRegistering ] = useState(false);
 	return (
