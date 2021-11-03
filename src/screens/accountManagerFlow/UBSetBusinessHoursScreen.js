@@ -18,6 +18,7 @@ import { HeaderForm } from '../../components/HeaderForm';
 // Design
 
 // Hooks
+import useConvertTime from '../../hooks/useConvertTime';
 
 // color
 import color from '../../color';
@@ -85,21 +86,9 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                         </Text>
                       </View>
                       <View style={styles.timeContainer}>
-                        <View>
-                          <Text>
-                            {item.opens.hour}
-                          </Text>
-                        </View>
-                        <View>
-                          <Text>
-                            :
-                          </Text>
-                        </View>
-                        <View>
-                          <Text>
-                            {item.opens.min}
-                          </Text>
-                        </View>
+                        <Text>
+                          {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   </View>
@@ -115,20 +104,9 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                         </Text>
                       </View>
                       <View style={styles.timeContainer}>
-                        <View>
-                          <Text>
-                            {item.closes.hour}
-                          </Text>
-                        </View><View>
-                          <Text>
-                            :
-                          </Text>
-                        </View>
-                        <View>
-                          <Text>
-                            {item.closes.min}
-                          </Text>
-                        </View>
+                        <Text>
+                          {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   </View>

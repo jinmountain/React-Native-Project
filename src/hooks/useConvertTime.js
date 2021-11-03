@@ -99,6 +99,40 @@ const convertToNormHourMin = (timestamp) => {
   return normalHour + " : " + normalMin + " " + pmOrAm;
 };
 
+const convertMilitaryToStandard = (hour, min) => {
+	let normalHour;
+	let normalMin;
+	let meridiem;
+
+	if (hour > 12) {
+		normalHour = hour - 12;
+		meridiem = 'PM'
+	}
+
+	if (hour === 12) {
+		normalHour = 12;
+		meridiem = 'PM'
+	}
+
+	if (hour < 12) {
+		normalHour = hour;
+		meridiem = 'AM';
+	}
+
+	if (hour === 0) {
+		normalHour = 12;
+		meridiem = 'AM'
+	}
+
+	if (min < 10) {
+		normalMin = `0${min}`
+	} else {
+		normalMin = min
+	}
+
+	return normalHour + ":" + normalMin + " " + meridiem;
+};
+
 const convertEtcToHourMin = (etc) => {
 	const etcNumber = Number(etc);
 	if (etcNumber >= 60) {
@@ -217,7 +251,8 @@ export default {
 	getDateTimestamp,
 	convertToTime, 
 	convertToMDD, 
-	convertToNormHourMin, 
+	convertToNormHourMin,
+	convertMilitaryToStandard, 
 	convertEtcToHourMin, 
 	convertToWeekInMs, 
 	convertToMonthInMs,
