@@ -224,21 +224,28 @@ const App = () => {
     };
   }, []);
 
-  // user notification listener
+  // user notification listener, user data listener
   useEffect(() => {
     let notificationListener;
+    let userDataListener;
+
     if (user) {
       notificationListener = usersGetFire.getUserNotificationsRealtime(user.id, schedulePushNotification);
+      userDataListener = usersGetFire.getUserDataRealtime(user.id);
     }
 
     return () => {
       // must unsubscribe when not in effect
       if (notificationListener) {
         console.log("App: unsubscribe: notificationListener");
-        notificationListener()
-      }
+        notificationListener();
+      };
+      if (userDataListener) {
+        console.log("App: unsubscribe: userDataListener");
+        userDataListener();
+      };
     };
-  }, [user])
+  }, [user]);
 
   return (
     <NavigationContainer 

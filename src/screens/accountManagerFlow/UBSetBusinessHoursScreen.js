@@ -1,3 +1,9 @@
+// developer summary
+// ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+// this screen is for a business to change its business hours.
+// if they make any change and click save a two button alert 
+// will pop and ask again to confirm.
+
 import React, { useState, useEffect, useContext } from 'react';
 import { 
   StyleSheet, 
@@ -14,6 +20,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import MainTemplate from '../../components/MainTemplate';
 import HeaderBottomLine from '../../components/HeaderBottomLine';
 import { HeaderForm } from '../../components/HeaderForm';
+import TwoButtonAlert from '../../components/TwoButtonAlert';
 
 // Design
 
@@ -159,36 +166,51 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
       user
     }
   } = useContext(AuthContext);
-  const [ businessHours, setBusinessHours ] = useState(user.business_hours ? user.business_hours : []); // business user's business hours
+  
+  const [ showTba, setShowTba ] = useState(false);
+
+  const [ businessHours, setBusinessHours ] = useState(user.business_hours ? user.business_hours : null); // business user's business hours
   // businessHours structure
   // [
-  //   [ boolean, boolean, ... ] all the days
-  //   // sun
+  //   {
+  //      sun_open: boolean,
+  //      mon_open: boolean,
+  //      ...
+  //      sat_open: boolean,
+  //      sun_hours: array,
+  //      mon_hours: array,
+  //      ...
+  //      sat_hours: array
+  //   } 
+
+  //   sun_hours example below
   //   [ 
-  //     hour: number,
-  //     min: number
-  //   ],
-  //   [
-  //   // mon
-  //     hour: number,
-  //     min: number
-  //   ],
-  //   // ...
-  // ]
-  const [ sunOpen, setSunOpen ] = useState(false);
-  const [ sunHours, setSunHours ] = useState([]);
-  const [ monOpen, setMonOpen ] = useState(false);
-  const [ monHours, setMonHours ] = useState([]);
-  const [ tueOpen, setTueOpen ] = useState(false);
-  const [ tueHours, setTueHours ] = useState([]);
-  const [ wedOpen, setWedOpen ] = useState(false);
-  const [ wedHours, setWedHours ] = useState([]);
-  const [ thuOpen, setThuOpen ] = useState(false);
-  const [ thuHours, setThuHours ] = useState([]);
-  const [ friOpen, setFriOpen ] = useState(false);
-  const [ friHours, setFriHours ] = useState([]);
-  const [ satOpen, setSatOpen ] = useState(false);
-  const [ satHours, setSatHours ] = useState([]);
+  //     {
+  //       opens: {
+  //         hour: militaryStartHour,
+  //         min: startMin
+  //       },
+  //       closes: {
+  //         hour: militaryEndHour,
+  //         min:  endMin
+  //       }
+  //     }
+  //   ]
+
+  const [ sunOpen, setSunOpen ] = useState(user.business_hours && user.business_hours.sun_open ? user.business_hours.sun_open : false );
+  const [ sunHours, setSunHours ] = useState(user.business_hours && user.business_hours.sun_hours ? user.business_hours.sun_hours : []);
+  const [ monOpen, setMonOpen ] = useState(user.business_hours && user.business_hours.mon_open ? user.business_hours.mon_open : false);
+  const [ monHours, setMonHours ] = useState(user.business_hours && user.business_hours.mon_hours ? user.business_hours.mon_hours : []);
+  const [ tueOpen, setTueOpen ] = useState(user.business_hours && user.business_hours.tue_open ? user.business_hours.tue_open : false);
+  const [ tueHours, setTueHours ] = useState(user.business_hours && user.business_hours.tue_hours ? user.business_hours.tue_hours : []);
+  const [ wedOpen, setWedOpen ] = useState(user.business_hours && user.business_hours.wed_open ? user.business_hours.wed_open : false);
+  const [ wedHours, setWedHours ] = useState(user.business_hours && user.business_hours.wed_hours ? user.business_hours.wed_hours : []);
+  const [ thuOpen, setThuOpen ] = useState(user.business_hours && user.business_hours.thu_open ? user.business_hours.thu_open : false);
+  const [ thuHours, setThuHours ] = useState(user.business_hours && user.business_hours.thu_hours ? user.business_hours.thu_hours : []);
+  const [ friOpen, setFriOpen ] = useState(user.business_hours && user.business_hours.fri_open ? user.business_hours.fri_open : false);
+  const [ friHours, setFriHours ] = useState(user.business_hours && user.business_hours.fri_hours ? user.business_hours.fri_hours : []);
+  const [ satOpen, setSatOpen ] = useState(user.business_hours && user.business_hours.sat_open ? user.business_hours.sat_open : false);
+  const [ satHours, setSatHours ] = useState(user.business_hours && user.business_hours.sat_hours ? user.business_hours.sat_hours : []);
 
   const [ readyToSave, setReadyToSave ] = useState(false);
 
@@ -201,11 +223,29 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
     if (newHours && dayType) {
       if (dayType === 'sun') {
         setSunHours([ ...sunHours, newHours ]);
-        navigation.setParams({ 
-          newHours: null, 
-          dayType: null, 
-        });
-      }
+      };
+      if (dayType === 'mon') {
+        setMonHours([ ...monHours, newHours ]);
+      };
+      if (dayType === 'tue') {
+        setTueHours([ ...tueHours, newHours ]);
+      };
+      if (dayType === 'wed') {
+        setWedHours([ ...wedHours, newHours ]);
+      };
+      if (dayType === 'thu') {
+        setThuHours([ ...thuHours, newHours ]);
+      };
+      if (dayType === 'fri') {
+        setFriHours([ ...friHours, newHours ]);
+      };
+      if (dayType === 'sat') {
+        setSatHours([ ...satHours, newHours ]);
+      };
+      navigation.setParams({ 
+        newHours: null, 
+        dayType: null, 
+      });
     }
   }, [newHours]);
 
@@ -228,24 +268,86 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             navigation.goBack();
           }}
           rightButtonPress={() => {
-            const newBusinessHours = [
-              [ sunOpen, monOpen, tueOpen, wedOpen, thuOpen, friOpen, satOpen ],
-              sunHours, 
-              monHours,
-              tueHours,
-              wedHours,
-              thuHours,
-              friHours,
-              satHours,
-            ];
+            const newBusinessHours = 
+            { 
+              sun_open: sunOpen, 
+              mon_open: monOpen, 
+              tue_open: tueOpen, 
+              wed_open: wedOpen, 
+              thu_open: thuOpen, 
+              fri_open: friOpen, 
+              sat_open: satOpen,
+              sun_hours: sunHours,
+              mon_hours: monHours,
+              tue_hours: tueHours,
+              wed_hours: wedHours,
+              thu_hours: thuHours,
+              fri_hours: friHours,
+              sat_hours: satHours
+            };
 
-            if (businessHours === newBusinessHours) {
-              console.log('nothing to save');
-            } else {
-              businessUpdateFire.busUserUpdate({
-                business_hours: newBusinessHours
-              });
+            console.log("businessHours: ", businessHours);
+            console.log("newBusinessHours: ", newBusinessHours);
+
+            let readyToSave = false;
+
+            const sunHoursLen = businessHours.sun_hours.length;
+            const monHoursLen = businessHours.mon_hours.length;
+            const tueHoursLen = businessHours.tue_hours.length;
+            const wedHoursLen = businessHours.wed_hours.length;
+            const thuHoursLen = businessHours.thu_hours.length;
+            const friHoursLen = businessHours.fri_hours.length;
+            const satHoursLen = businessHours.sat_hours.length;
+
+            const compareHours = (currentHours, newHours) => {
+              let hoursIndex = 0;
+              const currentHoursLen = currentHours.length;
+              const newHoursLen = newHours.length;
+              // when the two hours have different length then return false
+              if (currentHoursLen !== newHoursLen) {
+                return true
+              }
+              // if not compare each hours in the two arrays
+              for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
+                if (
+                  currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
+                  currentHours[hoursIndex].min !== newHours[hoursIndex].min 
+                ) {
+                  return true
+                }
+              }
+              return false;
+            };
+
+            if ( 
+              // when one of the days is changed from open to close or vice versa
+              businessHours.sun_open !== newBusinessHours.sun_open ||
+              businessHours.mon_open !== newBusinessHours.mon_open ||
+              businessHours.tue_open !== newBusinessHours.tue_open ||
+              businessHours.wed_open !== newBusinessHours.wed_open ||
+              businessHours.thu_open !== newBusinessHours.thu_open ||
+              businessHours.fri_open !== newBusinessHours.fri_open ||
+              businessHours.sat_open !== newBusinessHours.sat_open
+            ) {
+              readyToSave = true;
+            }
+            else if (
+              compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
+              compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
+              compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
+              compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
+              compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
+              compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
+              compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
+            ) {
+              readyToSave = true;
+            };
+
+            if (readyToSave) {
               console.log("ready to save");
+              setShowTba(true);
+            } else {
+              console.log('nothing to save');
             }
           }}
         />
@@ -315,6 +417,49 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
           />
         </ScrollView>
       </View>
+      { showTba && 
+        <TwoButtonAlert 
+          title={"Ready to Save?"}
+          message={
+            "Please, make sure all the hours are correct."
+          }
+          buttonOneText={"Save"}
+          buttonTwoText={"No"} 
+          buttonOneAction={() => {
+            console.log("save");
+            const newBusinessHours = 
+            { 
+              sun_open: sunOpen, 
+              mon_open: monOpen, 
+              tue_open: tueOpen, 
+              wed_open: wedOpen, 
+              thu_open: thuOpen, 
+              fri_open: friOpen, 
+              sat_open: satOpen,
+              sun_hours: sunHours,
+              mon_hours: monHours,
+              tue_hours: tueHours,
+              wed_hours: wedHours,
+              thu_hours: thuHours,
+              fri_hours: friHours,
+              sat_hours: satHours
+            };
+            const updateBusUser = businessUpdateFire.busUserUpdate({
+              business_hours: newBusinessHours
+            });
+            updateBusUser
+            .then(() => {
+              setShowTba(false);
+            })
+            .catch((error) => {
+              console.log("error: updateBusUser: ", error);
+            })
+          }} 
+          buttonTwoAction={() => {
+            setShowTba(false);
+          }}
+        />
+      }
     </MainTemplate>
   )
 };

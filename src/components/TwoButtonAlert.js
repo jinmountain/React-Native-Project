@@ -38,12 +38,12 @@ const TwoButtonAlert = ({
 				</View>
 				<View style={styles.actionContainer}>
 					<TouchableHighlight
-						style={{ ...styles.buttonContainer, ...{borderBottomLeftRadius: RFValue(7), backgroundColor: color.blue1} }}
+						style={{ ...styles.buttonContainer, ...{borderBottomLeftRadius: RFValue(7), backgroundColor: color.red2} }}
 						onPress={buttonOneAction}
 						underlayColor={color.grey4}
 					>
 						<View style={styles.buttonInner}>
-							<Text style={[ styles.buttonText, { color: color.white2 } ]}>
+							<Text style={[ styles.buttonText, { color: color.black1 } ]}>
 								{buttonOneText}
 							</Text>
 						</View>
@@ -82,9 +82,19 @@ const styles = StyleSheet.create({
 	},
 	alertContainer: {
 		borderRadius: RFValue(7),
-		width: '57%',
-		height: '33%',
+		width: '70%',
+		minHeight: RFValue(250),
 		backgroundColor: '#fff',
+		// shadow alert box
+		shadowColor: "#000",
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.25,
+		shadowRadius: 3,
+		// elevation for android
+		elevation: 5,
 	},
 	
 	titleContainer: {
@@ -92,14 +102,18 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
+	titleText: {
+		fontSize: RFValue(23),
+		fontWeight: 'bold'
+	},
 	messageContainer: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		paddingHorizontal: RFValue(7),
+		padding: RFValue(7),
 	},
 	messageText: {
-		fontSize: RFValue(15)
+		fontSize: RFValue(17)
 	},
 	actionContainer: {
 		flex: 1,
@@ -115,7 +129,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	buttonText: {
-		fontSize: RFValue(17),
+		fontSize: RFValue(19),
+		fontWeight: 'bold',
 	},
 });
 

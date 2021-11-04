@@ -175,7 +175,20 @@ const getUserNotificationsRealtime = (uid, schedulePushNotification) => {
   });
 
   return () => unsubscribe();
-}
+};
+
+const getUserDataRealtime = (uid) => {
+  console.log("start listening user data");
+  const userDoc = usersRef.doc(uid);
+  return userDoc.onSnapshot(docSnapshot => {
+    console.log(`Received doc snapshot: ${docSnapshot}`);
+
+  }, err => {
+    console.log(`Encountered error: ${err}`);
+  });
+
+  return () => unsubscribe();
+};
 
 const getTheOtherUserChatStatusRealtime = (theOtherUserId) => {
   const now = Date.now();
@@ -251,4 +264,4 @@ const getTheOtherUserChatStatusRealtime = (theOtherUserId) => {
   return () => unsubscribe();
 }
 
-export default { getSearchUsersFire, getBusinessUsersNearFire, getUserInfoFire, getUserNotificationsRealtime };
+export default { getSearchUsersFire, getBusinessUsersNearFire, getUserInfoFire, getUserNotificationsRealtime, getUserDataRealtime };
