@@ -210,8 +210,12 @@ const getUserInfoFire = (uid) => {
       if (doc.exists) {
       	const userData = doc.data();
 
-      	delete userData['g'];
-        delete userData['coordinates'];
+      	if (userData && userData.g) {
+          delete userData['g']
+        }
+        if (userData && userData.coordinates) {
+          delete userData['coordinates']
+        }
 
         res(userData);
       } else {

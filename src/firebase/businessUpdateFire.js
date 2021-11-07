@@ -59,14 +59,14 @@ const businessUpdateLocation = (newLocation, userLocality, userService) => {
 					let locality; // string
 					const splitAddressArr = address.split(", ");
 					const splitArrLength = splitAddressArr.length;
-					if (splitAddressArr[splitArrLength-1] === "USA") {
-						var state = splitAddressArr[2].replace(/[0-9]/g, '').replace(/ /g, '');
-						var city = splitAddressArr[1].replace(/ /g, '');
-						var country = splitAddressArr[splitArrLength-1];
-						locality = `${city}${state}${country}`;
+					if (splitAddressArr[splitArrLength-1] === "usa") {
+						var state = splitAddressArr[2].replace(/[0-9]/g, '').replace(/ /g, '').toLowerCase();
+						var city = splitAddressArr[1].replace(/ /g, '').toLowerCase();
+						var country = splitAddressArr[splitArrLength-1].toLowerCase();
+						locality = `${city}_${state}_${country}`;
 					}
 					return locality;
-				}
+				};
 				
 				const locality = getLocality(newLocation.formatted_address);
 				
@@ -90,8 +90,8 @@ const businessUpdateLocation = (newLocation, userLocality, userService) => {
 				let serviceIndex;
 				for (serviceIndex = 0; serviceIndex < serviceLen; serviceIndex++ ) {
 					rootRef
-					.collection(`${locality}StoreCount`)
-					.doc(`${userService[serviceIndex]}StoreCount`)
+					.collection(`${locality}_store_count`)
+					.doc(`${userService[serviceIndex]}_store_count`)
 					.set({ count: countIncrementByOne }, { merge: true });
 				}
 
@@ -119,8 +119,8 @@ const businessUpdateLocation = (newLocation, userLocality, userService) => {
 					let serviceIndex;
 					for (serviceIndex = 0; serviceIndex < serviceLen; serviceIndex++ ) {
 						rootRef
-						.collection(`${userLocality}StoreCount`)
-						.doc(`${userService[serviceIndex]}StoreCount`)
+						.collection(`${userLocality}_store_count`)
+						.doc(`${userService[serviceIndex]}_store_count`)
 						.set({ count: countDecrementByOne }, { merge: true });
 					}
 				}
@@ -176,7 +176,7 @@ const businessDeregister = () => {
 				// decrement store count of the locality
 				if (userData && userData.locality) {
 					rootCountsRef
-					.doc(`${userData.locality}StoreCount`)
+					.doc(`${userData.locality}_store_count`)
 					.set({ count: countDecrementByOne }, { merge: true });
 				}
 

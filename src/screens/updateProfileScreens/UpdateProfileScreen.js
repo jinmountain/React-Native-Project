@@ -22,6 +22,10 @@ import { HeaderForm } from '../../components/HeaderForm';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import UserDataEditButtonForm from '../../components/profilePage/UserDataEditButtonForm';
 
+// firebase
+import authFire from '../../firebase/authFire';
+import { profileUpdateFire } from '../../firebase/profileUpdateFire';
+
 // Contexts
 import { Context as AuthContext } from '../../context/AuthContext';
 
@@ -47,6 +51,7 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 			newWebsite,
 			newSign,
 		}, 
+		signout,
 		resetEdit,
 		updateUser,
 		addNewName,
@@ -96,16 +101,26 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 				}}
 				rightButtonPress={() => {
 					// allow update when at least one is changed
-					newProfileJson !== undefined && newProfileJson !== null 
-					? 
-					(
-						updateUser(
-							user.type,
-							newProfileJson
-						),
-						navigation.navigate('Account')
-					)
-					: null
+					if (newProfileJson !== undefined && newProfileJson !== null) {
+						console.log("update user: ", newProfileJson);
+						const authCheck = authFire.authCheck();
+						authCheck
+						.then((currentUser) => {
+							const currentUserId = currentUser.uid;
+							const newUserData = profileUpdateFire(currentUserId, newProfileJson);
+							newUserData
+							.then(() => {
+								navigation.navigate('Account');
+							})
+							.catch((error) => {
+								console.log(error);
+							});
+						})
+						.catch((error) => {
+							// when authCheck fails
+							signout();
+						});
+					};
 				}} 
 			/>
 			<View style={styles.inputFormContainer}>

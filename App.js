@@ -165,8 +165,10 @@ const App = () => {
   // const route = useRoute();
   // console.log(route.name);
   const { 
-    state: { user },
+    state: { user, userLogin },
     localSignin,
+    addCurrentUserData,
+    changeUserLogin
   } = useContext(AuthContext);
 
   const { 
@@ -174,24 +176,20 @@ const App = () => {
     addAppStateSocial,
   } = useContext(SocialContext);
 
-  useEffect(() => {
-    return () => {
-      isReadyRef.current = false
-    };
-  }, []);
-
   // listen appState and post to users ref
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
-  useEffect(() => {
-    AppState.addEventListener('change', handleAppStateChange);
+  // merged with another useEffect
+  // useEffect(() => {
+  //   AppState.addEventListener('change', handleAppStateChange);
 
-    return () => {
-      AppState.removeEventListener('change', handleAppStateChange);
-    };
-  }, []);
+  //   return () => {
+  //     AppState.removeEventListener('change', handleAppStateChange);
+  //   };
+  // }, []);
 
+  // change app state on user's data on firestore and context
   useEffect(() => {
     if (user && user.emailVerified) {
       usersPostFire.changeUserAppState(user.id, appStateVisible);
@@ -204,13 +202,18 @@ const App = () => {
     setAppStateVisible(appState.current);
   };
 
-  // start local sign in
+  const [ userRealtimeListenerSwitch, setUserRealtimeListenerSwitch ] = useState(false);
+
+  // start local sign in and app state listener
   useEffect(() => {
     const tryLoginFirst = localSignin();
     tryLoginFirst
     .then((userData) => {
       wait(1000).then(() => {
         setSplash(false);
+        changeUserLogin(true);
+        setUserRealtimeListenerSwitch(true);
+        AppState.addEventListener('change', handleAppStateChange);
       });
     })
     .catch((error) => {
@@ -221,6 +224,10 @@ const App = () => {
     });
 
     return () => {
+      isReadyRef.current = false;
+      // remove app state listener
+      AppState.removeEventListener('change', handleAppStateChange);
+      setUserRealtimeListenerSwitch(false);
     };
   }, []);
 
@@ -229,9 +236,16 @@ const App = () => {
     let notificationListener;
     let userDataListener;
 
-    if (user) {
+    if (userRealtimeListenerSwitch && userLogin && user && user.id) {
       notificationListener = usersGetFire.getUserNotificationsRealtime(user.id, schedulePushNotification);
-      userDataListener = usersGetFire.getUserDataRealtime(user.id);
+      userDataListener = usersGetFire.getUserDataRealtime(user.id, addCurrentUserData);
+    } else {
+      if (notificationListener) {
+        notificationListener()
+      };
+      if (userDataListener) {
+        userDataListener()
+      };
     }
 
     return () => {
@@ -245,7 +259,7 @@ const App = () => {
         userDataListener();
       };
     };
-  }, [user]);
+  }, [userRealtimeListenerSwitch]);
 
   return (
     <NavigationContainer 

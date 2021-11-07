@@ -9,20 +9,20 @@ const db = Firebase.firestore();
 const usersRef = db.collection('users');
 const reservationsRef = db.collection('reservations');
 
-const appRsvCounts = db.collection('rsvCounts');
+const appRsvCounts = db.collection('rsv_counts');
 
-const appRsvGlobalPeriodsRef = db.collection('rsvGlobalPeriods');
-const appRsvLocalPeriodsRef = db.collection('rsvLocalPeriods');
+const appRsvGlobalPeriodsRef = db.collection('rsv_global_periods');
+const appRsvLocalPeriodsRef = db.collection('rsv_local_periods');
 
 const getLocality = (address) => {
 	let locality; // string
 	const splitAddressArr = address.split(", ");
 	const splitArrLength = splitAddressArr.length;
-	if (splitAddressArr[splitArrLength-1] === "USA") {
-		var state = splitAddressArr[2].replace(/[0-9]/g, '').replace(/ /g, '');
-		var city = splitAddressArr[1].replace(/ /g, '');
-		var country = splitAddressArr[splitArrLength-1];
-		locality = `${city}${state}${country}`;
+	if (splitAddressArr[splitArrLength-1] === "usa") {
+		var state = splitAddressArr[2].replace(/[0-9]/g, '').replace(/ /g, '').toLowerCase();
+		var city = splitAddressArr[1].replace(/ /g, '').toLowerCase();
+		var country = splitAddressArr[splitArrLength-1].toLowerCase();
+		locality = `${city}_${state}_${country}`;
 	}
 	return locality;
 };
@@ -182,18 +182,18 @@ const sendRsvRequest = (
 						reservationsRef.add(newReservation);
 		    		
 						// Snail Global Reservation Count
-						changeCounts(appRsvCounts, `${postServiceType}GlobalRsvCount`);
+						changeCounts(appRsvCounts, `${postServiceType}_global_rsv_count`);
 
 						if (busLocationType === "inStore" && busLocality) {
 							// Snail Local Reservation Count
-							changeCounts(appRsvCounts, `${postServiceType}${busLocality}RsvCount`);
+							changeCounts(appRsvCounts, `${postServiceType}_${busLocality}_rsv_count`);
 						}
 						
 						// Business Reservation Count
-						changeCounts(usersRef.doc(busId).collection("rsvCounts"), `${postServiceType}RsvCount`);
+						changeCounts(usersRef.doc(busId).collection("rsv_counts"), `${postServiceType}_rsv_count`);
 
 		    		// User Reservation Count
-		    		changeCounts(usersRef.doc(userId).collection("rsvCounts"), `${postServiceType}RsvCount`);
+		    		changeCounts(usersRef.doc(userId).collection("rsv_counts"), `${postServiceType}_rsv_count`);
 
 		    		res(newReservation);
 					} else {
@@ -204,18 +204,18 @@ const sendRsvRequest = (
 	    		reservationsRef.add(newReservation);
 
 	    		// Snail Global Reservation Count
-	    		changeCounts(appRsvCounts, `${postServiceType}GlobalRsvCount`);
+	    		changeCounts(appRsvCounts, `${postServiceType}_global_rsv_count`);
 
 	    		if (busLocationType === "inStore" && busLocality) {
 						// Snail Local Reservation Count
-						changeCounts(appRsvCounts, `${postServiceType}${busLocality}RsvCount`);
+						changeCounts(appRsvCounts, `${postServiceType}_${busLocality}_rsv_count`);
 					}
 
 					// Business Reservation Count
-					changeCounts(usersRef.doc(busId).collection("rsvCounts"), `${postServiceType}RsvCount`);
+					changeCounts(usersRef.doc(busId).collection("rsv_counts"), `${postServiceType}_rsv_count`);
 
 	    		// User Reservation Count
-	    		changeCounts(usersRef.doc(userId).collection("rsvCounts"), `${postServiceType}RsvCount`);
+	    		changeCounts(usersRef.doc(userId).collection("rsv_counts"), `${postServiceType}_rsv_count`);
 
 	    		res(newReservation);
 				}
@@ -243,7 +243,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 			// Snail's Reservation Completed Count
 			// Global
 			batch.update(
-				appRsvCounts.doc(`${postServiceType}GlobalRsvCount`),
+				appRsvCounts.doc(`${postServiceType}_global_rsv_count`),
 				{
 					completedCount: countIncrementByOne
 				}
@@ -253,7 +253,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 			if (busLocationType === "inStore" && busLocality) {
 				// Local Snail Data
 				batch.update(
-					appRsvCounts.doc(`${postServiceType}${busLocality}RsvCount`),
+					appRsvCounts.doc(`${postServiceType}_${busLocality}_rsv_count`),
 					{
 						completedCount: countIncrementByOne
 					}
@@ -263,7 +263,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 			// w1
 			// Business' Reservation Completed Count
 			batch.update(
-				usersRef.doc(busId).collection("rsvCounts").doc(`${postServiceType}RsvCount`),
+				usersRef.doc(busId).collection("rsv_counts").doc(`${postServiceType}_rsv_count`),
 				{
 					completedCount: countIncrementByOne
 				}
@@ -272,7 +272,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 			// w1
 			// User's Reservation Completed Count
 			batch.update(
-				usersRef.doc(cusId).collection("rsvCounts").doc(`${postServiceType}RsvCount`),
+				usersRef.doc(cusId).collection("rsv_counts").doc(`${postServiceType}_rsv_count`),
 				{
 					completedCount: countIncrementByOne
 				}
@@ -280,7 +280,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 
 			// w1 r1
 			// Snail Global Reservation Period
-			const rsvGlobalPeriodsRef = appRsvGlobalPeriodsRef.doc(`${postServiceType}GlobalRsvPeriod`);
+			const rsvGlobalPeriodsRef = appRsvGlobalPeriodsRef.doc(`${postServiceType}_global_rsv_period`);
 			await rsvGlobalPeriodsRef
 			.get()
 			.then((doc) => {
@@ -313,7 +313,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 
 			// w1 r1
 			// Snail Local Reservation Period
-			const rsvLocalPeriodsRef = snailRsvLocalPeriodsRef.doc(`${postServiceType}${busLocality}RsvPeriod`);
+			const rsvLocalPeriodsRef = snailRsvLocalPeriodsRef.doc(`${postServiceType}_${busLocality}_rsv_period`);
 			await rsvLocalPeriodsRef
 			.get()
 			.then((doc) => {
@@ -348,7 +348,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 			// w1 r1
 			// Business’ Customer Reservation Period
 			// First check the doc exists
-			const businessRsvPeriodsRef = usersRef.doc(busId).collection(`${postServiceType}CustomerRsvPeriods`).doc(cusId);
+			const businessRsvPeriodsRef = usersRef.doc(busId).collection(`${postServiceType}_customer_rsv_periods`).doc(cusId);
 			await businessRsvPeriodsRef
 			.get()
 			.then((doc) => {
@@ -383,7 +383,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 			// w1 r1
 			// User's Reservation Period
 			// First check the doc exists
-			const userRsvPeriodsRef = usersRef.doc(cusId).collection("rsvPeriods").doc(`${postServiceType}RsvPeriod`);
+			const userRsvPeriodsRef = usersRef.doc(cusId).collection("rsv_periods").doc(`${postServiceType}_rsv_period`);
 			await userRsvPeriodsRef
 			.get()
 			.then((doc) => {
@@ -425,7 +425,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 				console.log("tag: ", postTags[tagIndex]);
 				// // Tag Popularity of User Completed Reservation
 				// // w3 r3
-				const userRsvTagCountsRef = usersRef.doc(cusId).collection(`${postServiceType}RsvTagCounts`).doc(postTags[tagIndex]);
+				const userRsvTagCountsRef = usersRef.doc(cusId).collection(`${postServiceType}_rsv_tag_counts`).doc(postTags[tagIndex]);
 				await userRsvTagCountsRef
 				.get()
 				.then((doc) => {
@@ -461,7 +461,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 
 				// Tag Popularity of Business Completed Reservation
 				// w3 r3
-				const businessRsvTagCountsRef = usersRef.doc(busId).collection(`${postServiceType}RsvTagCounts`).doc(postTags[tagIndex]);
+				const businessRsvTagCountsRef = usersRef.doc(busId).collection(`${postServiceType}_rsv_tag_counts`).doc(postTags[tagIndex]);
 				await businessRsvTagCountsRef
 				.get()
 				.then((doc) => {
@@ -497,7 +497,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 
 				// Tag Popularity of Snail Global Completed Reservation
 				// w3 r3
-				const snailGlobalRsvTagCountsRef = db.collection(`${postServiceType}GlobalRsvTagCounts`).doc(postTags[tagIndex]);
+				const snailGlobalRsvTagCountsRef = db.collection(`${postServiceType}_global_rsv_tag_counts`).doc(postTags[tagIndex]);
 				await snailGlobalRsvTagCountsRef
 				.get()
 				.then((doc) => {
@@ -534,7 +534,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 
 				// Tag Popularity of Snail Local Completed Reservation
 				// w3 r3
-				const snailLocalRsvTagCountsRef = db.collection(`${postServiceType}${busLocality}RsvTagCounts`).doc(postTags[tagIndex]);
+				const snailLocalRsvTagCountsRef = db.collection(`${postServiceType}_${busLocality}_rsv_tag_counts`).doc(postTags[tagIndex]);
 				await snailLocalRsvTagCountsRef
 				.get()
 				.then((doc) => {

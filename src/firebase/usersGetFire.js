@@ -90,7 +90,6 @@ const getUserInfoFire = (uid) => {
         if (userData && userData.coordinates) {
           delete userData['coordinates']
         }
-        console.log(userData);
         res(userData);
       } else {
         res(false);
@@ -177,14 +176,21 @@ const getUserNotificationsRealtime = (uid, schedulePushNotification) => {
   return () => unsubscribe();
 };
 
-const getUserDataRealtime = (uid) => {
+const getUserDataRealtime = (uid, addCurrentUserData) => {
   console.log("start listening user data");
   const userDoc = usersRef.doc(uid);
   return userDoc.onSnapshot(docSnapshot => {
-    console.log(`Received doc snapshot: ${docSnapshot}`);
-
+    const userData = docSnapshot.data();
+    if (userData && userData.g) {
+      delete userData['g']
+    }
+    if (userData && userData.coordinates) {
+      delete userData['coordinates']
+    }
+    console.log("add user's realtime data: ", userData.id);
+    addCurrentUserData(userData);
   }, err => {
-    console.log(`Encountered error: ${err}`);
+    console.log(`error: getUserDataRealtime: ${err}`);
   });
 
   return () => unsubscribe();

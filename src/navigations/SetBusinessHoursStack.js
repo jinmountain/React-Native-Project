@@ -3,12 +3,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 // Screens
 // business hours
-import UBSetBusinessHoursScreen from '../screens/accountManagerFlow/UBSetBusinessHoursScreen';
-import UBSetHoursScreen from '../screens/accountManagerFlow/UBSetHoursScreen';
+import SetBusinessHoursScreen from '../screens/setBusinessHoursStack/SetBusinessHoursScreen';
+import SetHoursScreen from '../screens/setBusinessHoursStack/SetHoursScreen';
 
 const Stack = createStackNavigator();
 
-const UBSetBusinessHoursStack = () => {
+const SetBusinessHoursStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{ 
@@ -17,19 +17,19 @@ const UBSetBusinessHoursStack = () => {
       }}
     >
       <Stack.Screen 
-        name="UBSetBusinessHours" 
-        component={UBSetBusinessHoursScreen}
+        name="SetBusinessHours" 
+        component={SetBusinessHoursScreen}
         initialParams={{ 
           newHours: null,
           dayType: null
         }}
       />
       <Stack.Screen 
-        name="UBSetHours" 
-        component={UBSetHoursScreen}
+        name="SetHours" 
+        component={SetHoursScreen}
       />
     </Stack.Navigator>
   )
 };
 
-export default UBSetBusinessHoursStack;
+export default SetBusinessHoursStack;

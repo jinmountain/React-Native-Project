@@ -78,14 +78,14 @@ const UpdateBusinessScreen = ({ navigation }) => {
 			    <HeaderBottomLine />
 			    <KitkatButton
 						onPress={() => {
-							navigation.navigate('UBSetBusinessHoursStack')
+							navigation.navigate('SetBusinessHoursStack')
 						}}
 						icon={<MaterialCommunityIcons name="clock-outline" size={RFValue(27)} color={color.black1} />}
 						text={"Set Business Hours"}
 					/>
 					<KitkatButton
 						onPress={() => {
-							navigation.navigate('')
+							navigation.navigate('SetSpecialHoursStack')
 						}}
 						icon={<MaterialCommunityIcons name="timeline-clock-outline" size={RFValue(27)} color={color.black1} />}
 						text={"Add Special Hours"}

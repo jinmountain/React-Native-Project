@@ -34,6 +34,7 @@ const MainBottomTab = () => {
   const { 
     state: { 
       user,
+      userLogin,
     }
   } = useContext(AuthContext);
   return (
@@ -96,13 +97,13 @@ const MainBottomTab = () => {
         component={AccountStack} 
         options={{
           tabBarIcon: ({ focused, color, size }) => (
-            focused && user.photoURL
+            focused && user && user.photoURL
             ? 
             <Image 
               style={{ ...styles.userPhoto, ...{ borderRadius: RFValue(100) }}} 
               source={{uri: user.photoURL}} 
             />
-            : user.photoURL
+            : user && user.photoURL
             ? 
             <Image 
               style={{ ...styles.userPhoto, ...{ borderRadius: RFValue(5) }}} 

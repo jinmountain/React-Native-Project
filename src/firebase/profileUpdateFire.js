@@ -12,23 +12,25 @@ const firestoreUsersUpdate = (userId, newProfileInfo) => {
 	.doc(userId)
 	.update(newProfileInfo)
 	.then((user) => {
-		console.log("users updated");
+		console.log("updated user data on firestore");
 	})
 	.catch((error) => {
 		console.log(error);
 	});
 };
 
-const profileUpdateFire = (userId, type, newProfile) => {
+const profileUpdateFire = (userId, newProfile) => {
 	return new Promise (async (res, rej) => {
 		try {
 			if (newProfile.username) {
 				const checkUsernameUnique = checkUsernameFire.checkUniqueUsername(newProfile.username);
 				checkUsernameUnique
 				.then((result) => {
+					// result true if the username is unique
 					if (result) {
+						console.log("change user data with new username");
 						firestoreUsersUpdate(userId, newProfile);
-						res(newProfile);
+						res(true);
 					} else {
 						console.log("profileUpdateFire: profileUpdateFire: checkUniqueUsername: username already exists");
 						res(false);
@@ -39,10 +41,10 @@ const profileUpdateFire = (userId, type, newProfile) => {
 					console.log('Error occured: profileUpdateFire: profileUpdateFire:', error);
 				});
 			} else {
-				console.log("change user info without new username");
+				console.log("change user data without new username");
 				try {
 					firestoreUsersUpdate(userId, newProfile);
-					res(newProfile);
+					res(true);
 				} catch (error) {
 					res(false);
 					console.log('Error occured: profileUpdateFire: profileUpdateFire: ', error);

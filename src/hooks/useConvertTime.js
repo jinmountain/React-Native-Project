@@ -64,6 +64,11 @@ const convertToTime = (timestamp) => {
 	};
 };
 
+const getDayMonthDateYear = (timestamp) => {
+	const time = convertToTime(timestamp);
+	return time.day + ", " + time.month + " " + time.date + ", " + time.year
+};
+
 const convertToMDD = (timestamp) => {
 	var getTime = new Date(timestamp);
 	var monthIndex = getTime.getMonth();
@@ -250,6 +255,7 @@ export default {
 	getDayIndex,
 	getDateTimestamp,
 	convertToTime, 
+	getDayMonthDateYear,
 	convertToMDD, 
 	convertToNormHourMin,
 	convertMilitaryToStandard, 

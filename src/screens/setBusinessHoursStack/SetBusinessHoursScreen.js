@@ -286,9 +286,6 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
               sat_hours: satHours
             };
 
-            console.log("businessHours: ", businessHours);
-            console.log("newBusinessHours: ", newBusinessHours);
-
             let readyToSave = false;
 
             const sunHoursLen = businessHours.sun_hours.length;

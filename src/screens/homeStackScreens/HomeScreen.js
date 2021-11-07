@@ -69,26 +69,40 @@ const HomeScreen = ({ navigation }) => {
 	const [ hotPostState, setHotPostState ] = useState(false);
 	
 	useEffect(() => {
+		let isMounted = true;
 		if( hotPostFetchSwitch && !hotPostState) {
-			setHotPostState(true);
+			isMounted && setHotPostState(true);
 			const getHotPosts = contentGetFire.getHotPostsFire(hotPostLast, user.id);
 			getHotPosts
 			.then((posts) => {
-				setHotPosts([ ...hotPosts, ...posts.fetchedPosts ]);
+				isMounted && setHotPosts([ ...hotPosts, ...posts.fetchedPosts ]);
 				if (posts.lastPost !== undefined) {
-					setHotPostLast(posts.lastPost);
+					isMounted && setHotPostLast(posts.lastPost);
 				} else {
-					setHotPostFetchSwitch(false);
+					isMounted && setHotPostFetchSwitch(false);
 				};
-				setHotPostState(false);
+				isMounted && setHotPostState(false);
 			})
 		}
 
+		const tagsHot = tagGetFire.getTagsHotFire();
+		tagsHot
+		.then((tags) => {
+			isMounted && setTrendingTags(tags);
+			console.log("fetched hot tags", trendingTags);
+		})
+		.catch((error) => {
+			console.log("failed to fetch tags hot: ", error);
+		});
+
 		return () => {
+			isMounted = false;
 			setHotPosts([]);
 			setHotPostLast(null);
 			setHotPostFetchSwitch(true);
 			setHotPostState(false);
+
+			setTrendingTags([]);
 		}
 	}, []);
 
@@ -109,20 +123,20 @@ const HomeScreen = ({ navigation }) => {
 
 	const [trendingTags, setTrendingTags] = useState([]);
 
-	useEffect(() => {
-		// Good Here
-		const tagsHot = tagGetFire.getTagsHotFire();
-		tagsHot
-		.then((tags) => {
-			setTrendingTags(tags);
-			console.log("fetched hot tags", trendingTags);
-		})
-		.catch((error) => {
-			console.log("failed to fetch tags hot: ", error);
-		});
+	// useEffect(() => {
+	// 	// Good Here
+	// 	// const tagsHot = tagGetFire.getTagsHotFire();
+	// 	// tagsHot
+	// 	// .then((tags) => {
+	// 	// 	setTrendingTags(tags);
+	// 	// 	console.log("fetched hot tags", trendingTags);
+	// 	// })
+	// 	// .catch((error) => {
+	// 	// 	console.log("failed to fetch tags hot: ", error);
+	// 	// });
 
-		// clearFirstAndGetHotPosts(user.id);
-	}, []);
+	// 	// clearFirstAndGetHotPosts(user.id);
+	// }, []);
 
 	// when received new notification
 	useEffect(() => {

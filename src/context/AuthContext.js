@@ -1,7 +1,6 @@
 import createDataContext from './createDataContext';
 import authFire from '../firebase/authFire';
 import usersGetFire from '../firebase/usersGetFire';
-import { profileUpdateFire } from '../firebase/profileUpdateFire';
 import businessUpdateFire from '../firebase/businessUpdateFire';
 
 // import navigate from '../hooks/navigate';
@@ -14,9 +13,11 @@ const authReducer = (state, action) => {
 			return { errorMessage: '' };
 		case 'clear_error_message':
 			return { ...state, errorMessage: '' };
-		case 'add_currentUser':
+		case 'change_user_login':
+			return { ...state, userLogin: action.payload };
+		case 'add_current_user_data':
 			return { user: action.payload };
-		case 'clear_currentUser':
+		case 'clear_current_user_data':
 			return { ...state, user: null };
 		case 'signout':
 			return { errorMessage: '', user: null };
@@ -76,10 +77,10 @@ const localSignin = dispatch => async (navigate, screen) => {
 			const userData = await authFire.localSigninFire();
 			if (userData) {
 				console.log('localSignin: userData >> ', userData.id);
+				dispatch({ type: 'add_current_user_data', payload: userData});
 			} else {
 				console.log('localSignin: current user data does not exist');
 			}
-			dispatch({ type: 'add_currentUser', payload: userData});
 			if (screen) {
 				navigate(screen);
 			}
@@ -92,6 +93,10 @@ const localSignin = dispatch => async (navigate, screen) => {
 	});
 };
 
+const changeUserLogin = dispatch => (value) => {
+	dispatch({ type: 'change_user_login', payload: value });
+};
+
 const accountRefresh = dispatch => (navigate) => {
 	const authCheck = authFire.authCheck();
 	authCheck
@@ -100,7 +105,7 @@ const accountRefresh = dispatch => (navigate) => {
 		getUserInfo
 		.then((userData) => {
 			if (userData) {
-				dispatch({ type: 'add_currentUser', payload: userData});
+				dispatch({ type: 'add_current_user_data', payload: userData});
 				console.log('current user data is up to date: ', userData.id);
 			} else {
 				// when userData is false
@@ -116,7 +121,7 @@ const accountRefresh = dispatch => (navigate) => {
 		const signOut = authFire.signoutFire();
 		signOut
 		.then(() => {
-			dispatch({ type: 'clear_currentUser'});
+			dispatch({ type: 'clear_current_user_data'});
 			console.log("AuthContext: accountRefresh: authCheck: ", error);
 		})
 		.catch((error) => {
@@ -125,51 +130,9 @@ const accountRefresh = dispatch => (navigate) => {
 	});
 };
 
-const updateUser = dispatch => async (type, newProfile) => {
-	console.log("update user: ", type, newProfile);
-	const authCheck = authFire.authCheck();
-	authCheck
-	.then((currentUser) => {
-		const currentUserId = currentUser.uid;
-		const newUserData = profileUpdateFire(currentUserId, type, newProfile);
-		newUserData
-		.then( async (response) => {
-			if (response) {
-				console.log("new user info applied: ", response);
-				const getUserInfo = usersGetFire.getUserInfoFire(currentUserId);
-				getUserInfo
-				.then((userData) => {
-					if (userData) {
-						dispatch({ type: 'add_currentUser', payload: userData});
-						console.log('received new user data: ', userData.id);
-					} else {
-						console.log('new user data update failed');
-					}
-				})
-				.catch((error) => {
-					console.log("error: getUserInfoFire: ", error);
-				});
-			} else {
-				console.log("AuthContext: updateUser: profile update failed");
-			}
-		})
-		.catch((err) => {
-			console.log(err);
-		});
-	})
-	.catch((error) => {
-		// when authCheck fails
-		const signOut = authFire.signoutFire();
-		signOut
-		.then(() => {
-			dispatch({ type: 'clear_currentUser'});
-			console.log("AuthContext: updateUser: authCheck: ", error);
-		})
-		.catch((error) => {
-			console.log("error: AuthContext: updateUser: signOut: ", error);
-		})
-	});
-}
+const addCurrentUserData = dispatch => (userData) => {
+	dispatch({ type: 'add_current_user_data', payload: userData});
+};
 
 const clearErrorMessage = dispatch => () => {
 	dispatch({ type: 'clear_error_message' });
@@ -188,7 +151,7 @@ const signup = dispatch => async ({ email, password, confirmPassword }) => {
 				'Your password and confirm password do not match.' 
 			});
 		} else {
-			dispatch({ type: 'add_currentUser', payload: userData});
+			dispatch({ type: 'add_current_user_data', payload: userData});
 		} 
 	} catch (error) {
 		dispatch({ type: 'add_error', payload: 'Email is already registered.' })
@@ -202,7 +165,7 @@ const signup = dispatch => async ({ email, password, confirmPassword }) => {
         console.log(`Email address ${email} is invalid.`);
         break;
       case 'auth/operation-not-allowed':
-        console.log(`Error during sign up.`);
+        console.log('Error during sign up.');
         break;
       case 'auth/weak-password':
         console.log('Password is not strong enough. Add additional characters including special characters and numbers.');
@@ -217,7 +180,7 @@ const signup = dispatch => async ({ email, password, confirmPassword }) => {
 const signin = dispatch => async ({ email, password }) => {
 	try {
 		const userData = await authFire.signinFire(trimmer(email), trimmer(password));
-		dispatch({ type: 'add_currentUser', payload: userData});
+		dispatch({ type: 'add_current_user_data', payload: userData});
 	} catch (err) {
 		dispatch({
 			type: 'add_error',
@@ -261,7 +224,7 @@ const signout = dispatch => async () => {
 		signOut
 		.then(() => {
 			console.log("signout successful");
-			dispatch({ type: 'clear_currentUser' });
+			dispatch({ type: 'clear_current_user_data' });
 			console.log('state change: user >> null user info is removed from auth context');
 			res(true);
 		})
@@ -272,7 +235,7 @@ const signout = dispatch => async () => {
 };
 
 const clearCurrentUser = dispatch => () => {
-	dispatch({ type: 'clear_currentUser'});
+	dispatch({ type: 'clear_current_user_data'});
 };
 
 // update profile
@@ -328,10 +291,11 @@ export const { Provider, Context } = createDataContext(
 		clearCurrentUser,
 		signup,
 		passwordReset,
-		clearErrorMessage, 
+		clearErrorMessage,
+		changeUserLogin, 
 		localSignin, 
 		accountRefresh, 
-		updateUser, 
+		addCurrentUserData,
 		// update profile
 		resetEdit,
 		addNewName,
@@ -347,7 +311,8 @@ export const { Provider, Context } = createDataContext(
 		tabAccount,
 	},
 	{ 
-		user: null, 
+		user: null,
+		userLogin: false,
 		// update profile
 		newProfileJson: null, 
 		newName : null,
