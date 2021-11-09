@@ -28,11 +28,11 @@ import { Context as AuthContext } from '../../context/AuthContext';
 import { kOrNo } from '../../hooks/kOrNo';
 import getRandomColor from '../../hooks/getRandomColor';
 import useConvertTime from '../../hooks/useConvertTime';
+import { getCalendarDates } from '../../hooks/getCalendarDates';
 // Firebase
 import businessGetFire from '../../firebase/businessGetFire';
 import businessPostFire from '../../firebase/businessPostFire';
 import contentGetFire from '../../firebase/contentGetFire';
-import { getCalendarDates } from '../../hooks/getCalendarDates';
 
 // Components
 import AlertBoxTop from '../../components/AlertBoxTop'; 
@@ -345,105 +345,105 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	// // - Calander Dates 
 	// // - Dates Left In The Month  
 	// // - Dates of The Following Month in The Last Week of The Month
-	// getCalendarDates(calendarDate, dateNow, endTime, setDatesOnCalendar);
-	useEffect(() => {
-		let mounted = true;
-		const monthInMs = useConvertTime.convertToMonthInMs(calendarDate);
-		const time = useConvertTime.convertToTime(monthInMs);
-		const monthIndex = time.monthIndex;
-		// todays date and when business end today
-		const calendarDateInMs = useConvertTime.convertToDateInMs(calendarDate);
-		const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
-		const dateNowEndTime = dateNowInMs + endTime * 60 * 60 * 1000;
+	getCalendarDates(calendarDate, dateNow, endTime, setDatesOnCalendar);
+	// useEffect(() => {
+	// 	let mounted = true;
+	// 	const monthInMs = useConvertTime.convertToMonthInMs(calendarDate);
+	// 	const time = useConvertTime.convertToTime(monthInMs);
+	// 	const monthIndex = time.monthIndex;
+	// 	// todays date and when business end today
+	// 	const calendarDateInMs = useConvertTime.convertToDateInMs(calendarDate);
+	// 	const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
+	// 	const dateNowEndTime = dateNowInMs + endTime * 60 * 60 * 1000;
 
-		// days
-		// 0 1 2 3 4 5 6
-		// add days of the month
-		let datesInPreMonth = [];
-		let dayInPreMonthIndex;
-		const firstDayIndex = time.dayIndex;
-		if (firstDayIndex !== 0) {
-			for (dayInPreMonthIndex = 1; dayInPreMonthIndex < firstDayIndex + 1; dayInPreMonthIndex++) {
-				const dayInPreMonthTimestamp = useConvertTime.convertToDateInMs(monthInMs - dayInPreMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
-				const dayInPreMonthTime = useConvertTime.convertToTime(dayInPreMonthTimestamp);
-				if (dayInPreMonthTimestamp > dateNowInMs) {
-					datesInPreMonth.unshift({ dateInMS: dayInPreMonthTimestamp, time: dayInPreMonthTime, thisMonth: false, past: false });
-				} else {
-					datesInPreMonth.unshift({ dateInMS: dayInPreMonthTimestamp, time: dayInPreMonthTime, thisMonth: false, past: true });
-				}
-			};
-		}
+	// 	// days
+	// 	// 0 1 2 3 4 5 6
+	// 	// add days of the month
+	// 	let datesInPreMonth = [];
+	// 	let dayInPreMonthIndex;
+	// 	const firstDayIndex = time.dayIndex;
+	// 	if (firstDayIndex !== 0) {
+	// 		for (dayInPreMonthIndex = 1; dayInPreMonthIndex < firstDayIndex + 1; dayInPreMonthIndex++) {
+	// 			const dayInPreMonthTimestamp = useConvertTime.convertToDateInMs(monthInMs - dayInPreMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
+	// 			const dayInPreMonthTime = useConvertTime.convertToTime(dayInPreMonthTimestamp);
+	// 			if (dayInPreMonthTimestamp > dateNowInMs) {
+	// 				datesInPreMonth.unshift({ dateInMS: dayInPreMonthTimestamp, time: dayInPreMonthTime, thisMonth: false, past: false });
+	// 			} else {
+	// 				datesInPreMonth.unshift({ dateInMS: dayInPreMonthTimestamp, time: dayInPreMonthTime, thisMonth: false, past: true });
+	// 			}
+	// 		};
+	// 	}
 		
-		let datesInMonth = []
-		let dateInMonthIndex;
-		let numOfDaysInMonth = useConvertTime.getDaysInMonth(monthIndex, time.year);
-		for (dateInMonthIndex = 0; dateInMonthIndex < numOfDaysInMonth; dateInMonthIndex++) {
-			const dateInMonthTimestamp = useConvertTime.convertToDateInMs(monthInMs + dateInMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000) // to avoid day light savings;
-			const dateInMonthTime = useConvertTime.convertToTime(dateInMonthTimestamp);
-			// date is in the month and same as today and the current time is bigger than the end time
-			if (dateInMonthTimestamp === dateNowInMs && dateNow > dateNowEndTime) {
-				datesInMonth.push({ 
-					dateInMS: dateInMonthTimestamp, 
-					time: dateInMonthTime, 
-					thisMonth: true, 
-					past: true, 
-					today: true 
-				});
-			} 
-			// date is in the month but less than today
-			else if (dateInMonthTimestamp < dateNowInMs) {
-				datesInMonth.push({ 
-					dateInMS: dateInMonthTimestamp, 
-					time: dateInMonthTime, 
-					thisMonth: true, 
-					past: true, 
-					today: false 
-				});
-			}
-			// date is in the month and same as today and the current time is less than the end time
-			else if (dateInMonthTimestamp === dateNowInMs && dateNow < dateNowEndTime) {
-				datesInMonth.push({ 
-					dateInMS: dateInMonthTimestamp, 
-					time: dateInMonthTime, 
-					thisMonth: true, 
-					past: false, 
-					today: true 
-				});
-			}
-			// date is in the month and bigger than today
-			else {
-				datesInMonth.push({ 
-					dateInMS: dateInMonthTimestamp, 
-					time: dateInMonthTime, 
-					thisMonth: true, 
-					past: false, 
-					today: false 
-				});
-			}
-		};
+	// 	let datesInMonth = []
+	// 	let dateInMonthIndex;
+	// 	let numOfDaysInMonth = useConvertTime.getDaysInMonth(monthIndex, time.year);
+	// 	for (dateInMonthIndex = 0; dateInMonthIndex < numOfDaysInMonth; dateInMonthIndex++) {
+	// 		const dateInMonthTimestamp = useConvertTime.convertToDateInMs(monthInMs + dateInMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000) // to avoid day light savings;
+	// 		const dateInMonthTime = useConvertTime.convertToTime(dateInMonthTimestamp);
+	// 		// date is in the month and same as today and the current time is bigger than the end time
+	// 		if (dateInMonthTimestamp === dateNowInMs && dateNow > dateNowEndTime) {
+	// 			datesInMonth.push({ 
+	// 				dateInMS: dateInMonthTimestamp, 
+	// 				time: dateInMonthTime, 
+	// 				thisMonth: true, 
+	// 				past: true, 
+	// 				today: true 
+	// 			});
+	// 		} 
+	// 		// date is in the month but less than today
+	// 		else if (dateInMonthTimestamp < dateNowInMs) {
+	// 			datesInMonth.push({ 
+	// 				dateInMS: dateInMonthTimestamp, 
+	// 				time: dateInMonthTime, 
+	// 				thisMonth: true, 
+	// 				past: true, 
+	// 				today: false 
+	// 			});
+	// 		}
+	// 		// date is in the month and same as today and the current time is less than the end time
+	// 		else if (dateInMonthTimestamp === dateNowInMs && dateNow < dateNowEndTime) {
+	// 			datesInMonth.push({ 
+	// 				dateInMS: dateInMonthTimestamp, 
+	// 				time: dateInMonthTime, 
+	// 				thisMonth: true, 
+	// 				past: false, 
+	// 				today: true 
+	// 			});
+	// 		}
+	// 		// date is in the month and bigger than today
+	// 		else {
+	// 			datesInMonth.push({ 
+	// 				dateInMS: dateInMonthTimestamp, 
+	// 				time: dateInMonthTime, 
+	// 				thisMonth: true, 
+	// 				past: false, 
+	// 				today: false 
+	// 			});
+	// 		}
+	// 	};
 
-		let datesInNextMonth = [];
-		let lastDateTimestamp = useConvertTime.getDateTimestamp(time.year, monthIndex, numOfDaysInMonth);
-		let lastDayIndex = useConvertTime.getDayIndex(time.year, monthIndex, numOfDaysInMonth);
+	// 	let datesInNextMonth = [];
+	// 	let lastDateTimestamp = useConvertTime.getDateTimestamp(time.year, monthIndex, numOfDaysInMonth);
+	// 	let lastDayIndex = useConvertTime.getDayIndex(time.year, monthIndex, numOfDaysInMonth);
 		
-		// if lastDayIndex is not 6 which is saturday
-		if (lastDayIndex !== 6) {
-			let daysLeftInWeek = 6 - lastDayIndex;
-			let dayInNextMonthIndex
-			for (dayInNextMonthIndex = 1; dayInNextMonthIndex < daysLeftInWeek + 1; dayInNextMonthIndex++) {
-				const dateInNextMonthTimestamp = useConvertTime.convertToDateInMs(lastDateTimestamp + dayInNextMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
-				const dateInNextMonthTime = useConvertTime.convertToTime(dateInNextMonthTimestamp);
-				datesInNextMonth.push({ dateInMS: dateInNextMonthTimestamp, time: dateInNextMonthTime, thisMonth: false, past: false });
-			};
-		}
+	// 	// if lastDayIndex is not 6 which is saturday
+	// 	if (lastDayIndex !== 6) {
+	// 		let daysLeftInWeek = 6 - lastDayIndex;
+	// 		let dayInNextMonthIndex
+	// 		for (dayInNextMonthIndex = 1; dayInNextMonthIndex < daysLeftInWeek + 1; dayInNextMonthIndex++) {
+	// 			const dateInNextMonthTimestamp = useConvertTime.convertToDateInMs(lastDateTimestamp + dayInNextMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
+	// 			const dateInNextMonthTime = useConvertTime.convertToTime(dateInNextMonthTimestamp);
+	// 			datesInNextMonth.push({ dateInMS: dateInNextMonthTimestamp, time: dateInNextMonthTime, thisMonth: false, past: false });
+	// 		};
+	// 	}
 
-		mounted && setDatesOnCalendar(datesInPreMonth.concat(datesInMonth, datesInNextMonth));
+	// 	mounted && setDatesOnCalendar(datesInPreMonth.concat(datesInMonth, datesInNextMonth));
 
-		return () => {
-			mounted = false;
-			setDatesOnCalendar([]);
-		}
-	}, [calendarDate]);
+	// 	return () => {
+	// 		mounted = false;
+	// 		setDatesOnCalendar([]);
+	// 	}
+	// }, [calendarDate]);
 
 	// make schedule grids
 	useEffect(() => {
@@ -881,22 +881,20 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						<View style={styles.topControllerContainer}>
 							<View style={styles.topControllerLeftCompartment}>
 								{
-									showCalendar && calendarMove > 0
+									// new calendar date => useConvertTime.moveMonthInMs(calendarDate, -1)
+									// dateNow's month in miliseconds => useConvertTime.convertToMonthInMs(dateNow)
+									showCalendar && 
+									useConvertTime.convertToMonthInMs(dateNow) <= useConvertTime.moveMonthInMs(calendarDate, -1)
 									?
 									<TouchableOpacity
 										onPress={() => {
-											const dateNowMonthInMs = useConvertTime.convertToMonthInMs(dateNow);
-											const newCalendarDate = useConvertTime.moveMonthInMs(calendarDate, -1);
-											console.log("dateNowMonthInMs: ", dateNowMonthInMs, "newCalendarDate: ", newCalendarDate);
-											if (dateNowMonthInMs <= newCalendarDate) {
-												setCalendarDate(newCalendarDate);
-												setCalendarMove(calendarMove - 1);
-											}
+											setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, -1));
+											setCalendarMove(calendarMove - 1);
 										}}
 									>
 										<AntDesign name="leftcircleo" size={RFValue(27)} color="black" />
 									</TouchableOpacity>
-									: dateMoveFromToday > 0
+									: !showCalendar && dateMoveFromToday > 0
 									?
 									<TouchableOpacity
 										onPress={() => {
@@ -970,6 +968,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						setShowCalendar={setShowCalendar}
 	          setDateMoveFromToday={setDateMoveFromToday}
 	          setCalendarMove={setCalendarMove}
+	          canSelectPast={false}
 					/>
 					: null
 				}

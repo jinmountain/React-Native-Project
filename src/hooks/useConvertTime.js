@@ -225,8 +225,8 @@ const getMonthMovesBtwDateNowAndThis = (dateNow, ThisDate) => {
 	var dateNowMonthIndex = getTimeDateNow.getMonth() + 1; // normalize month index (jan is 0 so + 1)
 
 	var getTimeThisDate = new Date(ThisDate);
-	var thisDateYear = getTimeCalendarDate.getFullYear();
-	var thisDateMonthIndex = getTimeCalendarDate.getMonth() + 1; // normalize month index (jan is 0 so + 1) 
+	var thisDateYear = getTimeThisDate.getFullYear();
+	var thisDateMonthIndex = getTimeThisDate.getMonth() + 1; // normalize month index (jan is 0 so + 1) 
 
 	var yearsBtw = thisDateYear - dateNowYear;
 	var yearsBtwInMonths = yearsBtw * 12;
@@ -265,5 +265,6 @@ export default {
 	moveMonthInMs, 
 	convertToYearInMs, 
 	convertToMonthly,
+	getMonthMovesBtwDateNowAndThis,
 	getDaysInMonth
 }

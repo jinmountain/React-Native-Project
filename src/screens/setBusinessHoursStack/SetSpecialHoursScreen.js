@@ -41,7 +41,7 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SpecialHoursContainer = ({ navigation, dateInMs, dayOpen, setDayOpen, hours, dayType, setHours }) => {
+const SpecialHoursContainer = ({ navigation, dateInMs, status, index, hours, setHours }) => {
   return (
     <View style={styles.settingContainer}>
       <View style={styles.settingTopContainer}>
@@ -53,24 +53,17 @@ const SpecialHoursContainer = ({ navigation, dateInMs, dayOpen, setDayOpen, hour
             <Text style={styles.specialDateText}>{useConvertTime.getDayMonthDateYear(dateInMs)}</Text>
           </View>
         </View>
-        <View style={styles.switchContainer}>
-          <View style={styles.onOffStatusConatiner}>
-            { dayOpen === false
+        <View style={styles.statusContainer}>
+          <View style={styles.statusTextContainer}>
+            { status === false
               ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
               : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
             }
           </View>
-          <Switch
-            trackColor={{ false: color.grey8, true: color.red2 }}
-            thumbColor={dayOpen ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={setDayOpen}
-            value={dayOpen}
-          />
         </View>
       </View>
       {
-        dayOpen &&
+        status &&
         <View style={styles.settingBottomContainer}>
           {
             // newHours: {
@@ -171,7 +164,7 @@ const UBSetSpecialHoursScreen = ({ route, navigation }) => {
   
   const [ showTba, setShowTba ] = useState(false);
 
-  const [ specialHours, setSpecialHours ] = useState(user.special_hours ? user.special_hours : null); // business user's business hours
+  const [ currentSpecialHours, setCurrentSpecialHours ] = useState(user.special_hours ? user.special_hours : null); // business user's business hours
   // spcialHours structure
   // [
   //   speical day
@@ -196,50 +189,20 @@ const UBSetSpecialHoursScreen = ({ route, navigation }) => {
   //   ]
   // ]
 
-  const [ specialHours, setSpeicalHours ] = useState([]);
+  // seperated into three for date_in_ms, status, and hours
+  const [ speicalDates, setSpecialDate ] = useState([]);
+  const [ speicalDatesStatus, setSpeicalDatesStatus ] = useState([]);
+  const [ specialHours, setSpecialHours ] = useState([]);
+
   const [ readyToSave, setReadyToSave ] = useState(false);
 
   const { 
-    newHours,
-    dayType
+
   } = route.params;
 
   useEffect(() => {
-    if (newHours && dayType) {
-      if (dayType === 'sun') {
-        setSunHours([ ...sunHours, newHours ]);
-      };
-      if (dayType === 'mon') {
-        setMonHours([ ...monHours, newHours ]);
-      };
-      if (dayType === 'tue') {
-        setTueHours([ ...tueHours, newHours ]);
-      };
-      if (dayType === 'wed') {
-        setWedHours([ ...wedHours, newHours ]);
-      };
-      if (dayType === 'thu') {
-        setThuHours([ ...thuHours, newHours ]);
-      };
-      if (dayType === 'fri') {
-        setFriHours([ ...friHours, newHours ]);
-      };
-      if (dayType === 'sat') {
-        setSatHours([ ...satHours, newHours ]);
-      };
-      navigation.setParams({ 
-        newHours: null, 
-        dayType: null, 
-      });
-    }
-  }, [newHours]);
-
-  // detect hours change and set readyToSave to true
-  // useEffect(() => {
-  //   if (businessHours === [sunHours, monHours]) {
-  //     setReadyToSave(true);
-  //   }
-  // }, [sunHours, monHours]);
+    
+  }, []);
 
   return (
     <MainTemplate>
@@ -268,7 +231,14 @@ const UBSetSpecialHoursScreen = ({ route, navigation }) => {
             keyExtractor={(hour, index ) => index.toString()}
             renderItem={({ item, index }) => {
               return (
-
+                <SpecialHoursContainer 
+                  navigation={navigation}
+                  dateInMs={item.date_in_ms}
+                  status={item.status}
+                  index={index}
+                  hours={item.hours}
+                  setHours={setSpeicalHours}
+                />
               )
             }}
           />
@@ -276,7 +246,9 @@ const UBSetSpecialHoursScreen = ({ route, navigation }) => {
         <View style={styles.addAnotherDayContainer}>
           <TouchableHighlight
             style={styles.addAnotherDayButton}
-            onPress={() => {}}
+            onPress={() => {
+              navigation.navigate("SetAnotherDay");
+            }}
             underlayColor={color.grey4}
           >
             <View style={styles.addAnotherDayTextContainer}>
@@ -297,33 +269,6 @@ const UBSetSpecialHoursScreen = ({ route, navigation }) => {
           buttonTwoText={"No"} 
           buttonOneAction={() => {
             console.log("save");
-            const newBusinessHours = 
-            { 
-              sun_open: sunOpen, 
-              mon_open: monOpen, 
-              tue_open: tueOpen, 
-              wed_open: wedOpen, 
-              thu_open: thuOpen, 
-              fri_open: friOpen, 
-              sat_open: satOpen,
-              sun_hours: sunHours,
-              mon_hours: monHours,
-              tue_hours: tueHours,
-              wed_hours: wedHours,
-              thu_hours: thuHours,
-              fri_hours: friHours,
-              sat_hours: satHours
-            };
-            const updateBusUser = businessUpdateFire.busUserUpdate({
-              business_hours: newBusinessHours
-            });
-            updateBusUser
-            .then(() => {
-              setShowTba(false);
-            })
-            .catch((error) => {
-              console.log("error: updateBusUser: ", error);
-            })
           }} 
           buttonTwoAction={() => {
             setShowTba(false);
@@ -369,7 +314,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
 
-  switchContainer: {
+  statusContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',

@@ -25,7 +25,16 @@ const windowHeight = Dimensions.get("window").height;
 
 const dateBoxWidth = windowWidth/7;
 
-const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, setDateMoveFromToday, setCalendarMove }) => {
+const MonthCalendar = ({ 
+	selectedDate,
+	dateNow, 
+	datesOnCalendar, 
+	setDate, 
+	setShowCalendar, 
+	setDateMoveFromToday, 
+	setCalendarMove,
+	canSelectPast
+}) => {
 	return (
 		<View >
 			<View style={styles.weekContainer}>
@@ -79,34 +88,83 @@ const MonthCalendar = ({ dateNow, datesOnCalendar, setDate, setShowCalendar, set
 			  				? [styles.dateBox, { backgroundColor: color.blue1 }]
 			  				: item.today && item.past
 			  				? [styles.dateBox, { backgroundColor: color.blue1, opacity: 0.3 }]
+			  				: item.time.timestamp === selectedDate
+			  				? [ styles.dateBox, { backgroundColor: color.red2 }]
 			  				: styles.dateBox
 			  			}
 			  		>
-							<TouchableOpacity
-								onPress={() => {
-									const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
-									const dateMove = (dateNowInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
-									console.log("dateNowInMs: ", dateNowInMs, "dateMove: ", dateMove);
-									setDate(item.time.timestamp);
-									setShowCalendar(false);
-									setDateMoveFromToday(dateMove);
-									setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
-								}}
-							>
-								<View style={styles.dateBoxTextContainer}>
-									<Text 
-										style={
-											item.today
-											?
-											[styles.dateBoxText, { color: color.white2 }]
-											:
-											styles.dateBoxText
-										}
-									>
-										{item.time.date}
-									</Text>
-								</View>
-							</TouchableOpacity>
+			  			{
+			  				canSelectPast && item.past
+			  				?
+			  				<TouchableOpacity
+									onPress={() => {
+										const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
+										const dateMove = (dateNowInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
+										console.log("dateNowInMs: ", dateNowInMs, "dateMove: ", dateMove);
+										setDate(item.time.timestamp);
+										setShowCalendar && setShowCalendar(false);
+										setDateMoveFromToday(dateMove);
+										setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
+									}}
+								>
+			  					<View style={styles.dateBoxTextContainer}>
+										<Text 
+											style={
+												item.today
+												?
+												[styles.dateBoxText, { color: color.white2 }]
+												:
+												styles.dateBoxText
+											}
+										>
+											{item.time.date}
+										</Text>
+									</View>
+			  				</TouchableOpacity>
+			  				: !canSelectPast && item.past
+			  				?
+			  				<View>
+			  					<View style={styles.dateBoxTextContainer}>
+										<Text 
+											style={
+												item.today
+												?
+												[styles.dateBoxText, { color: color.white2 }]
+												:
+												styles.dateBoxText
+											}
+										>
+											{item.time.date}
+										</Text>
+									</View>
+			  				</View>
+			  				:
+			  				<TouchableOpacity
+									onPress={() => {
+										const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
+										const dateMove = (dateNowInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
+										console.log("dateNowInMs: ", dateNowInMs, "dateMove: ", dateMove);
+										setDate(item.time.timestamp);
+										setShowCalendar && setShowCalendar(false);
+										setDateMoveFromToday(dateMove);
+										setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
+									}}
+								>
+									<View style={styles.dateBoxTextContainer}>
+										<Text 
+											style={
+												item.today
+												?
+												[styles.dateBoxText, { color: color.white2 }]
+												:
+												styles.dateBoxText
+											}
+										>
+											{item.time.date}
+										</Text>
+									</View>
+								</TouchableOpacity>
+			  			}
 						</View>
 			  	))
 				}
