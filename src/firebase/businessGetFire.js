@@ -442,6 +442,42 @@ const getPreviousRsvsOfBus = (busId, currentTimestamp, daysFromToday, completed)
 			console.log("businessGetFire: getPreviousRsvsOfBus: ", error);
 		})
 	})
+};
+
+const getTechBusinessHours = (busId, techId) => {
+	return new Promise ((res, rej) => {
+		const getTechData = usersRef.doc(busId).collection("technicians").doc(techId).get();
+		getTechData
+		.then((doc) => {
+			const techData = doc.data();
+			if (techData.business_hours) {
+				res(techData.business_hours)
+			} else {
+				res(null)
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		})
+	});
+};
+
+const getTechSpecialHours = (busId, techId) => {
+	return new Promise ((res, rej) => {
+		const getTechData = usersRef.doc(busId).collection("technicians").doc(techId).get();
+		getTechData
+		.then((doc) => {
+			const techData = doc.data();
+			if (techData.special_hours) {
+				res(techData.special_hours)
+			} else {
+				res(null)
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		})
+	});
 }
 
 export default { 
@@ -450,5 +486,8 @@ export default {
 	getTechsRating, 
 	getRsvTimestampsOfTech, 
 	getUpcomingRsvsOfBus, 
-	getPreviousRsvsOfBus 
+	getPreviousRsvsOfBus,
+
+	getTechBusinessHours,
+	getTechSpecialHours
 };

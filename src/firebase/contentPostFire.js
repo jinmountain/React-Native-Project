@@ -160,7 +160,7 @@ const addPostFire = (newPost) => {
 
         // tech post rating
         batch.set(
-          usersTaggedRef.collection("technicians").doc(newPost.ratedTechId).collection("ratingsByPost").doc(newPost.ratedPostId),
+          usersTaggedRef.collection("technicians").doc(newPost.ratedTechId).collection("post_ratings").doc(newPost.ratedPostId),
           ratedPostChange,
           { merge: true }
         )

@@ -30,10 +30,10 @@ const BusinessManagerTopTab = () => {
 			    tabBarStyle: { backgroundColor: color.white2 },
 			    tabBarIndicatorStyle: {
 			    	backgroundColor: color.black1
-			    },
+			    }
 			  })}
 	    >
-	    	<Tab.Screen 
+	    	<Tab.Screen
 	    		name="BusinessManagerReservationStack"
 	    		component={BusinessManagerReservationStack}
 	    		options={{
@@ -41,7 +41,7 @@ const BusinessManagerTopTab = () => {
 	          headerShown: true,
 	        }}
 	    	/>
-	      <Tab.Screen 
+	      <Tab.Screen
 	      	name="BusinessManagerTechnicianStack" 
 	      	component={BusinessManagerTechnicianStack} 
 	      	options={{

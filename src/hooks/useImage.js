@@ -58,7 +58,7 @@ export default () => {
 				let lastIndexOfDash = result.uri.lastIndexOf('/');
 				let lastIndexOfDot = result.uri.lastIndexOf(".") - lastIndexOfDash;
 				// id is the combi of the file name and the current time
-				let id = result.uri.substr(lastIndexOfDash+1, lastIndexOfDot-1).concat('-' + Date.now());
+				let id = result.uri.substr(lastIndexOfDash+1, lastIndexOfDot-1).concat('_' + Date.now());
 				console.log('file id: ', id);
 				console.log('file type: ', result.type);
 				if (result.type === 'video' && result.duration < 5000) {
@@ -78,8 +78,25 @@ export default () => {
 					if (screen === 'chat') {
 						addFileChat(id, result.type, result.uri);
 					}
-				} else {
-					console.log("video is longer than 5 sec");
+				} 
+
+				if (result.type === 'image') {
+					if (screen === 'profile') {
+						updateProfilePhotoFire(result.uri, currentUser);
+					}
+
+					if (screen === 'post') {
+						addFile(id, result.type, result.uri);
+					}
+
+					if (screen === 'nav') {
+						addFile(id, result.type, result.uri);
+						navigation.navigate('ContentCreate');
+					}
+
+					if (screen === 'chat') {
+						addFileChat(id, result.type, result.uri);
+					}
 				}
 			}
 		} catch (error) {

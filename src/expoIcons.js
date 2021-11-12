@@ -118,6 +118,14 @@ const clockIcon = (size, color) => {
 	return <MaterialCommunityIcons name="clock-outline" size={size} color={color} />
 };
 
+const fontAwesomeCalendarO = (size, color) => {
+	return <FontAwesome name="calendar-o" size={size} color={color} />
+};
+
+const fontAwesomeCalendarPlusO = (size, color) => {
+	return <FontAwesome name="calendar-plus-o" size={size} color={color} />
+};
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -145,5 +153,7 @@ export default {
 	featherPlus,
 	phoneIcon,
 	setting,
-	clockIcon
+	clockIcon,
+	fontAwesomeCalendarO,
+	fontAwesomeCalendarPlusO
 };

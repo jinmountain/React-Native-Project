@@ -63,7 +63,12 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
 	    }).start();
 	    res(true);
   	})
-  }
+  };
+
+  const resetAnimValues = () => {
+  	topToBotAnim.setValue(RFValue(70));
+  	fadeAnim.setValue(1);
+  };
 
   useEffect(() => {
   	drop() // initiate drop
@@ -88,6 +93,7 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
 				style={styles.warningContainer}
 				onPress={() => {
 					setAlert(false);
+					resetAnimValues();
 				}}
 				// underlayColor={color.grey4}
 			>
@@ -106,7 +112,6 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
 
 const styles = StyleSheet.create({
   screenContainer: {
-  	elevation: 10, // for android
   	position: 'absolute',
   	width: '100%',
   	backgroundColor: 'transparent',
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
   	zIndex: 0,
   	alignItems: 'center',
   	justifyContent: 'center',
-    backgroundColor: color.black2,
+    backgroundColor: color.red2,
     shadowColor: "#000",
     shadowRadius: 3,
     shadowOpacity: 0.3,
@@ -132,9 +137,7 @@ const styles = StyleSheet.create({
   },
   warningInnerContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: RFValue(20),
+    paddingLeft: RFValue(10)
   },
   signContainer: {
   	padding: RFValue(10),
@@ -142,10 +145,9 @@ const styles = StyleSheet.create({
   	justifyContent: 'center',
   },
   text: {
-  	flex: 5,
   	fontSize: RFValue(17),
   	fontWeight: 'bold',
-  	color: color.white2
+  	color: color.white2,
   }
 });
 

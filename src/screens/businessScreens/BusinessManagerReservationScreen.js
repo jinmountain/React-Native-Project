@@ -499,9 +499,11 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 								  					const completedRsvsLen = completedRsvs.length;
 								  					let i;
 								  					
+								  					// empty
 								  					if (completedRsvs.length === 0) {
 								  						setCompletedRsvs([ item ]);
 								  					} 
+								  					// only one
 								  					else if (completedRsvs.length === 1) {
 								  						if (completedRsvs[0].rsv.startAt < item.rsv.startAt) {
 								  							setCompletedRsvs([ item, ...completedRsvs]);
@@ -509,6 +511,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 								  							setCompletedRsvs([ ...completedRsvs, item]);
 								  						}
 								  					}
+								  					// more than one
 								  					else {
 								  						let smallerRsvIndex = completedRsvsLen - 1;
 								  						for (i = 0; i < completedRsvsLen; i++) {

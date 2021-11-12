@@ -49,6 +49,11 @@ import { navigationRef, isReadyRef } from './src/navigationRef';
 import { wait } from './src/hooks/wait';
 import useAppState from './src/hooks/useAppState';
 
+// To assign console.log to nothing   
+if (!__DEV__) {
+  console.log = () => {};
+}
+
 const Stack = createStackNavigator();
 
 const LoginFlow = () => {

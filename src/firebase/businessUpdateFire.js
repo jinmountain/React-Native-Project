@@ -265,4 +265,49 @@ const technicianDeregister = () => {
 	});
 };
 
-export default { busUserUpdate, businessUpdateLocation, businessRegister, businessDeregister, technicianRegister, technicianDeregister }
+const updateTechBusinessHours = (busId, techId, newBusinessHours) => {
+	return new Promise ((res, rej) => {
+		const techRef = usersRef.doc(busId).collection("technicians").doc(techId)
+		techRef
+		.set({
+			business_hours: newBusinessHours
+		}, {
+			merge: true
+		})
+		.then(() => {
+			res();
+		})
+		.catch((error) => {
+			rej(error);
+		})
+	});
+};
+
+const updateTechSpecialHours = (busId, techId, newSpecialHours) => {
+	return new Promise ((res, rej) => {
+		const techRef = usersRef.doc(busId).collection("technicians").doc(techId)
+		techRef
+		.set({
+			special_hours: newSpecialHours
+		}, {
+			merge: true
+		})
+		.then(() => {
+			res();
+		})
+		.catch((error) => {
+			rej(error);
+		})
+	});
+};
+
+export default { 
+	busUserUpdate, 
+	businessUpdateLocation, 
+	businessRegister, 
+	businessDeregister, 
+	technicianRegister, 
+	technicianDeregister,
+	updateTechBusinessHours,
+	updateTechSpecialHours
+}

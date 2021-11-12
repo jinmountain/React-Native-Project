@@ -21,11 +21,13 @@ import MainTemplate from '../../components/MainTemplate';
 import HeaderBottomLine from '../../components/HeaderBottomLine';
 import { HeaderForm } from '../../components/HeaderForm';
 import TwoButtonAlert from '../../components/TwoButtonAlert';
+import AlertBoxTop from '../../components/AlertBoxTop';
 
 // Design
 
 // firebase
 import businessUpdateFire from '../../firebase/businessUpdateFire';
+import businessGetFire from '../../firebase/businessGetFire';
 
 // Context
 import { Context as AuthContext } from '../../context/AuthContext';
@@ -39,7 +41,7 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, dayType, setHours }) => {
+const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, businessDay, setHours, userType }) => {
   return (
     <View style={styles.settingContainer}>
       <View style={styles.settingTopContainer}>
@@ -83,64 +85,64 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
             // }
             hours.map(( item, index ) => {
               return (
-
-                  <View 
-                    key={index}
-                    style={styles.addNewHoursContainer}
-                  >
-                    <View style={styles.startContainer}>
-                      <View style={styles.timeLabelContainer}>
-                        <Text style={styles.timelabelText}>
-                          Opens
-                        </Text>
-                      </View>
-                      <View style={styles.timeContainer}>
-                        <Text style={styles.timeText}>
-                          {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
-                        </Text>
-                      </View>
+                <View 
+                  key={index}
+                  style={styles.addNewHoursContainer}
+                >
+                  <View style={styles.startContainer}>
+                    <View style={styles.timeLabelContainer}>
+                      <Text style={styles.timelabelText}>
+                        Opens
+                      </Text>
                     </View>
-                    <View style={styles.crossContainer}>
-                      <View 
-                        style={[styles.cross, { transform: [{ rotate: "-25deg" }], marginTop: RFValue(1.5) }]} 
-                      />
-                      <View
-                        style={[styles.cross, { transform: [{ rotate: "25deg" }], marginTop: RFValue(26.5) }]}
-                      />
+                    <View style={styles.timeContainer}>
+                      <Text style={styles.timeText}>
+                        {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
+                      </Text>
                     </View>
-                    <View style={styles.endContainer}>
-                      <View style={styles.timeLabelContainer}>
-                        <Text style={styles.timelabelText}>
-                          Closes
-                        </Text>
-                      </View>
-                      <View style={styles.timeContainer}>
-                        <Text style={styles.timeText}>
-                          {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
-                        </Text>
-                      </View>
-                    </View>
-                    <TouchableHighlight
-                      style={styles.deleteHoursButton}
-                      onPress={() => {
-                        console.log('delete');
-                        setHours([ ...hours.filter((hour) => hour !== item ) ]) 
-                      }}
-                      underlayColor={color.grey4}
-                    >
-                      <View style={styles.addButtonTextContainer}>
-                        <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
-                      </View>
-                    </TouchableHighlight>
                   </View>
+                  <View style={styles.crossContainer}>
+                    <View 
+                      style={[styles.cross, { transform: [{ rotate: "-25deg" }], marginTop: RFValue(1.5) }]} 
+                    />
+                    <View
+                      style={[styles.cross, { transform: [{ rotate: "25deg" }], marginTop: RFValue(26.5) }]}
+                    />
+                  </View>
+                  <View style={styles.endContainer}>
+                    <View style={styles.timeLabelContainer}>
+                      <Text style={styles.timelabelText}>
+                        Closes
+                      </Text>
+                    </View>
+                    <View style={styles.timeContainer}>
+                      <Text style={styles.timeText}>
+                        {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableHighlight
+                    style={styles.deleteHoursButton}
+                    onPress={() => {
+                      setHours([ ...hours.filter((hour) => hour !== item ) ]) 
+                    }}
+                    underlayColor={color.grey4}
+                  >
+                    <View style={styles.addButtonTextContainer}>
+                      <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
+                    </View>
+                  </TouchableHighlight>
+                </View>
               )
             })
           }
           <TouchableHighlight
             style={styles.addOpenHoursButtonContainer}
             onPress={() => {
-              navigation.navigate("UBSetHours", {
-                dayType: dayType
+              navigation.navigate("SetHours", {
+                userType: userType,
+                hoursType: 'business',
+                businessDay: businessDay
               })
             }}
             underlayColor={color.grey4}
@@ -160,7 +162,15 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
   )
 }
 
-const UBSetBusinessHoursScreen = ({ route, navigation }) => {
+const SetBusinessHoursScreen = ({ route, navigation }) => {
+  const {
+    userType,
+    newHours,
+    businessDay,
+    // for tech
+    techId
+  } = route.params;
+
   const { 
     state: {
       user
@@ -168,8 +178,14 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
   } = useContext(AuthContext);
   
   const [ showTba, setShowTba ] = useState(false);
+  const [ alertBoxText, setAlertBoxText ] = useState('');
+  const [ alertBoxStatus, setAlertBoxStatus ] = useState(false);
 
-  const [ businessHours, setBusinessHours ] = useState(user.business_hours ? user.business_hours : null); // business user's business hours
+  const [ businessHours, setBusinessHours ] = useState(
+    userType === 'bus' && user.business_hours 
+    ? user.business_hours 
+    : []
+  ); // business user's business hours
   // businessHours structure
   // [
   //   {
@@ -197,55 +213,149 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
   //     }
   //   ]
 
-  const [ sunOpen, setSunOpen ] = useState(user.business_hours && user.business_hours.sun_open ? user.business_hours.sun_open : false );
-  const [ sunHours, setSunHours ] = useState(user.business_hours && user.business_hours.sun_hours ? user.business_hours.sun_hours : []);
-  const [ monOpen, setMonOpen ] = useState(user.business_hours && user.business_hours.mon_open ? user.business_hours.mon_open : false);
-  const [ monHours, setMonHours ] = useState(user.business_hours && user.business_hours.mon_hours ? user.business_hours.mon_hours : []);
-  const [ tueOpen, setTueOpen ] = useState(user.business_hours && user.business_hours.tue_open ? user.business_hours.tue_open : false);
-  const [ tueHours, setTueHours ] = useState(user.business_hours && user.business_hours.tue_hours ? user.business_hours.tue_hours : []);
-  const [ wedOpen, setWedOpen ] = useState(user.business_hours && user.business_hours.wed_open ? user.business_hours.wed_open : false);
-  const [ wedHours, setWedHours ] = useState(user.business_hours && user.business_hours.wed_hours ? user.business_hours.wed_hours : []);
-  const [ thuOpen, setThuOpen ] = useState(user.business_hours && user.business_hours.thu_open ? user.business_hours.thu_open : false);
-  const [ thuHours, setThuHours ] = useState(user.business_hours && user.business_hours.thu_hours ? user.business_hours.thu_hours : []);
-  const [ friOpen, setFriOpen ] = useState(user.business_hours && user.business_hours.fri_open ? user.business_hours.fri_open : false);
-  const [ friHours, setFriHours ] = useState(user.business_hours && user.business_hours.fri_hours ? user.business_hours.fri_hours : []);
-  const [ satOpen, setSatOpen ] = useState(user.business_hours && user.business_hours.sat_open ? user.business_hours.sat_open : false);
-  const [ satHours, setSatHours ] = useState(user.business_hours && user.business_hours.sat_hours ? user.business_hours.sat_hours : []);
+  const [ sunOpen, setSunOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.sun_open 
+    ? user.business_hours.sun_open
+    : false 
+  );
+  const [ sunHours, setSunHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.sun_hours
+    ? user.business_hours.sun_hours
+    : []
+  );
+  const [ monOpen, setMonOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.mon_open 
+    ? user.business_hours.mon_open
+    : false
+  );
+  const [ monHours, setMonHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.mon_hours
+    ? user.business_hours.mon_hours
+    : []
+  );
+  const [ tueOpen, setTueOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.tue_open 
+    ? user.business_hours.tue_open
+    : false
+  );
+  const [ tueHours, setTueHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.tue_hours
+    ? user.business_hours.tue_hours
+    : []
+  );
+  const [ wedOpen, setWedOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.wed_open 
+    ? user.business_hours.wed_open
+    : false
+  );
+  const [ wedHours, setWedHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.wed_hours
+    ? user.business_hours.wed_hours
+    : []
+  );
+  const [ thuOpen, setThuOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.thu_open 
+    ? user.business_hours.thu_open
+    : false
+  );
+  const [ thuHours, setThuHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.thu_hours
+    ? user.business_hours.thu_hours
+    : []
+  );
+  const [ friOpen, setFriOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.fri_open 
+    ? user.business_hours.fri_open
+    : false
+  );
+  const [ friHours, setFriHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.fri_hours
+    ? user.business_hours.fri_hours
+    : []
+  );
+  const [ satOpen, setSatOpen ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.sat_open 
+    ? user.business_hours.sat_open
+    : false
+  );
+  const [ satHours, setSatHours ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.sat_hours
+    ? user.business_hours.sat_hours
+    : []
+  );
 
   const [ readyToSave, setReadyToSave ] = useState(false);
 
-  const { 
-    newHours,
-    dayType
-  } = route.params;
+  // get technician business hours and set to the states
+  useEffect(() => {
+    let isMounted = true;
+    if (userType === 'tech' && techId) {
+      // get tech business hours
+      const getTechBusinessHours = businessGetFire.getTechBusinessHours(user.id, techId);
+      getTechBusinessHours
+      .then((currentBusinessHours) => {
+        // set to the states
+        if (currentBusinessHours && currentBusinessHours.sun_open) {
+          isMounted && setBusinessHours(currentBusinessHours);
+          isMounted && setSunOpen(currentBusinessHours.sun_open);
+          isMounted && setSunHours(currentBusinessHours.sun_hours);
+          isMounted && setMonOpen(currentBusinessHours.mon_open);
+          isMounted && setMonHours(currentBusinessHours.mon_hours);
+          isMounted && setTueOpen(currentBusinessHours.tue_open);
+          isMounted && setTueHours(currentBusinessHours.tue_hours);
+          isMounted && setWedOpen(currentBusinessHours.wed_open);
+          isMounted && setWedHours(currentBusinessHours.wed_hours);
+          isMounted && setThuOpen(currentBusinessHours.thu_open);
+          isMounted && setThuHours(currentBusinessHours.thu_hours);
+          isMounted && setFriOpen(currentBusinessHours.fri_open);
+          isMounted && setFriHours(currentBusinessHours.fri_hours);
+          isMounted && setSatOpen(currentBusinessHours.sat_open);
+          isMounted && setSatHours(currentBusinessHours.sat_hours);
+        }
+      })
+      .catch((error) => {
+        console.log("error: ", error);
+      });
+    } 
+    return () => {
+      isMounted = false;
+      // navigation.setParams({ 
+      //   userType: null, 
+      // });
+    }
+  }, []);
 
   useEffect(() => {
-    if (newHours && dayType) {
-      if (dayType === 'sun') {
-        setSunHours([ ...sunHours, newHours ]);
+    let isMounted = true;
+    if (newHours && businessDay) {
+      if (businessDay === 'sun') {
+        isMounted && setSunHours([ ...sunHours, newHours ]);
       };
-      if (dayType === 'mon') {
-        setMonHours([ ...monHours, newHours ]);
+      if (businessDay === 'mon') {
+        isMounted && setMonHours([ ...monHours, newHours ]);
       };
-      if (dayType === 'tue') {
-        setTueHours([ ...tueHours, newHours ]);
+      if (businessDay === 'tue') {
+        isMounted && setTueHours([ ...tueHours, newHours ]);
       };
-      if (dayType === 'wed') {
-        setWedHours([ ...wedHours, newHours ]);
+      if (businessDay === 'wed') {
+        isMounted && setWedHours([ ...wedHours, newHours ]);
       };
-      if (dayType === 'thu') {
-        setThuHours([ ...thuHours, newHours ]);
+      if (businessDay === 'thu') {
+        isMounted && setThuHours([ ...thuHours, newHours ]);
       };
-      if (dayType === 'fri') {
-        setFriHours([ ...friHours, newHours ]);
+      if (businessDay === 'fri') {
+        isMounted && setFriHours([ ...friHours, newHours ]);
       };
-      if (dayType === 'sat') {
-        setSatHours([ ...satHours, newHours ]);
+      if (businessDay === 'sat') {
+        isMounted && setSatHours([ ...satHours, newHours ]);
       };
       navigation.setParams({ 
         newHours: null, 
-        dayType: null, 
+        businessDay: null, 
       });
+    }
+    return () => {
+      isMounted = false;
     }
   }, [newHours]);
 
@@ -257,7 +367,7 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
   // }, [sunHours, monHours]);
 
   return (
-    <MainTemplate>
+    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
       <View style={styles.mainContainer}>
         <HeaderForm 
           leftButtonTitle={"Cancel"}
@@ -288,14 +398,6 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
 
             let readyToSave = false;
 
-            const sunHoursLen = businessHours.sun_hours.length;
-            const monHoursLen = businessHours.mon_hours.length;
-            const tueHoursLen = businessHours.tue_hours.length;
-            const wedHoursLen = businessHours.wed_hours.length;
-            const thuHoursLen = businessHours.thu_hours.length;
-            const friHoursLen = businessHours.fri_hours.length;
-            const satHoursLen = businessHours.sat_hours.length;
-
             const compareHours = (currentHours, newHours) => {
               let hoursIndex = 0;
               const currentHoursLen = currentHours.length;
@@ -316,38 +418,44 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
               return false;
             };
 
-            if ( 
-              // when one of the days is changed from open to close or vice versa
-              businessHours.sun_open !== newBusinessHours.sun_open ||
-              businessHours.mon_open !== newBusinessHours.mon_open ||
-              businessHours.tue_open !== newBusinessHours.tue_open ||
-              businessHours.wed_open !== newBusinessHours.wed_open ||
-              businessHours.thu_open !== newBusinessHours.thu_open ||
-              businessHours.fri_open !== newBusinessHours.fri_open ||
-              businessHours.sat_open !== newBusinessHours.sat_open
-            ) {
+            if (businessHours.sun_open) {
+              if ( 
+                // when one of the days is changed from open to close or vice versa
+                businessHours.sun_open !== newBusinessHours.sun_open ||
+                businessHours.mon_open !== newBusinessHours.mon_open ||
+                businessHours.tue_open !== newBusinessHours.tue_open ||
+                businessHours.wed_open !== newBusinessHours.wed_open ||
+                businessHours.thu_open !== newBusinessHours.thu_open ||
+                businessHours.fri_open !== newBusinessHours.fri_open ||
+                businessHours.sat_open !== newBusinessHours.sat_open
+              ) {
+                readyToSave = true;
+              }
+              else if (
+                compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
+                compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
+                compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
+                compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
+                compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
+                compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
+                compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
+              ) {
+                readyToSave = true;
+              };
+            } else {
               readyToSave = true;
             }
-            else if (
-              compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
-              compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
-              compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
-              compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
-              compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
-              compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
-              compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
-            ) {
-              readyToSave = true;
-            };
-
+            
             if (readyToSave) {
               console.log("ready to save");
               setShowTba(true);
             } else {
-              console.log('nothing to save');
+              setAlertBoxStatus(true);
+              setAlertBoxText("Change has not made.");
             }
           }}
         />
+        <HeaderBottomLine/>
         <ScrollView>
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -355,8 +463,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={sunOpen}
             setDayOpen={setSunOpen}
             hours={sunHours}
-            dayType={'sun'}
+            businessDay={'sun'}
             setHours={setSunHours}
+            userType={userType}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -364,8 +473,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={monOpen}
             setDayOpen={setMonOpen}
             hours={monHours}
-            dayType={'mon'}
+            businessDay={'mon'}
             setHours={setMonHours}
+            userType={userType}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -373,8 +483,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={tueOpen}
             setDayOpen={setTueOpen}
             hours={tueHours}
-            dayType={'tue'}
+            businessDay={'tue'}
             setHours={setTueHours}
+            userType={userType}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -382,8 +493,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={wedOpen}
             setDayOpen={setWedOpen}
             hours={wedHours}
-            dayType={'wed'}
+            businessDay={'wed'}
             setHours={setWedHours}
+            userType={userType}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -391,8 +503,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={thuOpen}
             setDayOpen={setThuOpen}
             hours={thuHours}
-            dayType={'thu'}
+            businessDay={'thu'}
             setHours={setThuHours}
+            userType={userType}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -400,8 +513,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={friOpen}
             setDayOpen={setFriOpen}
             hours={friHours}
-            dayType={'fri'}
+            businessDay={'fri'}
             setHours={setFriHours}
+            userType={userType}
           />
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -409,8 +523,9 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
             dayOpen={satOpen}
             setDayOpen={setSatOpen}
             hours={satHours}
-            dayType={'sat'}
+            businessDay={'sat'}
             setHours={setSatHours}
+            userType={userType}
           />
         </ScrollView>
       </View>
@@ -424,6 +539,8 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
           buttonTwoText={"No"} 
           buttonOneAction={() => {
             console.log("save");
+            console.log(userType);
+            console.log(techId);
             const newBusinessHours = 
             { 
               sun_open: sunOpen, 
@@ -441,20 +558,41 @@ const UBSetBusinessHoursScreen = ({ route, navigation }) => {
               fri_hours: friHours,
               sat_hours: satHours
             };
-            const updateBusUser = businessUpdateFire.busUserUpdate({
-              business_hours: newBusinessHours
-            });
-            updateBusUser
-            .then(() => {
-              setShowTba(false);
-            })
-            .catch((error) => {
-              console.log("error: updateBusUser: ", error);
-            })
+            if (userType === 'bus') {
+              const updateBusUser = businessUpdateFire.busUserUpdate({
+                business_hours: newBusinessHours
+              });
+              updateBusUser
+              .then(() => {
+                setBusinessHours(newBusinessHours);
+                setShowTba(false);
+              })
+              .catch((error) => {
+                console.log("error: updateBusUser: ", error);
+              });
+            }
+            if (userType === 'tech' && techId) {
+              const updateTechBusinessHours = businessUpdateFire.updateTechBusinessHours(user.id, techId, newBusinessHours);
+              updateTechBusinessHours
+              .then(() => {
+                setBusinessHours(newBusinessHours);
+                setShowTba(false);
+              })
+              .catch((error) => {
+                console.log("error: ", error);
+              });
+            }
           }} 
           buttonTwoAction={() => {
             setShowTba(false);
           }}
+        />
+      }
+      {
+        alertBoxStatus &&
+        <AlertBoxTop
+          alertText={alertBoxText}
+          setAlert={setAlertBoxStatus}
         />
       }
     </MainTemplate>
@@ -590,4 +728,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UBSetBusinessHoursScreen;
+export default SetBusinessHoursScreen;

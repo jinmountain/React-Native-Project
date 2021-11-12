@@ -20,13 +20,20 @@ const SetBusinessHoursStack = () => {
         name="SetBusinessHours" 
         component={SetBusinessHoursScreen}
         initialParams={{ 
+          userType: null,
           newHours: null,
-          dayType: null
+          businessDay: null,
+          // for tech 
+          techId: null
         }}
       />
       <Stack.Screen 
         name="SetHours" 
         component={SetHoursScreen}
+        initialParams={{ 
+          businessDay: null,
+          specialDateIndex: null,
+        }}
       />
     </Stack.Navigator>
   )

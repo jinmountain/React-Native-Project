@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   StyleSheet, 
-  View, 
+  View,
+  ScrollView, 
   Text, 
   TouchableOpacity,
   TouchableHighlight,
@@ -31,27 +32,28 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SetAnotherDayScreen = ({ navigation }) => {
-  const [ dateNow, setDateNow ] = useState(Date.now());
-  // date
-  const [ specialDate, setSpecialDate ] = useState( useConvertTime.convertToDateInMs( Date.now() ));
-  const [ dateMoveFromToday, setDateMoveFromToday ] = useState(0);
+const SetAnotherDayScreen = ({ navigation, route }) => {
+  const {
+    userType
+  } = route.params;
+
   // calendar 
   const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
   const [ calendarMove, setCalendarMove ] = useState(0);
-
+  const [ dateNow, setDateNow ] = useState(Date.now());
   const [ endTime, setEndTime ] = useState(17);
-
   const [ datesOnCalendar, setDatesOnCalendar ] = useState([]);
 
-  // status switch
-  const [ status, setStatus ] = useState(false);
+  // speical date and status 
+  const [ specialDate, setSpecialDate ] = useState(null);
+  const [ specialDateStatus, setSpecialDateStatus ] = useState(false);
+  
   // get calendar dates
   getCalendarDates(calendarDate, dateNow, endTime, setDatesOnCalendar);
 
   return (
-    <MainTemplate>
-      <View style={styles.mainContainer}>
+    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
+      <ScrollView style={styles.mainContainer}>
         <HeaderForm 
           leftButtonTitle={"Cancel"}
           leftButtonIcon={null}
@@ -61,11 +63,49 @@ const SetAnotherDayScreen = ({ navigation }) => {
             navigation.goBack();
           }}
           rightButtonPress={() => {
+            specialDate && navigation.navigate("SetSpecialHours", {
+              newSpecialDate: specialDate,
+              newSpecialDateStatus: specialDateStatus,
+              userType: userType
+            });
+            console.log("newSpeicalDate: ", specialDate, "newSpecialDateStatus: ", specialDateStatus);
           }}
         />
+        <HeaderBottomLine />
         <View style={styles.labelContainer}>
-          <Text style={styles. labelText}>Select Date</Text>
+          <Text style={styles. labelText}> Select Date and Status</Text>
         </View>
+        <HeaderBottomLine />
+        <View style={styles.switchContainer}>
+          <View style={styles.speicalDateContainer}>
+            <Text style={styles.specialDateText}>
+              { specialDate
+                ?
+                `Date: ${useConvertTime.getDayMonthDateYear(specialDate)}`
+                : 
+                "Date: Choose a date using the calendar below"
+              }
+            </Text>
+          </View>
+          <View style={styles.onOffStatusConatiner}>
+            { specialDateStatus === false
+              ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
+              : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
+            }
+          </View>
+          <Switch
+            trackColor={{ false: color.grey8, true: color.red2 }}
+            thumbColor={specialDateStatus ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={setSpecialDateStatus}
+            value={specialDateStatus}
+          />
+        </View>
+        <HeaderBottomLine />
+        <View style={styles.labelContainer}>
+          <Text style={styles. labelText}>Calendar</Text>
+        </View>
+        <HeaderBottomLine />
         <View style={styles.controllerContainer}>
           <View style={styles.topControllerContainer}>
             <View style={styles.topControllerLeftCompartment}>
@@ -94,7 +134,7 @@ const SetAnotherDayScreen = ({ navigation }) => {
 
                 }}
               >
-                <Text style={styles.rsvDateText}>
+                <Text style={styles.calendarDateText}>
                   {useConvertTime.convertToMonthly(calendarDate)}
                 </Text>
               </TouchableOpacity>
@@ -115,40 +155,16 @@ const SetAnotherDayScreen = ({ navigation }) => {
           <HeaderBottomLine />
         </View>
         <MonthCalendar 
-          selectedDate={specialDate}
+          chosenDate={specialDate}
           dateNow={dateNow}
           datesOnCalendar={datesOnCalendar}
-          setDate={setSpecialDate}
-          setDateMoveFromToday={setDateMoveFromToday}
+          setChosenDate={setSpecialDate}
           setCalendarMove={setCalendarMove}
           canSelectPast={false}
         />
         <View style={{height: RFValue(30)}}>
         </View>
-        <View style={styles.labelContainer}>
-          <Text style={styles. labelText}> Choose Open or Close</Text>
-        </View>
-        <View style={styles.switchContainer}>
-          <View style={styles.speicalDateContainer}>
-            <Text style={styles.specialDateText}>
-              Selected Date: {useConvertTime.getDayMonthDateYear(specialDate)}
-            </Text>
-          </View>
-          <View style={styles.onOffStatusConatiner}>
-            { status === false
-              ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
-              : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
-            }
-          </View>
-          <Switch
-            trackColor={{ false: color.grey8, true: color.red2 }}
-            thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={setStatus}
-            value={status}
-          />
-        </View>
-      </View>
+      </ScrollView>
     </MainTemplate>
   )
 };
@@ -186,6 +202,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  calendarDateText: {
+    fontSize: RFValue(19)
+  },
 
   switchContainer: {
     justifyContent: 'center',
@@ -203,6 +222,10 @@ const styles = StyleSheet.create({
     fontSize: RFValue(15),
   },
 
+  switchContainer: {
+    flexDirection: 'row',
+    paddingVertical: RFValue(10)
+  },
   speicalDateContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -214,8 +237,9 @@ const styles = StyleSheet.create({
 
   labelContainer: {
     justifyContent: 'center',
+    alignItems: 'center',
     paddingLeft: RFValue(15),
-    paddingVertical: RFValue(7),
+    paddingVertical: RFValue(15),
   },
   labelText: {
     fontSize: RFValue(19),

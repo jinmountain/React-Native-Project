@@ -7,6 +7,8 @@ import BusinessManagerManageTechnicianScreen from '../screens/businessScreens/Bu
 import BusinessManagerTechApplicationScreen from '../screens/businessScreens/BusinessManagerTechApplicationScreen';
 
 // Stacks
+import SetBusinessHoursStack from './SetBusinessHoursStack';
+import SetSpecialHoursStack from './SetSpecialHoursStack';
 
 const Stack = createStackNavigator();
 
@@ -35,6 +37,17 @@ const BusinessManagerTechnicianStack = () => {
           animationEnabled: true,
           presentation: 'transparentModal'
         }}
+        initialParams={{
+          techId: null
+        }}
+      />
+      <Stack.Screen 
+        name="SetBusinessHoursStack" 
+        component={SetBusinessHoursStack}
+      />
+      <Stack.Screen 
+        name="SetSpecialHoursStack" 
+        component={SetSpecialHoursStack}
       />
     </Stack.Navigator>
   );

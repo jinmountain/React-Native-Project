@@ -83,7 +83,7 @@ const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) 
       style={
         currentValue === conditionalValue
         ?
-        [ styles.setHourButtonContainer, { backgroundColor: color.red2 }]
+        [ styles.setHourButtonContainer, { borderColor: color.red2, borderWidth: 1, margin: RFValue(3), borderRadius: RFValue(5) }]
         :
         styles.setHourButtonContainer
       }
@@ -92,6 +92,10 @@ const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) 
     >
       <View style={styles.buttonTextContainer}>
         <Text style={
+          currentValue === conditionalValue
+          ?
+          [ styles.buttonText, { color: color.red2 }]
+          :
           styles.buttonText
         }>
           {buttonText}
@@ -102,7 +106,7 @@ const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) 
 }
 
 const UBSetHoursScreen = ({ navigation, route }) => {
-  const { dayType } = route.params;
+  const { hoursType, businessDay, specialDateIndex, userType } = route.params;
 
   const [ startHour, setStartHour ] = useState(null);
   const [ startMin, setStartMin ] = useState(null);
@@ -115,6 +119,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
   const [ hoursReady, setHoursReady ] = useState(false);
 
   useEffect(() => {
+    console.log("userTpye:", userType);
     if (
       startHour &&
       startMin !== null &&
@@ -145,7 +150,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
   }, [startHour, startMin, startMeridiem, endHour, endMin, endMeridiem]);
 
   return (
-    <MainTemplate>
+    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
       <View style={styles.mainContainer}>
         <HeaderForm 
           leftButtonTitle={"Cancel"}
@@ -159,6 +164,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
             console.log("save");
           }}
         />
+        <HeaderBottomLine />
         <View style={styles.timeContainer}>
           <View style={styles.labelContainer}>
             <View style={styles.labelTitleContainer}>
@@ -173,6 +179,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
               : null
             }
           </View>
+          <HeaderBottomLine />
           <View style={styles.startTimeContainer}>
             <View style={styles.hourContainer}>
               <ScrollView fadingEdgeLength={100}>
@@ -334,6 +341,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
               </ScrollView>
             </View>
           </View>
+          <HeaderBottomLine />
           <View style={styles.labelContainer}>
             <View style={styles.labelTimeContainer}>
               <Text style={styles.labelText}>Closes</Text>
@@ -349,6 +357,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
               : null
             }
           </View>
+          <HeaderBottomLine />
           <View style={styles.endTimeContainer}>
             <View style={styles.hourContainer}>
               <ScrollView fadingEdgeLength={100}>
@@ -512,7 +521,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
           style={
             hoursReady
             ?
-            [ styles.saveHourButtonContainer, { backgroundColor: color.black2 }]
+            [ styles.saveHourButtonContainer, { borderColor: color.red2 }]
             : styles.saveHourButtonContainer
           }
           underlayColor={color.grey4}
@@ -543,24 +552,52 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 militaryEndHour = endHour + 12;
               }
               console.log(militaryEndHour);
-              navigation.navigate('UBSetBusinessHours', {
-                newHours: {
-                  opens: {
-                    hour: militaryStartHour,
-                    min: startMin
+              if (hoursType === 'business') {
+                navigation.navigate('SetBusinessHours', {
+                  newHours: {
+                    opens: {
+                      hour: militaryStartHour,
+                      min: startMin
+                    },
+                    closes: {
+                      hour: militaryEndHour,
+                      min:  endMin
+                    }
                   },
-                  closes: {
-                    hour: militaryEndHour,
-                    min:  endMin
-                  }
-                },
-                dayType: dayType
-              })
+                  businessDay: businessDay
+                });
+              };
+
+              if (hoursType === 'special') {
+                navigation.navigate('SetSpecialHours', {
+                  newHours: {
+                    opens: {
+                      hour: militaryStartHour,
+                      min: startMin
+                    },
+                    closes: {
+                      hour: militaryEndHour,
+                      min:  endMin
+                    }
+                  },
+                  specialDateIndex: specialDateIndex
+                });
+              }
+              
             }
           }}
         >
           <View style={styles.saveTextContainer}>
-            <Text style={styles.saveText}>Save</Text>
+            <Text 
+              style={
+                hoursReady
+                ?
+                [ styles.saveText, { color: color.red2 }]
+                : styles.saveText
+              }
+            >
+              Save
+            </Text>
           </View>
         </TouchableHighlight>
       </View>
@@ -624,8 +661,11 @@ const styles = StyleSheet.create({
     height: RFValue(57),
   },
   saveHourButtonContainer: {
+    margin: RFValue(3),
+    borderWidth: 1,
     borderRadius: RFValue(30),
-    backgroundColor: color.grey1,
+    backgroundColor: color.white2,
+    borderColor: color.black1,
     height: RFValue(50),
     justifyContent: 'center',
     alignItems: 'center',
@@ -635,7 +675,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveText: {
-    color: color.white2,
+    color: color.black1,
     fontSize: RFValue(25),
     fontWeight: 'bold'
   },
@@ -646,6 +686,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   buttonText: {
+    color: color.black1,
     fontSize: RFValue(17),
     fontWeight: 'bold'
   },

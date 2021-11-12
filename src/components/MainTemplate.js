@@ -8,23 +8,28 @@ import { NavigationBar } from './NavigationBar';
 // Hooks
 import { useOrientation } from '../hooks/useOrientation';
 
-const MainTemplate = ({ children }) => {
+const MainTemplate = ({ children, disableMarginTop }) => {
 	const orientation = useOrientation();
 	return (
-		<View style={{ 
-			...styles.safeAreaContainer, 
-			...{ ...Platform.select({
-	      android: {
-	        marginTop: orientation === 'LANDSCAPE' ? '3.5%' : '7%' ,
-	      },
-	      ios: {
-	        marginTop: '11%',
-	      },
-	      default: {
-	        marginTop: '7%',
-	      }
-	    })} 
-		}}>
+		<View style={
+			disableMarginTop
+			? styles.safeAreaContainer
+			:
+			{ 
+				...styles.safeAreaContainer, 
+				...{ ...Platform.select({
+		      android: {
+		        marginTop: orientation === 'LANDSCAPE' ? '3.5%' : '7%' ,
+		      },
+		      ios: {
+		        marginTop: '11%',
+		      },
+		      default: {
+		        marginTop: '7%',
+		      }
+		    })} 
+			}
+		}>
 			{children}
 		</View>
   );

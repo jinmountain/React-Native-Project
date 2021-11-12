@@ -314,36 +314,6 @@ const ContentCreateScreen = ({ route, navigation }) => {
             }
           }}
         />
-        { 
-          display === true
-          ? null
-          :
-          <SearchUsersForm 
-            userId={user.id}
-            usersFound={usersFound ? true : false }
-            rating={rating}
-            chosenUser={chosenUser}
-            userUsernameInput={userUsernameInput}
-
-            getCpDisplayPosts={getCpDisplayPosts}
-            cpDisplayPosts={cpDisplayPosts}
-            selectDisplayPost={selectDisplayPost}
-            selectedDisplayPost={selectedDisplayPost}
-            clearDisplayPost={clearDisplayPost}
-            cpDisplayPostState={cpDisplayPostState}
-            cpDisplayPostFetchSwitch={cpDisplayPostFetchSwitch}
-            cpDisplayPostLast={cpDisplayPostLast}
-
-            clearChosenUser={clearChosenUser}
-            rateTech={rateTech}
-            setRateTech={setRateTech}
-            clearRating={clearRating}
-            changeRating={changeRating}
-            clearUserUsernameInput={clearUserUsernameInput}
-            clearSearchUser={clearSearchUser}
-            changeUserUsernameInput={changeUserUsernameInput}
-          />
-        }
         { usersFound
           ? 
           <UsersFoundListForm
@@ -354,6 +324,36 @@ const ContentCreateScreen = ({ route, navigation }) => {
           />
           :
           <KeyboardAwareScrollView>
+            { 
+              display === true
+              ? null
+              :
+              <SearchUsersForm 
+                userId={user.id}
+                usersFound={usersFound ? true : false }
+                rating={rating}
+                chosenUser={chosenUser}
+                userUsernameInput={userUsernameInput}
+
+                getCpDisplayPosts={getCpDisplayPosts}
+                cpDisplayPosts={cpDisplayPosts}
+                selectDisplayPost={selectDisplayPost}
+                selectedDisplayPost={selectedDisplayPost}
+                clearDisplayPost={clearDisplayPost}
+                cpDisplayPostState={cpDisplayPostState}
+                cpDisplayPostFetchSwitch={cpDisplayPostFetchSwitch}
+                cpDisplayPostLast={cpDisplayPostLast}
+
+                clearChosenUser={clearChosenUser}
+                rateTech={rateTech}
+                setRateTech={setRateTech}
+                clearRating={clearRating}
+                changeRating={changeRating}
+                clearUserUsernameInput={clearUserUsernameInput}
+                clearSearchUser={clearSearchUser}
+                changeUserUsernameInput={changeUserUsernameInput}
+              />
+            }
             {
               user.type === "business" && chosenUser === null
               ?

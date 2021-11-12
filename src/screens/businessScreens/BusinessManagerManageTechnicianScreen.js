@@ -29,7 +29,7 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId, currentUserId }) => {
+const RenderContent = ({ navigation, contentHeight, techId }) => {
   return (
     <View
       style={{
@@ -73,7 +73,17 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
       <HeaderBottomLine />
       <TouchableOpacity
         onPress={() => {
-
+          // const goBackFirst = new Promise ((res, rej) => {
+          //   navigation.goBack();
+          //   res();
+          // });
+          navigation.navigate('SetBusinessHoursStack', {
+            screen: 'SetBusinessHours',
+            params: { 
+              userType: 'tech',
+              techId: techId
+            }
+          });
         }}
         style={styles.bsButtonTouch}
       >
@@ -84,7 +94,17 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
       <HeaderBottomLine />
 			<TouchableOpacity
         onPress={() => {
-
+          // const goBackFirst = new Promise ((res, rej) => {
+          //   navigation.goBack();
+          //   res();
+          // });
+          navigation.navigate('SetSpecialHoursStack', {
+            screen: 'SetSpecialHours',
+            params: { 
+              userType: 'tech',
+              techId: techId
+            }
+          });
         }}
         style={styles.bsButtonTouch}
       >
@@ -114,13 +134,17 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
           <Text style={styles.bsButtonText}>Delete</Text>
         </View>
       </TouchableOpacity>
+      <HeaderBottomLine />
     </View>
   )
 };
 
-const BusinessManagerManageTechnicianScreen = ({ navigation }) => {
+const BusinessManagerManageTechnicianScreen = ({ navigation, route }) => {
 	// const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
  //  const [ windowHeight, setWindowHeight ] = useState(Dimensions.get("window").height);
+  const {
+    techId
+  } = route.params;
 	const sheetRef = useRef(null);
   const [ bottomSheetHeight, setBottomSheetHeight ] = useState(Dimensions.get("window").height * 0.7);
 	return (
@@ -142,6 +166,7 @@ const BusinessManagerManageTechnicianScreen = ({ navigation }) => {
             <RenderContent
               navigation={navigation}
               contentHeight={bottomSheetHeight}
+              techId={techId}
             />
           )
         }}
@@ -163,7 +188,7 @@ const styles = StyleSheet.create({
 	},
 
 	bsButtonTouch: {
-    flex: 1,
+    height: RFValue(77),
     justifyContent: 'center',
     alignItems: 'center'
   },
