@@ -106,7 +106,14 @@ const SetHourButton = ({ buttonText, onPress, currentValue, conditionalValue }) 
 }
 
 const UBSetHoursScreen = ({ navigation, route }) => {
-  const { hoursType, businessDay, specialDateIndex, userType } = route.params;
+  const { 
+    hoursType,
+    specialHoursDocId, 
+    businessDay, 
+    specialDateIndex, 
+    userType, 
+    techId 
+  } = route.params;
 
   const [ startHour, setStartHour ] = useState(null);
   const [ startMin, setStartMin ] = useState(null);
@@ -119,7 +126,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
   const [ hoursReady, setHoursReady ] = useState(false);
 
   useEffect(() => {
-    console.log("userTpye:", userType);
+    console.log("user type:", userType, techId);
     if (
       startHour &&
       startMin !== null &&
@@ -150,458 +157,461 @@ const UBSetHoursScreen = ({ navigation, route }) => {
   }, [startHour, startMin, startMeridiem, endHour, endMin, endMeridiem]);
 
   return (
-    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
-      <View style={styles.mainContainer}>
-        <HeaderForm 
-          leftButtonTitle={"Cancel"}
-          leftButtonIcon={null}
-          headerTitle={"Hours"} 
-          rightButtonTitle={"Save"} 
-          leftButtonPress={() => {
-            navigation.goBack();
-          }}
-          rightButtonPress={() => {
-            console.log("save");
-          }}
-        />
-        <HeaderBottomLine />
-        <View style={styles.timeContainer}>
-          <View style={styles.labelContainer}>
-            <View style={styles.labelTitleContainer}>
-              <Text style={styles.labelText}>Opens</Text>
-            </View>
-            {
-              startHour && startMin !== null && startMeridiem
-              ?
-              <View style={styles.labelTimeContainer}>
-                <Text style={styles.labelTimeText}>{startHour} : {startMin < 10 ? `0${startMin}` : startMin} {startMeridiem}</Text>
-              </View>
-              : null
-            }
+    <View style={styles.mainContainer}>
+      <HeaderForm 
+        addPaddingTop={userType === 'tech' ? false : true}
+        leftButtonTitle={null}
+        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+        headerTitle={"Hours"} 
+        rightButtonIcon={"Save"} 
+        leftButtonPress={() => {
+          navigation.goBack();
+        }}
+        rightButtonPress={() => {
+          console.log("save");
+        }}
+      />
+      <HeaderBottomLine />
+      <View style={styles.timeContainer}>
+        <View style={styles.labelContainer}>
+          <View style={styles.labelTitleContainer}>
+            <Text style={styles.labelText}>{expoIcons.clockIcon(RFValue(27), color.red2)} Opens</Text>
           </View>
-          <HeaderBottomLine />
-          <View style={styles.startTimeContainer}>
-            <View style={styles.hourContainer}>
-              <ScrollView fadingEdgeLength={100}>
-                <SetHourButton
-                  buttonText={"12"}
-                  onPress={() => {
-                    setStartHour(12);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={12}
-                />
-                <SetHourButton
-                  buttonText={"1"}
-                  onPress={() => {
-                    setStartHour(1);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={1}
-                />
-                <SetHourButton
-                  buttonText={"2"}
-                  onPress={() => {
-                    setStartHour(2);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={2}
-                />
-                <SetHourButton
-                  buttonText={"3"}
-                  onPress={() => {
-                    setStartHour(3);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={3}
-                />
-                <SetHourButton
-                  buttonText={"4"}
-                  onPress={() => {
-                    setStartHour(4);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={4}
-                />
-                <SetHourButton
-                  buttonText={"5"}
-                  onPress={() => {
-                    setStartHour(5);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={5}
-                />
-                <SetHourButton
-                  buttonText={"6"}
-                  onPress={() => {
-                    setStartHour(6);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={6}
-                />
-                <SetHourButton
-                  buttonText={"7"}
-                  onPress={() => {
-                    setStartHour(7);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={7}
-                />
-                <SetHourButton
-                  buttonText={"8"}
-                  onPress={() => {
-                    setStartHour(8);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={8}
-                />
-                <SetHourButton
-                  buttonText={"9"}
-                  onPress={() => {
-                    setStartHour(9);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={9}
-                />
-                <SetHourButton
-                  buttonText={"10"}
-                  onPress={() => {
-                    setStartHour(10);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={10}
-                />
-                <SetHourButton
-                  buttonText={"11"}
-                  onPress={() => {
-                    setStartHour(11);
-                  }}
-                  currentValue={startHour}
-                  conditionalValue={11}
-                />
-              </ScrollView>
-            </View>
-            <View style={styles.minContainer}>
-              <ScrollView fadingEdgeLength={100}>
-                <SetHourButton
-                  buttonText={"0"}
-                  onPress={() => {
-                    setStartMin(0);
-                  }}
-                  currentValue={startMin}
-                  conditionalValue={0}
-                />
-                <SetHourButton
-                  buttonText={"15"}
-                  onPress={() => {
-                    setStartMin(15);
-                  }}
-                  currentValue={startMin}
-                  conditionalValue={15}
-                />
-                <SetHourButton
-                  buttonText={"30"}
-                  onPress={() => {
-                    setStartMin(30);
-                  }}
-                  currentValue={startMin}
-                  conditionalValue={30}
-                />
-                <SetHourButton
-                  buttonText={"45"}
-                  onPress={() => {
-                    setStartMin(45);
-                  }}
-                  currentValue={startMin}
-                  conditionalValue={45}
-                />
-              </ScrollView>
-            </View>
-            <View style={styles.meridiemContainer}>
-              <ScrollView 
-                fadingEdgeLength={100}
-                contentContainerStyle={styles.buttonScrollView}
-              >
-                <SetHourButton
-                  buttonText={"AM"}
-                  onPress={() => {
-                    setStartMeridiem('AM');
-                  }}
-                  currentValue={startMeridiem}
-                  conditionalValue={'AM'}
-                />
-                <SetHourButton
-                  buttonText={"PM"}
-                  onPress={() => {
-                    setStartMeridiem('PM');
-                  }}
-                  currentValue={startMeridiem}
-                  conditionalValue={'PM'}
-                />
-              </ScrollView>
-            </View>
-          </View>
-          <HeaderBottomLine />
-          <View style={styles.labelContainer}>
+          {
+            startHour && startMin !== null && startMeridiem
+            ?
             <View style={styles.labelTimeContainer}>
-              <Text style={styles.labelText}>Closes</Text>
+              <Text style={styles.labelTimeText}>{startHour} : {startMin < 10 ? `0${startMin}` : startMin} {startMeridiem}</Text>
             </View>
-            {
-              endHour && endMin !== null && endMeridiem
-              ?
-              <View style={styles.labelTimeContainer}>
-                <Text style={styles.labelTimeText}>
-                  {endHour} : {endMin < 10 ? `0${endMin}` : endMin} {endMeridiem}
-                </Text>
-              </View>
-              : null
-            }
+            : null
+          }
+        </View>
+        <HeaderBottomLine />
+        <View style={styles.startTimeContainer}>
+          <View style={styles.hourContainer}>
+            <ScrollView fadingEdgeLength={100}>
+              <SetHourButton
+                buttonText={"12"}
+                onPress={() => {
+                  setStartHour(12);
+                }}
+                currentValue={startHour}
+                conditionalValue={12}
+              />
+              <SetHourButton
+                buttonText={"1"}
+                onPress={() => {
+                  setStartHour(1);
+                }}
+                currentValue={startHour}
+                conditionalValue={1}
+              />
+              <SetHourButton
+                buttonText={"2"}
+                onPress={() => {
+                  setStartHour(2);
+                }}
+                currentValue={startHour}
+                conditionalValue={2}
+              />
+              <SetHourButton
+                buttonText={"3"}
+                onPress={() => {
+                  setStartHour(3);
+                }}
+                currentValue={startHour}
+                conditionalValue={3}
+              />
+              <SetHourButton
+                buttonText={"4"}
+                onPress={() => {
+                  setStartHour(4);
+                }}
+                currentValue={startHour}
+                conditionalValue={4}
+              />
+              <SetHourButton
+                buttonText={"5"}
+                onPress={() => {
+                  setStartHour(5);
+                }}
+                currentValue={startHour}
+                conditionalValue={5}
+              />
+              <SetHourButton
+                buttonText={"6"}
+                onPress={() => {
+                  setStartHour(6);
+                }}
+                currentValue={startHour}
+                conditionalValue={6}
+              />
+              <SetHourButton
+                buttonText={"7"}
+                onPress={() => {
+                  setStartHour(7);
+                }}
+                currentValue={startHour}
+                conditionalValue={7}
+              />
+              <SetHourButton
+                buttonText={"8"}
+                onPress={() => {
+                  setStartHour(8);
+                }}
+                currentValue={startHour}
+                conditionalValue={8}
+              />
+              <SetHourButton
+                buttonText={"9"}
+                onPress={() => {
+                  setStartHour(9);
+                }}
+                currentValue={startHour}
+                conditionalValue={9}
+              />
+              <SetHourButton
+                buttonText={"10"}
+                onPress={() => {
+                  setStartHour(10);
+                }}
+                currentValue={startHour}
+                conditionalValue={10}
+              />
+              <SetHourButton
+                buttonText={"11"}
+                onPress={() => {
+                  setStartHour(11);
+                }}
+                currentValue={startHour}
+                conditionalValue={11}
+              />
+            </ScrollView>
           </View>
-          <HeaderBottomLine />
-          <View style={styles.endTimeContainer}>
-            <View style={styles.hourContainer}>
-              <ScrollView fadingEdgeLength={100}>
-                <SetHourButton
-                  buttonText={"12"}
-                  onPress={() => {
-                    setEndHour(12);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={12}
-                />
-                <SetHourButton
-                  buttonText={"1"}
-                  onPress={() => {
-                    setEndHour(1);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={1}
-                />
-                <SetHourButton
-                  buttonText={"2"}
-                  onPress={() => {
-                    setEndHour(2);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={2}
-                />
-                <SetHourButton
-                  buttonText={"3"}
-                  onPress={() => {
-                    setEndHour(3);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={3}
-                />
-                <SetHourButton
-                  buttonText={"4"}
-                  onPress={() => {
-                    setEndHour(4);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={4}
-                />
-                <SetHourButton
-                  buttonText={"5"}
-                  onPress={() => {
-                    setEndHour(5);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={5}
-                />
-                <SetHourButton
-                  buttonText={"6"}
-                  onPress={() => {
-                    setEndHour(6);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={6}
-                />
-                <SetHourButton
-                  buttonText={"7"}
-                  onPress={() => {
-                    setEndHour(7);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={7}
-                />
-                <SetHourButton
-                  buttonText={"8"}
-                  onPress={() => {
-                    setEndHour(8);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={8}
-                />
-                <SetHourButton
-                  buttonText={"9"}
-                  onPress={() => {
-                    setEndHour(9);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={9}
-                />
-                <SetHourButton
-                  buttonText={"10"}
-                  onPress={() => {
-                    setEndHour(10);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={10}
-                />
-                <SetHourButton
-                  buttonText={"11"}
-                  onPress={() => {
-                    setEndHour(11);
-                  }}
-                  currentValue={endHour}
-                  conditionalValue={11}
-                />
-              </ScrollView>
-            </View>
-            <View style={styles.minContainer}>
-              <ScrollView fadingEdgeLength={100}>
-                <SetHourButton
-                  buttonText={"0"}
-                  onPress={() => {
-                    setEndMin(0);
-                  }}
-                  currentValue={endMin}
-                  conditionalValue={0}
-                />
-                <SetHourButton
-                  buttonText={"15"}
-                  onPress={() => {
-                    setEndMin(15);
-                  }}
-                  currentValue={endMin}
-                  conditionalValue={15}
-                />
-                <SetHourButton
-                  buttonText={"30"}
-                  onPress={() => {
-                    setEndMin(30);
-                  }}
-                  currentValue={endMin}
-                  conditionalValue={30}
-                />
-                <SetHourButton
-                  buttonText={"45"}
-                  onPress={() => {
-                    setEndMin(45);
-                  }}
-                  currentValue={endMin}
-                  conditionalValue={45}
-                />
-              </ScrollView>
-            </View>
-            <View style={styles.meridiemContainer}>
-              <ScrollView fadingEdgeLength={100}>
-                <SetHourButton
-                  buttonText={"AM"}
-                  onPress={() => {
-                    setEndMeridiem('AM');
-                  }}
-                  currentValue={endMeridiem}
-                  conditionalValue={'AM'}
-                />
-                <SetHourButton
-                  buttonText={"PM"}
-                  onPress={() => {
-                    setEndMeridiem('PM');
-                  }}
-                  currentValue={endMeridiem}
-                  conditionalValue={'PM'}
-                />
-              </ScrollView>
-            </View>
+          <View style={styles.minContainer}>
+            <ScrollView fadingEdgeLength={100}>
+              <SetHourButton
+                buttonText={"0"}
+                onPress={() => {
+                  setStartMin(0);
+                }}
+                currentValue={startMin}
+                conditionalValue={0}
+              />
+              <SetHourButton
+                buttonText={"15"}
+                onPress={() => {
+                  setStartMin(15);
+                }}
+                currentValue={startMin}
+                conditionalValue={15}
+              />
+              <SetHourButton
+                buttonText={"30"}
+                onPress={() => {
+                  setStartMin(30);
+                }}
+                currentValue={startMin}
+                conditionalValue={30}
+              />
+              <SetHourButton
+                buttonText={"45"}
+                onPress={() => {
+                  setStartMin(45);
+                }}
+                currentValue={startMin}
+                conditionalValue={45}
+              />
+            </ScrollView>
+          </View>
+          <View style={styles.meridiemContainer}>
+            <ScrollView 
+              fadingEdgeLength={100}
+              contentContainerStyle={styles.buttonScrollView}
+            >
+              <SetHourButton
+                buttonText={"AM"}
+                onPress={() => {
+                  setStartMeridiem('AM');
+                }}
+                currentValue={startMeridiem}
+                conditionalValue={'AM'}
+              />
+              <SetHourButton
+                buttonText={"PM"}
+                onPress={() => {
+                  setStartMeridiem('PM');
+                }}
+                currentValue={startMeridiem}
+                conditionalValue={'PM'}
+              />
+            </ScrollView>
           </View>
         </View>
-        <TouchableHighlight
-          style={
-            hoursReady
-            ?
-            [ styles.saveHourButtonContainer, { borderColor: color.red2 }]
-            : styles.saveHourButtonContainer
-          }
-          underlayColor={color.grey4}
-          onPress={() => {
-            if (hoursReady) {
-              let militaryStartHour;
-              let militaryEndHour;
-
-              if (startMeridiem === 'AM') {
-                if (startHour === 12) {
-                  militaryStartHour = 0
-                } else {
-                  militaryStartHour = startHour
-                }
-              }
-              if (startMeridiem === 'PM') {
-                militaryStartHour = startHour + 12
-              }
-
-              if (endMeridiem === 'AM') {
-                if (endHour === 12) {
-                  militaryEndHour = 0
-                } else {
-                  militaryEndHour = endHour;
-                }
-              } 
-              if (endMeridiem === 'PM') {
-                militaryEndHour = endHour + 12;
-              }
-              console.log(militaryEndHour);
-              if (hoursType === 'business') {
-                navigation.navigate('SetBusinessHours', {
-                  newHours: {
-                    opens: {
-                      hour: militaryStartHour,
-                      min: startMin
-                    },
-                    closes: {
-                      hour: militaryEndHour,
-                      min:  endMin
-                    }
-                  },
-                  businessDay: businessDay
-                });
-              };
-
-              if (hoursType === 'special') {
-                navigation.navigate('SetSpecialHours', {
-                  newHours: {
-                    opens: {
-                      hour: militaryStartHour,
-                      min: startMin
-                    },
-                    closes: {
-                      hour: militaryEndHour,
-                      min:  endMin
-                    }
-                  },
-                  specialDateIndex: specialDateIndex
-                });
-              }
-              
-            }
-          }}
-        >
-          <View style={styles.saveTextContainer}>
-            <Text 
-              style={
-                hoursReady
-                ?
-                [ styles.saveText, { color: color.red2 }]
-                : styles.saveText
-              }
-            >
-              Save
-            </Text>
+        <HeaderBottomLine />
+        <View style={styles.labelContainer}>
+          <View style={styles.labelTimeContainer}>
+            <Text style={styles.labelText}>{expoIcons.matClockTimeEightOutline(RFValue(27), color.red2)} Closes</Text>
           </View>
-        </TouchableHighlight>
+          {
+            endHour && endMin !== null && endMeridiem
+            ?
+            <View style={styles.labelTimeContainer}>
+              <Text style={styles.labelTimeText}>
+                {endHour} : {endMin < 10 ? `0${endMin}` : endMin} {endMeridiem}
+              </Text>
+            </View>
+            : null
+          }
+        </View>
+        <HeaderBottomLine />
+        <View style={styles.endTimeContainer}>
+          <View style={styles.hourContainer}>
+            <ScrollView fadingEdgeLength={100}>
+              <SetHourButton
+                buttonText={"12"}
+                onPress={() => {
+                  setEndHour(12);
+                }}
+                currentValue={endHour}
+                conditionalValue={12}
+              />
+              <SetHourButton
+                buttonText={"1"}
+                onPress={() => {
+                  setEndHour(1);
+                }}
+                currentValue={endHour}
+                conditionalValue={1}
+              />
+              <SetHourButton
+                buttonText={"2"}
+                onPress={() => {
+                  setEndHour(2);
+                }}
+                currentValue={endHour}
+                conditionalValue={2}
+              />
+              <SetHourButton
+                buttonText={"3"}
+                onPress={() => {
+                  setEndHour(3);
+                }}
+                currentValue={endHour}
+                conditionalValue={3}
+              />
+              <SetHourButton
+                buttonText={"4"}
+                onPress={() => {
+                  setEndHour(4);
+                }}
+                currentValue={endHour}
+                conditionalValue={4}
+              />
+              <SetHourButton
+                buttonText={"5"}
+                onPress={() => {
+                  setEndHour(5);
+                }}
+                currentValue={endHour}
+                conditionalValue={5}
+              />
+              <SetHourButton
+                buttonText={"6"}
+                onPress={() => {
+                  setEndHour(6);
+                }}
+                currentValue={endHour}
+                conditionalValue={6}
+              />
+              <SetHourButton
+                buttonText={"7"}
+                onPress={() => {
+                  setEndHour(7);
+                }}
+                currentValue={endHour}
+                conditionalValue={7}
+              />
+              <SetHourButton
+                buttonText={"8"}
+                onPress={() => {
+                  setEndHour(8);
+                }}
+                currentValue={endHour}
+                conditionalValue={8}
+              />
+              <SetHourButton
+                buttonText={"9"}
+                onPress={() => {
+                  setEndHour(9);
+                }}
+                currentValue={endHour}
+                conditionalValue={9}
+              />
+              <SetHourButton
+                buttonText={"10"}
+                onPress={() => {
+                  setEndHour(10);
+                }}
+                currentValue={endHour}
+                conditionalValue={10}
+              />
+              <SetHourButton
+                buttonText={"11"}
+                onPress={() => {
+                  setEndHour(11);
+                }}
+                currentValue={endHour}
+                conditionalValue={11}
+              />
+            </ScrollView>
+          </View>
+          <View style={styles.minContainer}>
+            <ScrollView fadingEdgeLength={100}>
+              <SetHourButton
+                buttonText={"0"}
+                onPress={() => {
+                  setEndMin(0);
+                }}
+                currentValue={endMin}
+                conditionalValue={0}
+              />
+              <SetHourButton
+                buttonText={"15"}
+                onPress={() => {
+                  setEndMin(15);
+                }}
+                currentValue={endMin}
+                conditionalValue={15}
+              />
+              <SetHourButton
+                buttonText={"30"}
+                onPress={() => {
+                  setEndMin(30);
+                }}
+                currentValue={endMin}
+                conditionalValue={30}
+              />
+              <SetHourButton
+                buttonText={"45"}
+                onPress={() => {
+                  setEndMin(45);
+                }}
+                currentValue={endMin}
+                conditionalValue={45}
+              />
+            </ScrollView>
+          </View>
+          <View style={styles.meridiemContainer}>
+            <ScrollView fadingEdgeLength={100}>
+              <SetHourButton
+                buttonText={"AM"}
+                onPress={() => {
+                  setEndMeridiem('AM');
+                }}
+                currentValue={endMeridiem}
+                conditionalValue={'AM'}
+              />
+              <SetHourButton
+                buttonText={"PM"}
+                onPress={() => {
+                  setEndMeridiem('PM');
+                }}
+                currentValue={endMeridiem}
+                conditionalValue={'PM'}
+              />
+            </ScrollView>
+          </View>
+        </View>
       </View>
-    </MainTemplate>
+      <TouchableHighlight
+        style={
+          hoursReady
+          ?
+          [ styles.saveHourButtonContainer, { borderColor: color.red2 }]
+          : styles.saveHourButtonContainer
+        }
+        underlayColor={color.grey4}
+        onPress={() => {
+          if (hoursReady) {
+            let militaryStartHour;
+            let militaryEndHour;
+
+            if (startMeridiem === 'AM') {
+              if (startHour === 12) {
+                militaryStartHour = 0
+              } else {
+                militaryStartHour = startHour
+              }
+            }
+            if (startMeridiem === 'PM') {
+              militaryStartHour = startHour + 12
+            }
+
+            if (endMeridiem === 'AM') {
+              if (endHour === 12) {
+                militaryEndHour = 0
+              } else {
+                militaryEndHour = endHour;
+              }
+            } 
+            if (endMeridiem === 'PM') {
+              militaryEndHour = endHour + 12;
+            }
+            console.log(militaryEndHour);
+            if (hoursType === 'business') {
+              navigation.navigate('SetBusinessHours', {
+                newHours: {
+                  opens: {
+                    hour: militaryStartHour,
+                    min: startMin
+                  },
+                  closes: {
+                    hour: militaryEndHour,
+                    min:  endMin
+                  }
+                },
+                businessDay: businessDay,
+                techId: techId
+              });
+            };
+
+            if (hoursType === 'special') {
+
+              navigation.navigate('SetSpecialHours', {
+                newHours: {
+                  opens: {
+                    hour: militaryStartHour,
+                    min: startMin
+                  },
+                  closes: {
+                    hour: militaryEndHour,
+                    min:  endMin
+                  }
+                },
+                specialDateIndex: specialDateIndex,
+                userType: userType,
+                techId: techId
+              });
+            }
+            
+          }
+        }}
+      >
+        <View style={styles.saveTextContainer}>
+          <Text 
+            style={
+              hoursReady
+              ?
+              [ styles.saveText, { color: color.red2 }]
+              : styles.saveText
+            }
+          >
+            Save
+          </Text>
+        </View>
+      </TouchableHighlight>
+    </View>
   )
 };
 

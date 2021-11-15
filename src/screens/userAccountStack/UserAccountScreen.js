@@ -33,6 +33,8 @@ import DisplayPostInfo from '../../components/displayPost/DisplayPostInfo';
 import DisplayPostLoading from '../../components/displayPost/DisplayPostLoading';
 // Loading Containers
 import GetPostLoading from '../../components/GetPostLoading';
+// horizontal line
+import HeaderBottomLine from '../../components/HeaderBottomLine';
 
 // Last Page Sign
 import PostEndSign from '../../components/PostEndSign';
@@ -222,353 +224,359 @@ const UserAccountScreen = ({ route, navigation }) => {
   const [status, setStatus] = useState({});
 
 	return (
-		<MainTemplate>
-		{ 
-			screenReady === true
-			?
-			<View style={styles.mainContainer}>
-				{/*Header*/}
-				<UserAccountHeaderForm
-				  leftButtonTitle={null}
-        	leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.black1} />}
-				  leftButtonPress={() => { navigation.goBack() }}
-					username={targetUser.username}
-					title={null}
-					firstIcon={
-						<Feather name="send" size={RFValue(27)} color={color.black1} />
-					}
-					secondIcon={
-						targetUser.type === 'business'
-						? <Feather name="shopping-bag" size={RFValue(27)} color={color.black1} />
-						: null
-					}
-					firstOnPress={() => {
-						navigation.navigate('Chat', { theOtherUser: targetUser });
-					}}
-					secondOnPress={
-						targetUser.type === 'business'
-						? null
-						: null
-					}
-				/>
+		screenReady === true
+		?
+		<View style={styles.mainContainer}>
+			{/*Header*/}
+			<UserAccountHeaderForm
+				addPaddingTop={true}
+			  leftButtonTitle={null}
+      	leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.black1} />}
+			  leftButtonPress={() => { navigation.goBack() }}
+				username={targetUser.username}
+				title={null}
+				firstIcon={
+					<Feather name="send" size={RFValue(27)} color={color.black1} />
+				}
+				secondIcon={
+					targetUser.type === 'business'
+					? <Feather name="shopping-bag" size={RFValue(27)} color={color.black1} />
+					: null
+				}
+				firstOnPress={() => {
+					navigation.navigate('Chat', { theOtherUser: targetUser });
+				}}
+				secondOnPress={
+					targetUser.type === 'business'
+					? null
+					: null
+				}
+			/>
 
-				<View
-					contentContainerStyle={styles.accountInfoAndContentContainer}
+			<View
+				contentContainerStyle={styles.accountInfoAndContentContainer}
+			>
+				<ScrollView
+					refreshControl={
+	          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+	        }
+	        onScroll={({nativeEvent}) => {
+			      if (
+			      	isCloseToBottom(nativeEvent) && 
+			      	screenReady && 
+			      	userAccountPostState === false && 
+			      	userAccountPostFetchSwitch
+			      ) {
+			      	setUserAccountPostState(true);
+			      	const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, targetUser, user.id);
+			      	getUserPosts
+			      	.then((posts) => {
+			      		setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
+								if (posts.lastPost !== undefined) {
+									setUserAccountPostLast(posts.lastPost);
+								} else {
+									setUserAccountPostFetchSwtich(false);
+								};
+								setUserAccountPostState(false);
+			      	})
+			      } else {
+			      	console.log("UserAccountScreen: scrollView: onScroll: post switch: " + userAccountPostFetchSwitch + " post state: " + userAccountPostState );
+			      };
+			    }}
+			    scrollEventThrottle={1000}
+			    style={styles.userPostsContainer}
 				>
-					<ScrollView
-						refreshControl={
-		          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-		        }
-		        onScroll={({nativeEvent}) => {
-				      if (
-				      	isCloseToBottom(nativeEvent) && 
-				      	screenReady && 
-				      	userAccountPostState === false && 
-				      	userAccountPostFetchSwitch
-				      ) {
-				      	setUserAccountPostState(true);
-				      	const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, targetUser, user.id);
-				      	getUserPosts
-				      	.then((posts) => {
-				      		setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
-									if (posts.lastPost !== undefined) {
-										setUserAccountPostLast(posts.lastPost);
-									} else {
-										setUserAccountPostFetchSwtich(false);
-									};
-									setUserAccountPostState(false);
-				      	})
-				      } else {
-				      	console.log("UserAccountScreen: scrollView: onScroll: post switch: " + userAccountPostFetchSwitch + " post state: " + userAccountPostState );
-				      };
-				    }}
-				    scrollEventThrottle={1000}
-				    style={styles.userPostsContainer}
-					>
-						<ProfileCardUpper 
-							photoURL={targetUser.photoURL}
-							postCount={targetUser.postCount}
-						/>
-						<ProfileCardBottom
-							locationType={targetUser.type === 'business' ? targetUser.locationType : null}
-							address={targetUser.type === 'business' ?  targetUser.formatted_address : null}
-							googleMapUrl={targetUser.type === 'business' ?  targetUser.googlemapsUrl : null}
-							sign={targetUser.sign}
-							websiteAddress={targetUser.website}
-						/>
+					<ProfileCardUpper 
+						photoURL={targetUser.photoURL}
+						postCount={targetUser.postCount}
+					/>
+					<ProfileCardBottom
+						locationType={targetUser.type === 'business' ? targetUser.locationType : null}
+						address={targetUser.type === 'business' ?  targetUser.formatted_address : null}
+						googleMapUrl={targetUser.type === 'business' ?  targetUser.googlemapsUrl : null}
+						sign={targetUser.sign}
+						websiteAddress={targetUser.website}
+					/>
 
-						{/*account communication tools*/}
-						<View style={styles.accountManagerContainer}>
-							{ // when target user is a business
-								targetUser.type === 'business'
-								?
-								<View style={styles.managerButtonContainer}>
-									<TouchableOpacity onPress={() => {
-										navigation.navigate('ShopStack', 
-										{	
-											screen: 'BusinessSchedule',
-											params: {
-                				businessUser: targetUser
-                			},
-                		});
-									}}>
-										<ButtonA 
-											text="Shop"
-											customStyles={{
-												fontSize: RFValue(15), 
-												color: color.black1,
-											}}
-											icon={<Feather name="shopping-bag" size={RFValue(23)} color={color.black1} />}
-										/>
-									</TouchableOpacity>
-								</View>
-								: null
-							}
-							{ // when user is a technician, target user is a business which user isn't part of 
-								user.type === 'technician' &&
-								targetUser.techs.includes(user.id) === false &&
-								targetUser.type === 'business' && 
-								sentTechApp === false
-								?
-								<View style={styles.managerButtonContainer}>
-									<TouchableOpacity 
-										onPress={() => {
-											setTbaStatus("apply");
-										}}
-									>
-										<ButtonA 
-											text={`Join ${targetUser.username}`}
-											customStyles={{
-												fontSize: RFValue(15), 
-												color: color.black1,
-											}}
-										/>
-									</TouchableOpacity>
-								</View>
-								:
-								user.type === 'technician' && 
-								targetUser.techs.includes(user.id) === false &&
-								targetUser.type === 'business' && 
-								sentTechApp === true
-								?
-								<View style={styles.managerButtonContainer}>
-									<View>
-										<ButtonA 
-											text={"Request Sent"}
-											customStyles={{
-												fontSize: RFValue(15), 
-												color: color.blue1,
-											}}
-											icon={<AntDesign name="checkcircleo" size={RFValue(11)} color={color.blue1} />}
-										/>
-									</View>
-								</View>
-								: null
-							}
-
-							{	// when user is a technician, target user is a business which use is part of
-								user.type === 'technician' &&
-								targetUser.techs.includes(user.id) &&
-								targetUser.type === 'business' &&
-								sentTechLeave === false 
-								?
-								<View style={styles.managerButtonContainer}>
-									<TouchableOpacity 
-										onPress={() => {
-											setTbaStatus("leave");
-										}}
-									>
-										<ButtonA 
-											text={`Request Leave to ${targetUser.username}`}
-											customStyles={{
-												fontSize: RFValue(15), 
-												color: color.black1,
-											}}
-										/>
-									</TouchableOpacity>
-								</View>
-								: null
-							}
-						</View>
-						{ 
+					{/*account communication tools*/}
+					<View style={styles.accountManagerContainer}>
+						{ // when target user is a business
 							targetUser.type === 'business'
 							?
+							<View style={styles.managerButtonContainer}>
+								<TouchableOpacity onPress={() => {
+									navigation.navigate('ShopStack', 
+									{	
+										screen: 'BusinessSchedule',
+										params: {
+              				businessUser: targetUser
+              			},
+              		});
+								}}>
+									<ButtonA 
+										text="Shop"
+										buttonContainerCustomStyle={
+											{ borderColor: color.red2 }
+										}
+										customStyles={{
+											fontSize: RFValue(15), 
+											color: color.red2,
+										}}
+										icon={<Feather name="shopping-bag" size={RFValue(23)} color={color.red2} />}
+									/>
+								</TouchableOpacity>
+							</View>
+							: null
+						}
+						{ // when user is a technician, target user is a business which user isn't part of 
+							user.type === 'technician' &&
+							targetUser.techs.includes(user.id) === false &&
+							targetUser.type === 'business' && 
+							sentTechApp === false
+							?
+							<View style={styles.managerButtonContainer}>
+								<TouchableOpacity 
+									onPress={() => {
+										setTbaStatus("apply");
+									}}
+								>
+									<ButtonA 
+										text={`Join ${targetUser.username}`}
+										customStyles={{
+											fontSize: RFValue(15), 
+											color: color.black1,
+										}}
+									/>
+								</TouchableOpacity>
+							</View>
+							:
+							user.type === 'technician' && 
+							targetUser.techs.includes(user.id) === false &&
+							targetUser.type === 'business' && 
+							sentTechApp === true
+							?
+							<View style={styles.managerButtonContainer}>
+								<View>
+									<ButtonA 
+										text={"Request Sent"}
+										customStyles={{
+											fontSize: RFValue(15), 
+											color: color.blue1,
+										}}
+										icon={<AntDesign name="checkcircleo" size={RFValue(11)} color={color.blue1} />}
+									/>
+								</View>
+							</View>
+							: null
+						}
+
+						{	// when user is a technician, target user is a business which use is part of
+							user.type === 'technician' &&
+							targetUser.techs.includes(user.id) &&
+							targetUser.type === 'business' &&
+							sentTechLeave === false 
+							?
+							<View style={styles.managerButtonContainer}>
+								<TouchableOpacity 
+									onPress={() => {
+										setTbaStatus("leave");
+									}}
+								>
+									<ButtonA 
+										text={`Request Leave to ${targetUser.username}`}
+										customStyles={{
+											fontSize: RFValue(15), 
+											color: color.black1,
+										}}
+									/>
+								</TouchableOpacity>
+							</View>
+							: null
+						}
+					</View>
+					{ 
+						targetUser.type === 'business'
+						?
+						<View>
+							<HeaderBottomLine />
 							<View style={styles.userPostsLabelContainer}>
 								<Text style={styles.userPostsLabelText}>
 									<Feather name="menu" size={RFValue(23)} color={color.black1} />
 								</Text>
 							</View>
-							:
-							null
-						}
-						{ 
-							targetUser.type === 'business' && userAccountDisplayPosts.length > 0
-							?
-							<View style={styles.displayPostsContainer}>
-								<FlatList
-									onEndReached={() => {
-										if (
-											screenReady && 
-											userAccountDisplayPostFetchSwitch && 
-											!userAccountDisplayPostState
-										) {
-											setUserAccountDisplayPostState(true);
-											const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, user, user.id);
-											getDisplayPosts
-											.then((posts) => {
-												setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
-												if (posts.lastPost !== undefined) {
-													setUserAccountDisplayPostLast(posts.lastPost);
-												} else {
-													setUserAccountPostFetchSwtich(false);
-												};
-												setUserAccountDisplayPostState(false);
-											})
-										}
-									}}
-									onEndReachedThreshold={0.01}
-			            horizontal
-			            showsHorizontalScrollIndicator={false}
-			            data={userAccountDisplayPosts}
-			            keyExtractor={(displayPost, index) => index.toString()}
-			            renderItem={({ item, index }) => {
-			              return (
-			                <TouchableOpacity 
-			                  style={{ ...styles.postImageContainer, ...{ height: windowWidth/2 + RFValue(50), width: windowWidth/2 } }}
-			                  onPress={() => {
-			                  	navigation.navigate('PostsSwipeStack', {
-			                  		screen: 'PostsSwipe',
-			                  		params: {
-			                  			postSource: 'userAccountDisplay',
-			                  			cardIndex: index,
-			                  			targetUser: targetUser,
-			                  			posts: userAccountDisplayPosts,
-          										postState: userAccountDisplayPostState,
-															postFetchSwitch: userAccountDisplayPostFetchSwitch,
-															postLast: userAccountDisplayPostLast,
-			                  		}
-			                  	});
-			                  }}
-			                >
-				                <DisplayPostImage
-				                	type={item.data.files[0].type}
-				                	url={item.data.files[0].url}
-				                	imageWidth={windowWidth/2}
-				                />
-				                <DisplayPostInfo
-				                	taggedCount={kOrNo(item.data.taggedCount)}
-				                	title={item.data.title}
-				                	likeCount={kOrNo(item.data.like)}
-				                	etc={item.data.etc}
-				                	price={item.data.price}
-				                	containerWidth={windowWidth/2}
-				                />
-			                  { item.data.files.length > 1
-			                  	? <MultiplePhotosIndicator
-			                  			size={RFValue(24)}
-			                  		/>
-			                  	: null
-			                  }
-			                </TouchableOpacity>
-			              )
-			            }}
-			          />
-								{ 
-									userAccountDisplayPostState
-									?
-									<DisplayPostLoading />
-									: 
-									null
-								}
-							</View>
-							: null
-						}
-						<View style={styles.userPostsLabelContainer}>
-							<Text style={styles.userPostsLabelText}>
-								<AntDesign name="picture" size={RFValue(23)} color={color.black1} />
-							</Text>
+							<HeaderBottomLine />
 						</View>
-						<ThreePostsRow
-							navigate={navigation.navigate}
-							screen={"userAccount"}
-							targetUser={targetUser}
-							posts={userAccountPosts} 
-							postState={userAccountPostState}
-							postFetchSwitch={userAccountPostFetchSwitch}
-							postState={userAccountPostState}
-							postLast={userAccountPostLast}
-							threePostsRowImageWH={threePostsRowImageWH}
-						/>
-						{ 
-							userAccountPostState
-							?
-							<GetPostLoading />
-							: 
-							null
-						}
-						{ 
-							userAccountPostFetchSwitch === false && userAccountPosts.length > 27
-							?
-							<PostEndSign />
-							: null
-						}
-					</ScrollView>
-				</View>
+						:
+						null
+					}
+					{ 
+						targetUser.type === 'business' && userAccountDisplayPosts.length > 0
+						?
+						<View style={styles.displayPostsContainer}>
+							<FlatList
+								onEndReached={() => {
+									if (
+										screenReady && 
+										userAccountDisplayPostFetchSwitch && 
+										!userAccountDisplayPostState
+									) {
+										setUserAccountDisplayPostState(true);
+										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, user, user.id);
+										getDisplayPosts
+										.then((posts) => {
+											setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+											if (posts.lastPost !== undefined) {
+												setUserAccountDisplayPostLast(posts.lastPost);
+											} else {
+												setUserAccountPostFetchSwtich(false);
+											};
+											setUserAccountDisplayPostState(false);
+										})
+									}
+								}}
+								onEndReachedThreshold={0.01}
+		            horizontal
+		            showsHorizontalScrollIndicator={false}
+		            data={userAccountDisplayPosts}
+		            keyExtractor={(displayPost, index) => index.toString()}
+		            renderItem={({ item, index }) => {
+		              return (
+		                <TouchableOpacity 
+		                  style={{ ...styles.postImageContainer, ...{ height: windowWidth/2 + RFValue(50), width: windowWidth/2 } }}
+		                  onPress={() => {
+		                  	navigation.navigate('PostsSwipeStack', {
+		                  		screen: 'PostsSwipe',
+		                  		params: {
+		                  			postSource: 'userAccountDisplay',
+		                  			cardIndex: index,
+		                  			targetUser: targetUser,
+		                  			posts: userAccountDisplayPosts,
+        										postState: userAccountDisplayPostState,
+														postFetchSwitch: userAccountDisplayPostFetchSwitch,
+														postLast: userAccountDisplayPostLast,
+		                  		}
+		                  	});
+		                  }}
+		                >
+			                <DisplayPostImage
+			                	type={item.data.files[0].type}
+			                	url={item.data.files[0].url}
+			                	imageWidth={windowWidth/2}
+			                />
+			                <DisplayPostInfo
+			                	taggedCount={kOrNo(item.data.taggedCount)}
+			                	title={item.data.title}
+			                	likeCount={kOrNo(item.data.like)}
+			                	etc={item.data.etc}
+			                	price={item.data.price}
+			                	containerWidth={windowWidth/2}
+			                />
+		                  { item.data.files.length > 1
+		                  	? <MultiplePhotosIndicator
+		                  			size={RFValue(24)}
+		                  		/>
+		                  	: null
+		                  }
+		                </TouchableOpacity>
+		              )
+		            }}
+		          />
+							{ 
+								userAccountDisplayPostState
+								?
+								<DisplayPostLoading />
+								: 
+								null
+							}
+						</View>
+						: null
+					}
+					<HeaderBottomLine />
+					<View style={styles.userPostsLabelContainer}>
+						<Text style={styles.userPostsLabelText}>
+							<AntDesign name="picture" size={RFValue(23)} color={color.black1} />
+						</Text>
+					</View>
+					<HeaderBottomLine />
+					<ThreePostsRow
+						navigate={navigation.navigate}
+						screen={"userAccount"}
+						targetUser={targetUser}
+						posts={userAccountPosts} 
+						postState={userAccountPostState}
+						postFetchSwitch={userAccountPostFetchSwitch}
+						postState={userAccountPostState}
+						postLast={userAccountPostLast}
+						threePostsRowImageWH={threePostsRowImageWH}
+					/>
+					{ 
+						userAccountPostState
+						?
+						<GetPostLoading />
+						: 
+						null
+					}
+					{ 
+						userAccountPostFetchSwitch === false && userAccountPosts.length > 27
+						?
+						<PostEndSign />
+						: null
+					}
+				</ScrollView>
 			</View>
-			: 
-			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-				<SpinnerFromActivityIndicator/>
-			</View>
-		}
-		{ 
-      tbaStatus
-      && 
-      <TwoButtonAlert 
-        title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
-        message={`Do you want to send an application to ${targetUser.username} to join as a technician?`}
-        buttonOneText={"Yes"}
-        buttonTwoText={"No"}
-        buttonOneAction={() => {
-        	if (tbaStatus === "leave") {
-        		const sendLeaveRequest = busTechPostFire.sentTechLeave(targetUser.id, user.id);
-						sendLeaveRequest
-						.then((response) => {
-							if (response === false) {
-								setSentTechLeave(true);
-							}
-							else if (response === 'sent') {
-								setSentTechLeave(true);
-							} 
-						})
-						.catch((error) => {
-							console.log("Error occured: UserAccountScreen: sentLeaveRequest: ", error);
-						});
-        	}
-        	
-        	if (tbaStatus === "apply") {
-        		const sendRequest = busTechPostFire.sendTechApp(targetUser.id, user.id);
-						sendRequest
-						.then((response) => {
-							if (response === true) {
-								setSentTechApp(true);
-							}
-							else if (response === 'sent') {
-								setSentTechApp(true);
-							}
-							setTbaStatus(false);
-						})
-						.catch((error) => {
-							console.log("Error occured: UserAccountScreen: sendRequest: ", error);
-						});
-        	}
-        	
-        }}
-        buttonTwoAction={() => { 
-        	setTbaStatus(false)
-        }}
-      />
-    }
-		</MainTemplate>
+			{ 
+		    tbaStatus
+		    && 
+		    <TwoButtonAlert 
+		      title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
+		      message={`Do you want to send an application to ${targetUser.username} to join as a technician?`}
+		      buttonOneText={"Yes"}
+		      buttonTwoText={"No"}
+		      buttonOneAction={() => {
+		      	if (tbaStatus === "leave") {
+		      		const sendLeaveRequest = busTechPostFire.sentTechLeave(targetUser.id, user.id);
+							sendLeaveRequest
+							.then((response) => {
+								if (response === false) {
+									setSentTechLeave(true);
+								}
+								else if (response === 'sent') {
+									setSentTechLeave(true);
+								} 
+							})
+							.catch((error) => {
+								console.log("Error occured: UserAccountScreen: sentLeaveRequest: ", error);
+							});
+		      	}
+		      	
+		      	if (tbaStatus === "apply") {
+		      		const sendRequest = busTechPostFire.sendTechApp(targetUser.id, user.id);
+							sendRequest
+							.then((response) => {
+								if (response === true) {
+									setSentTechApp(true);
+								}
+								else if (response === 'sent') {
+									setSentTechApp(true);
+								}
+								setTbaStatus(false);
+							})
+							.catch((error) => {
+								console.log("Error occured: UserAccountScreen: sendRequest: ", error);
+							});
+		      	}
+		      	
+		      }}
+		      buttonTwoAction={() => { 
+		      	setTbaStatus(false)
+		      }}
+		    />
+		  }
+		</View>
+		: 
+		<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+			<SpinnerFromActivityIndicator/>
+		</View>
 	);
 };
 
@@ -598,14 +606,8 @@ const styles = StyleSheet.create({
 	userPostsLabelContainer: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		shadowColor: '#ccc',
 		backgroundColor: '#fff',
-		elevation: 10,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    padding: 10,
-    shadowColor: "#000",
+    padding: RFValue(10),
 	},
 	userPostsLabelText: {
 		fontSize: RFValue(15),

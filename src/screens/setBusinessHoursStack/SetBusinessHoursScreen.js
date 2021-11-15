@@ -41,7 +41,7 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, businessDay, setHours, userType }) => {
+const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, businessDay, setHours, userType, techId }) => {
   return (
     <View style={styles.settingContainer}>
       <View style={styles.settingTopContainer}>
@@ -142,7 +142,8 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
               navigation.navigate("SetHours", {
                 userType: userType,
                 hoursType: 'business',
-                businessDay: businessDay
+                businessDay: businessDay,
+                techId: techId
               })
             }}
             underlayColor={color.grey4}
@@ -367,168 +368,180 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
   // }, [sunHours, monHours]);
 
   return (
-    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
-      <View style={styles.mainContainer}>
-        <HeaderForm 
-          leftButtonTitle={"Cancel"}
-          leftButtonIcon={null}
-          headerTitle={"Hours"} 
-          rightButtonTitle={"Save"} 
-          leftButtonPress={() => {
-            navigation.goBack();
-          }}
-          rightButtonPress={() => {
-            const newBusinessHours = 
-            { 
-              sun_open: sunOpen, 
-              mon_open: monOpen, 
-              tue_open: tueOpen, 
-              wed_open: wedOpen, 
-              thu_open: thuOpen, 
-              fri_open: friOpen, 
-              sat_open: satOpen,
-              sun_hours: sunHours,
-              mon_hours: monHours,
-              tue_hours: tueHours,
-              wed_hours: wedHours,
-              thu_hours: thuHours,
-              fri_hours: friHours,
-              sat_hours: satHours
-            };
+    <View style={styles.mainContainer}>
+      <HeaderForm 
+        addPaddingTop={userType === 'tech' ? false : true}
+        leftButtonTitle={null}
+        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+        headerTitle={"Hours"} 
+        rightButtonIcon={"Save"}
+        rightButtonTitle={null} 
+        leftButtonPress={() => {
+          navigation.goBack();
+        }}
+        rightButtonPress={() => {
+          const newBusinessHours = 
+          { 
+            sun_open: sunOpen, 
+            mon_open: monOpen, 
+            tue_open: tueOpen, 
+            wed_open: wedOpen, 
+            thu_open: thuOpen, 
+            fri_open: friOpen, 
+            sat_open: satOpen,
+            sun_hours: sunHours,
+            mon_hours: monHours,
+            tue_hours: tueHours,
+            wed_hours: wedHours,
+            thu_hours: thuHours,
+            fri_hours: friHours,
+            sat_hours: satHours
+          };
 
-            let readyToSave = false;
+          let readyToSave = false;
 
-            const compareHours = (currentHours, newHours) => {
-              let hoursIndex = 0;
-              const currentHoursLen = currentHours.length;
-              const newHoursLen = newHours.length;
-              // when the two hours have different length then return false
-              if (currentHoursLen !== newHoursLen) {
+          const compareHours = (currentHours, newHours) => {
+            let hoursIndex = 0;
+            const currentHoursLen = currentHours.length;
+            const newHoursLen = newHours.length;
+            // when the two hours have different length then return false
+            if (currentHoursLen !== newHoursLen) {
+              return true
+            }
+            // if not compare each hours in the two arrays
+            for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
+              if (
+                currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
+                currentHours[hoursIndex].min !== newHours[hoursIndex].min 
+              ) {
                 return true
               }
-              // if not compare each hours in the two arrays
-              for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
-                if (
-                  currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
-                  currentHours[hoursIndex].min !== newHours[hoursIndex].min 
-                ) {
-                  return true
-                }
-              }
-              return false;
-            };
+            }
+            return false;
+          };
 
-            if (businessHours.sun_open) {
-              if ( 
-                // when one of the days is changed from open to close or vice versa
-                businessHours.sun_open !== newBusinessHours.sun_open ||
-                businessHours.mon_open !== newBusinessHours.mon_open ||
-                businessHours.tue_open !== newBusinessHours.tue_open ||
-                businessHours.wed_open !== newBusinessHours.wed_open ||
-                businessHours.thu_open !== newBusinessHours.thu_open ||
-                businessHours.fri_open !== newBusinessHours.fri_open ||
-                businessHours.sat_open !== newBusinessHours.sat_open
-              ) {
-                readyToSave = true;
-              }
-              else if (
-                compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
-                compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
-                compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
-                compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
-                compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
-                compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
-                compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
-              ) {
-                readyToSave = true;
-              };
-            } else {
+          if (businessHours.sun_open) {
+            if ( 
+              // when one of the days is changed from open to close or vice versa
+              businessHours.sun_open !== newBusinessHours.sun_open ||
+              businessHours.mon_open !== newBusinessHours.mon_open ||
+              businessHours.tue_open !== newBusinessHours.tue_open ||
+              businessHours.wed_open !== newBusinessHours.wed_open ||
+              businessHours.thu_open !== newBusinessHours.thu_open ||
+              businessHours.fri_open !== newBusinessHours.fri_open ||
+              businessHours.sat_open !== newBusinessHours.sat_open
+            ) {
               readyToSave = true;
             }
-            
-            if (readyToSave) {
-              console.log("ready to save");
-              setShowTba(true);
-            } else {
-              setAlertBoxStatus(true);
-              setAlertBoxText("Change has not made.");
-            }
-          }}
+            else if (
+              compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
+              compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
+              compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
+              compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
+              compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
+              compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
+              compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
+            ) {
+              readyToSave = true;
+            };
+          } else {
+            readyToSave = true;
+          }
+          
+          if (readyToSave) {
+            console.log("ready to save");
+            setShowTba(true);
+          } else {
+            setAlertBoxStatus(true);
+            setAlertBoxText("Change has not made.");
+          }
+        }}
+      />
+      <ScrollView>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Sunday"}
+          dayOpen={sunOpen}
+          setDayOpen={setSunOpen}
+          hours={sunHours}
+          businessDay={'sun'}
+          setHours={setSunHours}
+          userType={userType}
+          techId={techId}
         />
         <HeaderBottomLine/>
-        <ScrollView>
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Sunday"}
-            dayOpen={sunOpen}
-            setDayOpen={setSunOpen}
-            hours={sunHours}
-            businessDay={'sun'}
-            setHours={setSunHours}
-            userType={userType}
-          />
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Monday"}
-            dayOpen={monOpen}
-            setDayOpen={setMonOpen}
-            hours={monHours}
-            businessDay={'mon'}
-            setHours={setMonHours}
-            userType={userType}
-          />
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Tuesday"}
-            dayOpen={tueOpen}
-            setDayOpen={setTueOpen}
-            hours={tueHours}
-            businessDay={'tue'}
-            setHours={setTueHours}
-            userType={userType}
-          />
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Wednesday"}
-            dayOpen={wedOpen}
-            setDayOpen={setWedOpen}
-            hours={wedHours}
-            businessDay={'wed'}
-            setHours={setWedHours}
-            userType={userType}
-          />
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Thursday"}
-            dayOpen={thuOpen}
-            setDayOpen={setThuOpen}
-            hours={thuHours}
-            businessDay={'thu'}
-            setHours={setThuHours}
-            userType={userType}
-          />
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Friday"}
-            dayOpen={friOpen}
-            setDayOpen={setFriOpen}
-            hours={friHours}
-            businessDay={'fri'}
-            setHours={setFriHours}
-            userType={userType}
-          />
-          <SettingHoursDayContainer
-            navigation={navigation} 
-            dayText={"Saturday"}
-            dayOpen={satOpen}
-            setDayOpen={setSatOpen}
-            hours={satHours}
-            businessDay={'sat'}
-            setHours={setSatHours}
-            userType={userType}
-          />
-        </ScrollView>
-      </View>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Monday"}
+          dayOpen={monOpen}
+          setDayOpen={setMonOpen}
+          hours={monHours}
+          businessDay={'mon'}
+          setHours={setMonHours}
+          userType={userType}
+          techId={techId}
+        />
+        <HeaderBottomLine/>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Tuesday"}
+          dayOpen={tueOpen}
+          setDayOpen={setTueOpen}
+          hours={tueHours}
+          businessDay={'tue'}
+          setHours={setTueHours}
+          userType={userType}
+          techId={techId}
+        />
+        <HeaderBottomLine/>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Wednesday"}
+          dayOpen={wedOpen}
+          setDayOpen={setWedOpen}
+          hours={wedHours}
+          businessDay={'wed'}
+          setHours={setWedHours}
+          userType={userType}
+          techId={techId}
+        />
+        <HeaderBottomLine/>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Thursday"}
+          dayOpen={thuOpen}
+          setDayOpen={setThuOpen}
+          hours={thuHours}
+          businessDay={'thu'}
+          setHours={setThuHours}
+          userType={userType}
+          techId={techId}
+        />
+        <HeaderBottomLine/>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Friday"}
+          dayOpen={friOpen}
+          setDayOpen={setFriOpen}
+          hours={friHours}
+          businessDay={'fri'}
+          setHours={setFriHours}
+          userType={userType}
+          techId={techId}
+        />
+        <HeaderBottomLine/>
+        <SettingHoursDayContainer
+          navigation={navigation} 
+          dayText={"Saturday"}
+          dayOpen={satOpen}
+          setDayOpen={setSatOpen}
+          hours={satHours}
+          businessDay={'sat'}
+          setHours={setSatHours}
+          userType={userType}
+          techId={techId}
+        />
+      </ScrollView>
       { showTba && 
         <TwoButtonAlert 
           title={"Ready to Save?"}
@@ -595,7 +608,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
           setAlert={setAlertBoxStatus}
         />
       }
-    </MainTemplate>
+    </View>
   )
 };
 

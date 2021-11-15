@@ -19,13 +19,13 @@ const MainTemplate = ({ children, disableMarginTop }) => {
 				...styles.safeAreaContainer, 
 				...{ ...Platform.select({
 		      android: {
-		        marginTop: orientation === 'LANDSCAPE' ? '3.5%' : '7%' ,
+		        paddingTop: orientation === 'LANDSCAPE' ? '3.5%' : '7%' ,
 		      },
 		      ios: {
-		        marginTop: '11%',
+		        paddingTop: '11%',
 		      },
 		      default: {
-		        marginTop: '7%',
+		        paddingTop: '7%',
 		      }
 		    })} 
 			}
@@ -37,7 +37,9 @@ const MainTemplate = ({ children, disableMarginTop }) => {
 
 const styles = StyleSheet.create({
 	safeAreaContainer: {
+		backgroundColor: 'white',
 		flex: 1,
+		elevation: 6
 	},
 });
 

@@ -47,11 +47,12 @@ const AccountManagerScreen = ({ navigation }) => {
 	const [ alertBoxText, setAlertBoxText ] = useState("Username is necessary for a business or technician registration.")
 
 	return (
-		<MainTemplate>
+		<View style={styles.mainContainer}>
 			<HeaderForm 
-        leftButtonTitle={null}
-        leftButtonIcon={<EvilIcons name="close" size={RFValue(27)} color={color.black1} />}
-        headerTitle={"Account Manager"} 
+				addPaddingTop={true}
+        leftButtonTitle={user.username}
+        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+        // headerTitle={"Account Manager"} 
         rightButtonTitle={null} 
         leftButtonPress={() => {
           navigation.goBack();
@@ -65,12 +66,12 @@ const AccountManagerScreen = ({ navigation }) => {
       
 			<View style={styles.menuContainer}>
 				<ScrollView>
-					{ user.username
+					{/*{ user.username
 						&&
 						<View style={styles.labelContainer}>
 							<Text style={styles.labelText}>{user.username}</Text>
 						</View>
-					}
+					}*/}
 					<View style={styles.regularMenu}>
 						<KitkatButton
 							onPress={() => {
@@ -177,11 +178,15 @@ const AccountManagerScreen = ({ navigation }) => {
 	      />
 	      : null
 	    }
-		</MainTemplate>
+		</View>
 	);
 };
 
 const styles = StyleSheet.create({
+	mainContainer: {
+		backgroundColor: color.white2,
+		flex: 1,
+	},
 	menuContainer: {
 		backgroundColor: color.white2,
 		flex: 1,

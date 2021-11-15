@@ -22,12 +22,13 @@ const SetSpecialHoursStack = () => {
         component={SetSpecialHoursScreen}
         initialParams={{ 
           userType: null,
+          newSpecialDateId: null,
           newSpecialDate: null,
           newSpecialDateStatus: null,
           newHours: null,
           specialDateIndex: null,
           // for tech
-          techId: null
+          techId: null,
         }}
       />
       <Stack.Screen 
@@ -35,12 +36,22 @@ const SetSpecialHoursStack = () => {
         component={SetHoursScreen}
         initialParams={{ 
           businessDay: null,
-          specialDateIndex: null
+          specialDateIndex: null,
+          userType: null,
+          techId: null,
+          busId: null
         }}
       />
       <Stack.Screen 
         name="SetAnotherDay" 
         component={SetAnotherDayScreen}
+        initialParams={{ 
+          businessDay: null,
+          specialDateIndex: null,
+          userType: null,
+          techId: null,
+          busId: null
+        }}
       />
     </Stack.Navigator>
   )

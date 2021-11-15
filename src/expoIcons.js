@@ -118,6 +118,10 @@ const clockIcon = (size, color) => {
 	return <MaterialCommunityIcons name="clock-outline" size={size} color={color} />
 };
 
+const matClockTimeEightOutline = (size, color) => {
+	return <MaterialCommunityIcons name="clock-time-eight-outline" size={size} color={color} />
+};
+
 const fontAwesomeCalendarO = (size, color) => {
 	return <FontAwesome name="calendar-o" size={size} color={color} />
 };
@@ -154,6 +158,7 @@ export default {
 	phoneIcon,
 	setting,
 	clockIcon,
+	matClockTimeEightOutline,
 	fontAwesomeCalendarO,
 	fontAwesomeCalendarPlusO
 };

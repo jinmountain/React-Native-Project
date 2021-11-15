@@ -10,6 +10,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 const LoadingAlert = ({ progress }) => {
 	return (
 		<View style={styles.container}>
+			<View style={styles.background}/>
+			
 			<View style={styles.loadingAlertContainer}>
 				{
 					progress
@@ -24,22 +26,19 @@ const LoadingAlert = ({ progress }) => {
 				}
 				<View style={styles.iconContainer}>
 					<View style={styles.letterContainer}>
-						<Text style={styles.letterText}>W</Text>
-					</View>
-					<View style={styles.letterContainer}>
-						<Text style={styles.letterText}>O</Text>
+						<Text style={styles.letterText}>S</Text>
 					</View>
 					<View style={styles.letterContainer}>
 						<Text style={styles.letterText}>N</Text>
 					</View>
 					<View style={styles.letterContainer}>
-						<Text style={styles.letterText}>D</Text>
+						<Text style={styles.letterText}>ㅅ</Text>
 					</View>
 					<View style={styles.letterContainer}>
-						<Text style={styles.letterText}>E</Text>
+						<Text style={styles.letterText}>ㅣ</Text>
 					</View>
 					<View style={styles.letterContainer}>
-						<Text style={styles.letterText}>R</Text>
+						<Text style={styles.letterText}>L</Text>
 					</View>
 					{/*<MaterialCommunityIcons name="alpha-l" size={RFValue(23)} color={color.grey3} />
 					<MaterialCommunityIcons name="alpha-o" size={RFValue(23)} color={color.grey3} />
@@ -59,23 +58,30 @@ const LoadingAlert = ({ progress }) => {
 
 const styles = StyleSheet.create({ 
 	container: {
-		zIndex: 2, // This covers the buttons on the screen and block from pressing
+		elevation: 6,
+		zIndex: 6, // This covers the buttons on the screen and block from pressing
 		position: 'absolute',
 		width: "100%",
 		height: "100%",
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
+	background: {
+		width: "100%",
+		height: "100%",
+		backgroundColor: color.black1,
+		opacity: 0.7
+	},
 	loadingAlertContainer: {
-		zIndex: 3,
 		alignSelf: 'center',
 		position: 'absolute',
 		backgroundColor: color.white2,
 		shadowColor: "#000",
-		shadowOffset: { x: 1, y: 1 },
+		shadowOffset: { x: 0, y: 2 },
     shadowRadius: 5,
     shadowOpacity: 0.4,
     elevation: 5, // for android
+    zIndex: 5, // for ios
     borderRadius: RFValue(7),
     width: RFValue(170),
     height: RFValue(170),
@@ -93,7 +99,7 @@ const styles = StyleSheet.create({
 	},
 	letterText: {
 		fontSize: RFValue(17),
-		color: color.black2,
+		color: color.red2,
 	},
 
 	progressBarContainer: {

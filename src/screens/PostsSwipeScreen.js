@@ -118,7 +118,7 @@ const PostsSwipeScreen = ({ route, navigation }) => {
   } = useContext(AuthContext);
 
   return (
-    <MainTemplate>
+    <View style={styles.mainContainer}>
       <HeaderForm 
         leftButtonTitle={null}
         leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.black1} />}
@@ -130,6 +130,7 @@ const PostsSwipeScreen = ({ route, navigation }) => {
         rightButtonPress={() => {
           null
         }}
+        addPaddingTop={true}
       />
       <View style={{height: "100%", paddingBottom: RFValue(37)}}>
         <PostCard
@@ -174,14 +175,14 @@ const PostsSwipeScreen = ({ route, navigation }) => {
           targetUser={swipeTargetUser}
         />
       </View>
-    </MainTemplate>
+    </View>
   )
 };
 
 const styles = StyleSheet.create({
-  postsSwipeScreenContainer: {
+  mainContainer: {
     flex: 1,
-    backgroundColor: "#F9F9F9",
+    backgroundColor: color.white2,
   },
 });
 

@@ -1,8 +1,7 @@
 // developer summary
 // ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
-// this screen is for a business to change its business hours.
-// if they make any change and click save a two button alert 
-// will pop and ask again to confirm.
+// when delete date, it will delete the doc
+// newly added special dates will be added to firebase when saved
 
 import React, { useState, useEffect, useContext } from 'react';
 import { 
@@ -35,6 +34,7 @@ import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
 import useConvertTime from '../../hooks/useConvertTime';
+import { isCloseToBottom } from '../../hooks/isCloseToBottom';
 
 // color
 import color from '../../color';
@@ -42,7 +42,7 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates, userType }) => {
+const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates, userType, techId, busId }) => {
   return (
     <View style={styles.settingContainer}>
       <View style={styles.settingTopContainer}>
@@ -182,7 +182,9 @@ const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates
               navigation.navigate("SetHours", {
                 hoursType: 'special',
                 specialDateIndex: index,
-                userType: userType
+                userType: userType,
+                techId: techId,
+                busId: busId
               })
             }}
             underlayColor={color.grey4}
@@ -209,13 +211,14 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
   const { 
     userType,
     // from SetAnotherDayScreen
+    newSpecialDateId,
     newSpecialDate,
     newSpecialDateStatus,
     // from SetHoursScreen
     newHours,
     specialDateIndex,
     // for tech
-    techId
+    techId,
   } = route.params;
   
   const [ showTba, setShowTba ] = useState(false);
@@ -225,6 +228,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
   // [
   //   special day
   //   {
+  //      id: string,
   //      date_in_ms: number,
   //      status: boolean,
   //      hours: array
@@ -245,33 +249,49 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
   //   ]
   // ]
 
+  // special hours fetch states
+  const [ specialHoursFetchSwitch, setSpecialHoursFetchSwitch ] = useState(true);
+  const [ lastSpecialHour, setLastSpecialHour ] = useState(null);
+  const [ getSpecialHoursState, setGetSpecialHoursState ] = useState(false);
+
   // business user's special hours
-  const [ currentSpecialHours, setCurrentSpecialHours ] = useState(
-    userType === 'bus' && user.special_hours ? user.special_hours : null
-  );
+  const [ currentSpecialHours, setCurrentSpecialHours ] = useState([]);
   // seperated into three for date_in_ms, status, and hours
-  const [ specialDates, setSpecialDates ] = useState(
-    []
-  );
+  const [ specialDates, setSpecialDates ] = useState([]);
 
   // if userType is tech
   useEffect(() => {
+    console.log("userType: ", userType, "busId: ", user.id, "techId: ", techId);
+
     let isMounted = true;
-    if (userType === 'tech' && techId) {
+    let getSpecialHours;
+
+    if (userType === 'bus' && user.id) {
+      isMounted && setGetSpecialHoursState(true);
+      getSpecialHours = businessGetFire.getBusUpcomingSpecialHours(user.id, null);
+    };
+    
+    if (userType === 'tech' && techId && user.id) {
       // get tech business hours
-      const getTechSpecialHours = businessGetFire.getTechSpecialHours(user.id, techId);
-      getTechSpecialHours
-      .then((currentSpecialHours) => {
-        // set to the states
-        if (currentSpecialHours) {
-          isMounted && setCurrentSpecialHours(currentSpecialHours);
-          isMounted && setSpecialDates(currentSpecialHours);
-        }
-      })
-      .catch((error) => {
-        console.log("error: ", error);
-      });
-    } 
+      isMounted && setGetSpecialHoursState(true);
+      getSpecialHours = businessGetFire.getTechUpcomingSpecialHours(user.id, techId, null);
+    };
+
+    getSpecialHours
+    .then((result) => {
+      // result
+      // { specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true }
+      if (isMounted) {
+        setSpecialDates(result.specialHours);
+        setGetSpecialHoursState(false);
+        setLastSpecialHour(result.lastSpecialHour);
+        setSpecialHoursFetchSwitch(result.fetchSwitch);
+      }
+    })
+    .catch((error) => {
+      console.log("error: ", error);
+    });
+
     return () => {
       isMounted = false;
       // navigation.setParams({ 
@@ -282,10 +302,18 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     let isMounted = true;
-    console.log("user speical hours: ", user.special_hours);
     if (newSpecialDate) {
-      isMounted && setSpecialDates([ ...specialDates, { date_in_ms: newSpecialDate, status: newSpecialDateStatus, hours: [] } ]);
-      navigation.setParams({ 
+      isMounted && setSpecialDates([ 
+        ...specialDates, 
+        { 
+          id: newSpecialDateId, 
+          date_in_ms: newSpecialDate, 
+          status: newSpecialDateStatus, 
+          hours: [] 
+        } 
+      ]);
+      navigation.setParams({
+        newSpecialDateId: null, 
         newSpecialDate: null, 
         newSpecialDateStatus: null, 
       });
@@ -321,124 +349,165 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
     return () => {
       isMounted = false;
       setShowTba(false);
-      user.special_hours && setSpecialDates(user.special_hours);
     }
   }, [ newSpecialDate, newHours ]);
 
   return (
-    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
-      <View style={styles.mainContainer}>
-        <HeaderForm 
-          leftButtonTitle={"Cancel"}
-          leftButtonIcon={null}
-          headerTitle={"Special Hours"} 
-          rightButtonTitle={"Save"} 
-          leftButtonPress={() => {
-            navigation.goBack();
-          }}
-          rightButtonPress={() => {
-            console.log(specialDates);
-            const compareHours = (currentHours, newHours) => {
-              let hoursIndex = 0;
-              const currentHoursLen = currentHours.length;
-              const newHoursLen = newHours.length;
-              // when the two hours have different length then return false
-              if (currentHoursLen !== newHoursLen) {
-                return true
-              }
-              // if not compare each hours in the two arrays
-              for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
-                if (
-                  currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
-                  currentHours[hoursIndex].min !== newHours[hoursIndex].min 
-                ) {
-                  return true
-                }
-              }
-              return false;
-            };
+    <View style={styles.mainContainer}>
+      <HeaderForm 
+        addPaddingTop={userType === 'tech' ? false : true}
+        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+        headerTitle={"Special Hours"} 
+        rightButtonIcon={"Done"} 
+        leftButtonPress={() => {
+          navigation.goBack();
+        }}
+        rightButtonPress={() => {
+          console.log(specialDates);
+          // const compareHours = (currentHours, newHours) => {
+          //   let hoursIndex = 0;
+          //   const currentHoursLen = currentHours.length;
+          //   const newHoursLen = newHours.length;
+          //   // when the two hours have different length then return false
+          //   if (currentHoursLen !== newHoursLen) {
+          //     return true
+          //   }
+          //   // if not compare each hours in the two arrays
+          //   for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
+          //     if (
+          //       currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
+          //       currentHours[hoursIndex].min !== newHours[hoursIndex].min 
+          //     ) {
+          //       return true
+          //     }
+          //   }
+          //   return false;
+          // };
 
-            let readyToSave = false;
+          // let readyToSave = false;
 
-            if (currentSpecialHours) {
-              // compare length 
-              const currentSpecialHoursLen = currentSpecialHours.length;
-              if (currentSpecialHoursLen !== specialDates.length ) {
-                readyToSave = true;
-              } else {
-                let specialHoursIndex = 0;
-                for (specialHoursIndex; specialHoursIndex < currentSpecialHoursLen; specialHoursIndex++) {
-                  if (currentSpecialHours[specialHoursIndex].date_in_ms !== specialDates[specialHoursIndex].date_in_ms) {
-                    readyToSave = true;
-                    break
-                  };
+          // if (currentSpecialHours) {
+          //   // compare length 
+          //   const currentSpecialHoursLen = currentSpecialHours.length;
+          //   if (currentSpecialHoursLen !== specialDates.length ) {
+          //     readyToSave = true;
+          //   } else {
+          //     let specialHoursIndex = 0;
+          //     for (specialHoursIndex; specialHoursIndex < currentSpecialHoursLen; specialHoursIndex++) {
+          //       if (currentSpecialHours[specialHoursIndex].date_in_ms !== specialDates[specialHoursIndex].date_in_ms) {
+          //         readyToSave = true;
+          //         break
+          //       };
 
-                  if (currentSpecialHours[specialHoursIndex].status !== specialDates[specialHoursIndex].status) {
-                    readyToSave = true;
-                    break
-                  }
+          //       if (currentSpecialHours[specialHoursIndex].status !== specialDates[specialHoursIndex].status) {
+          //         readyToSave = true;
+          //         break
+          //       }
 
-                  if (compareHours(currentSpecialHours[specialHoursIndex].hours, specialDates[specialHoursIndex]).hours) {
-                    readyToSave = true;
-                    break
-                  };
-                }
+          //       if (compareHours(currentSpecialHours[specialHoursIndex].hours, specialDates[specialHoursIndex]).hours) {
+          //         readyToSave = true;
+          //         break
+          //       };
+          //     }
+          //   };
+          // } else {
+          //   readyToSave = true;
+          // }
+
+          // if (readyToSave) {
+          //   console.log("ready to save");
+          //   setShowTba(true);
+          // } else {
+          //   setAlertBoxStatus(true);
+          //   setAlertBoxText("Change has not made.");
+          // }
+
+          navigation.goBack();
+        }}
+      />
+
+      <View style={styles.specialDayHoursContainer}>
+        <ScrollView
+          onScroll={({nativeEvent}) => {
+            let isMounted = true;
+            if (isCloseToBottom(nativeEvent) && specialHoursFetchSwitch && !getSpecialHoursState && isMounted) {
+              isMounted && setGetSpecialHoursState(true);
+
+              let getSpecialHours;
+
+              if (userType === 'bus' && user.id) {
+                getSpecialHours = businessGetFire.getBusUpcomingSpecialHours(user.id, lastSpecialHour);
               };
-            } else {
-              readyToSave = true;
+              
+              if (userType === 'tech' && techId && user.id) {
+                // get tech business hours
+                getSpecialHours = businessGetFire.getTechUpcomingSpecialHours(user.id, techId, lastSpecialHour);
+              };
+
+              getSpecialHours
+              .then((result) => {
+                // result
+                // { specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true }
+                if (isMounted) {
+                  setSpecialDates([...specialDates, ...result.specialHours]);
+                  setGetSpecialHoursState(false);
+                  setLastSpecialHour(result.lastSpecialHour);
+                  setSpecialHoursFetchSwitch(result.fetchSwitch);
+                }
+              })
+              .catch((error) => {
+                console.log("error: ", error);
+              });
             }
 
-            if (readyToSave) {
-              console.log("ready to save");
-              setShowTba(true);
-            } else {
-              setAlertBoxStatus(true);
-              setAlertBoxText("Change has not made.");
+            return () => {
+              isMounted = false;
             }
           }}
-        />
-        <HeaderBottomLine/>
-        <View style={styles.specialDayHoursContainer}>
-          <ScrollView>
-            {/*existing or new special dates*/}
-            {
-              specialDates.map((item, index) => {
-                return (
-                  <SpecialHoursContainer 
-                    key={index}
-                    navigation={navigation}
-                    index={index}
-                    specialDates={specialDates}
-                    date={item}
-                    setDates={setSpecialDates}
-                    userType={userType}
-                  />
-                )
-              })
-            }
-            {/*upcoming holidays*/}
-          </ScrollView>
-        </View>
-        <View style={styles.addAnotherDayContainer}>
-          <HeaderBottomLine />
-          <TouchableHighlight
-            style={styles.addAnotherDayButton}
-            onPress={() => {
-              navigation.navigate("SetAnotherDay", {
-                userType: userType
-              });
-            }}
-            underlayColor={color.grey4}
-          >
-            <View style={styles.addAnotherDayTextContainer}>
-              <Text style={styles.addAnotherDayText}>
-                {expoIcons.fontAwesomeCalendarPlusO(RFValue(23), color.black1)} Add Another Day
-              </Text>
-            </View>
-          </TouchableHighlight>
-        </View>
+        >
+          {/*existing or new special dates*/}
+          {
+            specialDates.map((item, index) => {
+              return (
+                <SpecialHoursContainer 
+                  key={index}
+                  navigation={navigation}
+                  index={index}
+                  specialDates={specialDates}
+                  date={item}
+                  setDates={setSpecialDates}
+                  userType={userType}
+                  techId={techId}
+                  busId={user.id}
+                />
+              )
+            })
+          }
+          {/*upcoming holidays*/}
+        </ScrollView>
       </View>
-      { showTba && 
+      <View style={styles.addAnotherDayContainer}>
+        <HeaderBottomLine />
+        <TouchableHighlight
+          style={styles.addAnotherDayButton}
+          onPress={() => {
+            navigation.navigate("SetAnotherDay", {
+              userType: userType,
+              techId: techId,
+              busId: user.id
+            });
+          }}
+          underlayColor={color.grey4}
+        >
+          <View style={styles.addAnotherDayTextContainer}>
+            <Text style={styles.addAnotherDayText}>
+              {expoIcons.fontAwesomeCalendarPlusO(RFValue(23), color.black1)} Add Another Day
+            </Text>
+          </View>
+        </TouchableHighlight>
+      </View>
+    
+      {/*{ showTba && 
         <TwoButtonAlert 
           title={"Ready to Save?"}
           message={
@@ -447,23 +516,27 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
           buttonOneText={"Save"}
           buttonTwoText={"No"} 
           buttonOneAction={() => {
-            const updateBusUser = businessUpdateFire.busUserUpdate({
-              special_hours: specialDates
-            });
-            updateBusUser
-            .then(() => {
-              setCurrentSpecialHours(specialDates);
-              setShowTba(false);
-            })
-            .catch((error) => {
-              console.log("error: updateBusUser: ", error);
-            })
+            if (userType === 'tech') {
+              const updateTechSpecialHours = businessUpdateFire.updateTechSpecialHours(user.id, techId, specialDates);
+              updateTechSpecialHours
+              .then(() => {
+                setCurrentSpecialHours(specialDates);
+                setShowTba(false);
+              })
+              .catch((error) => {
+                console.log("error: setCurrentSpecialHours: ", error);
+              });
+            }
+
+            if (userType === 'bus') {
+
+            }
           }} 
           buttonTwoAction={() => {
             setShowTba(false);
           }}
         />
-      }
+      }*/}
       {
         alertBoxStatus &&
         <AlertBoxTop
@@ -471,7 +544,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
           setAlert={setAlertBoxStatus}
         />
       }
-    </MainTemplate>
+    </View>
   )
 };
 

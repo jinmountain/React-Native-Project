@@ -31,88 +31,88 @@ import { Ionicons } from '@expo/vector-icons';
 
 const UpdateBusinessScreen = ({ navigation }) => {
 	const { 
-
+		user
 	} = useContext(AuthContext);
 	const [ businessOpen, setbusinessOpen ] = useState(false);
   const toggleSwitch = () => setbusinessOpen(previousState => !previousState);
 	return (
-		<MainTemplate>
-			<View style={styles.updateBusinessScreenContainer}>
-				<HeaderForm 
-	        leftButtonTitle={null}
-	        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
-	        headerTitle={"Update Business"} 
-	        rightButtonTitle={null} 
-	        leftButtonPress={() => {
-	          navigation.goBack();
-	        }}
-	        rightButtonPress={() => {
-	          {
-	            null
-	          }
-	        }}
-	      />
-				<View style={styles.businessManagerContainer}>
-					{/*<View style={styles.businessOpenStatusContainer}>
-						<View style={styles.statusTextContainer}>
-							<Text style={styles.statusText}>
-								Business Open Status
-							</Text>
+		<View style={styles.updateBusinessScreenContainer}>
+			<HeaderForm 
+				addPaddingTop={true}
+        leftButtonTitle={null}
+        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+        headerTitle={"Update Business"} 
+        rightButtonTitle={null} 
+        leftButtonPress={() => {
+          navigation.goBack();
+        }}
+        rightButtonPress={() => {
+          {
+            null
+          }
+        }}
+      />
+			<View style={styles.businessManagerContainer}>
+				{/*<View style={styles.businessOpenStatusContainer}>
+					<View style={styles.statusTextContainer}>
+						<Text style={styles.statusText}>
+							Business Open Status
+						</Text>
+					</View>
+					<View style={styles.switchContainer}>
+						<View style={styles.onOffStatusConatiner}>
+							{ businessOpen === false
+								? <Text style={[styles.onOffText, { color: "#252525" }]}>Closed</Text>
+								: <Text style={[styles.onOffText, { color: "#1069FF" }]}>Open</Text>
+							}
 						</View>
-						<View style={styles.switchContainer}>
-							<View style={styles.onOffStatusConatiner}>
-								{ businessOpen === false
-									? <Text style={[styles.onOffText, { color: "#252525" }]}>Closed</Text>
-									: <Text style={[styles.onOffText, { color: "#1069FF" }]}>Open</Text>
-								}
-							</View>
-							<Switch
-				        trackColor={{ false: '#767577', true: '#81b0ff' }}
-				        thumbColor={businessOpen ? '#f4f3f4' : '#f4f3f4'}
-				        ios_backgroundColor="#3e3e3e"
-				        onValueChange={toggleSwitch}
-				        value={businessOpen}
-				      />
-			     	</View>
-			    </View>*/}
-			    <HeaderBottomLine />
-			    <KitkatButton
-						onPress={() => {
-							navigation.navigate('SetBusinessHoursStack', {
-								screen: 'SetBusinessHours',
-								params: { userType: 'bus' }
-							})
-						}}
-						icon={<MaterialCommunityIcons name="clock-outline" size={RFValue(27)} color={color.black1} />}
-						text={"Set Business Hours"}
-					/>
-					<KitkatButton
-						onPress={() => {
-							navigation.navigate('SetSpecialHoursStack', {
-								screen: 'SetSpeicalHours',
-								params: { userType: 'tech' }
-							})
-						}}
-						icon={<MaterialCommunityIcons name="timeline-clock-outline" size={RFValue(27)} color={color.black1} />}
-						text={"Add Special Hours"}
-					/>
-			    <KitkatButton
-						onPress={() => {
-			    		navigation.navigate("UBLocationAddress")
-			    	}}
-						icon={expoIcons.evilIconsLocation(RFValue(27), color.black1)}
-						text={"Change Location & Address"}
-					/>
-					<KitkatButton
-						onPress={() => {
-			    		navigation.navigate("DeregisterBusiness")
-			    	}}
-						icon={<Ionicons name="log-out-outline" size={RFValue(27)} color={color.black1} />}
-						text={"Deregister Business"}
-					/>
-			  </View>
-			</View>
-		</MainTemplate>
+						<Switch
+			        trackColor={{ false: '#767577', true: '#81b0ff' }}
+			        thumbColor={businessOpen ? '#f4f3f4' : '#f4f3f4'}
+			        ios_backgroundColor="#3e3e3e"
+			        onValueChange={toggleSwitch}
+			        value={businessOpen}
+			      />
+		     	</View>
+		    </View>*/}
+		    <KitkatButton
+					onPress={() => {
+						navigation.navigate('SetBusinessHoursStack', {
+							screen: 'SetBusinessHours',
+							params: { userType: 'bus' }
+						})
+					}}
+					icon={<MaterialCommunityIcons name="clock-outline" size={RFValue(27)} color={color.black1} />}
+					text={"Set Business Hours"}
+				/>
+				<KitkatButton
+					onPress={() => {
+						navigation.navigate('SetSpecialHoursStack', {
+							screen: 'SetSpecialHours',
+							params: { 
+								userType: 'bus'
+							}
+						})
+					}}
+					icon={<MaterialCommunityIcons name="timeline-clock-outline" size={RFValue(27)} color={color.black1} />}
+					text={"Add Special Hours"}
+				/>
+		    <KitkatButton
+					onPress={() => {
+		    		navigation.navigate("UBLocationAddress")
+		    	}}
+					icon={expoIcons.evilIconsLocation(RFValue(27), color.black1)}
+					text={"Change Location & Address"}
+				/>
+				<KitkatButton
+					onPress={() => {
+		    		navigation.navigate("DeregisterBusiness")
+		    	}}
+					icon={<Ionicons name="log-out-outline" size={RFValue(27)} color={color.black1} />}
+					text={"Deregister Business"}
+				/>
+		  </View>
+		</View>
 	)
 };
 

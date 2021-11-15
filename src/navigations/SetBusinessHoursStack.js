@@ -33,6 +33,8 @@ const SetBusinessHoursStack = () => {
         initialParams={{ 
           businessDay: null,
           specialDateIndex: null,
+          userType: null,
+          techId: null,
         }}
       />
     </Stack.Navigator>

@@ -577,4 +577,57 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 	});
 };
 
-export default { sendRsvRequest, completeReservation };
+const postBusSpecialDate = (busId, dateInMs, dateStatus) => {
+	return new Promise (async (res, rej) => {
+		const newDocId = await usersRef.doc(busId).collection("special_hours").doc().id;
+
+		const newSpecialDate = {
+			id: newDocId,
+			date_in_ms: dateInMs,
+			status: dateStatus,
+		}
+		const busSpecialHoursRef = usersRef.doc(busId).collection("special_hours").doc(newDocId);
+		busSpecialHoursRef
+		.set(
+			newSpecialDate, 
+			{
+				merge: true
+			}
+		)
+		.then(() => {
+			res(newSpecialDate);
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+}
+
+const postTechSpecialDate = (busId, techId, dateInMs, dateStatus) => {
+	return new Promise (async (res, rej) => {
+		const newDocId = await usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc().id;
+
+		const newSpecialDate = {
+			id: newDocId,
+			date_in_ms: dateInMs,
+			status: dateStatus,
+		}
+		const techSpecialHoursRef = usersRef.collection("technicians").doc(techId).collection("special_hours").doc(newDocId);
+		techSpecialHoursRef
+		.set(
+			newSpecialDate, 
+			{
+				merge: true
+			}
+		)
+		.then(() => {
+			res(newSpecialDate);
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+}
+
+
+export default { sendRsvRequest, completeReservation, postBusSpecialDate, postTechSpecialDate };

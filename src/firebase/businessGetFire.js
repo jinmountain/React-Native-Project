@@ -278,7 +278,8 @@ const getUpcomingRsvsOfBus = (busId, currentTimestamp, daysFromToday) => {
 			.where("dateInMs", "==", dateInMs)
 			.limit(10)
 		}
-
+		// if daysFromToday is 0 it means it's today
+		// so get upcoming reservations that are after the current time
 		if (daysFromToday == 0) {
 			getReservations = reservationsRef
 			.where("busId", "==", busId)
@@ -462,23 +463,104 @@ const getTechBusinessHours = (busId, techId) => {
 	});
 };
 
-const getTechSpecialHours = (busId, techId) => {
+const getBusUpcomingSpecialHours = (busId, specialHourLast) => {
 	return new Promise ((res, rej) => {
-		const getTechData = usersRef.doc(busId).collection("technicians").doc(techId).get();
-		getTechData
-		.then((doc) => {
-			const techData = doc.data();
-			if (techData.special_hours) {
-				res(techData.special_hours)
+		const now = Date.now();
+		let specialHours = [];
+		let getSpecialHours;
+
+		if (specialHourLast) {
+			getSpecialHours = usersRef
+			.doc(busId)
+			.collection("special_hours")
+			.where("date_in_ms", ">", now)
+			.orderBy("date_in_ms")
+			.startAfter(specialHourLast)
+			.limit(10)
+		} else {
+			getSpecialHours = usersRef
+			.doc(busId)
+			.collection("special_hours")
+			.where("date_in_ms", ">", now)
+			.orderBy("date_in_ms")
+			.limit(10)
+		}
+
+		getSpecialHours
+		.get()
+		.then((querySnapshot) => {
+			let docIndex = 0;
+			const docLength = querySnapshot.docs.length;
+
+			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			
+			if (docLength > 0) {
+				querySnapshot.forEach(async (doc) => {
+					const docData = doc.data();
+					specialHours.push(docData);
+					docIndex += 1;
+
+					if (docIndex === docLength) {
+						res({ specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true });
+					}
+				});
 			} else {
-				res(null)
+				res({ rsvs: [], lastRsv: null, fetchSwitch: false });
 			}
 		})
 		.catch((error) => {
 			rej(error);
-		})
+		});
 	});
-}
+};
+
+const getTechUpcomingSpecialHours = (busId, techId, specialHourLast) => {
+	return new Promise ((res, rej) => {
+		const now = Date.now();
+		let specialHours = [];
+		let getSpecialHours;
+
+		if (specialHourLast) {
+			getSpecialHours = usersRef
+			.doc(busId)
+			.collection("special_hours")
+			.where("date_in_ms", ">", now)
+			.startAfter(specialHourLast)
+			.limit(20)
+		} else {
+			getSpecialHours = usersRef
+			.doc(busId)
+			.collection("special_hours")
+			.where("date_in_ms", ">", now)
+			.limit(20)
+		}
+		getSpecialHours
+		.get()
+		.then((querySnapshot) => {
+			let docIndex = 0;
+			const docLength = querySnapshot.docs.length;
+
+			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			
+			if (docLength > 0) {
+				querySnapshot.forEach(async (doc) => {
+					const docData = doc.data();
+					specialHours.push(docData);
+					docIndex += 1;
+
+					if (docIndex === docLength) {
+						res({ specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true });
+					}
+				});
+			} else {
+				res({ rsvs: [], lastRsv: null, fetchSwitch: false });
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+};
 
 export default { 
 	getTechnicians, 
@@ -488,6 +570,6 @@ export default {
 	getUpcomingRsvsOfBus, 
 	getPreviousRsvsOfBus,
 
-	getTechBusinessHours,
-	getTechSpecialHours
+	getBusUpcomingSpecialHours,
+	getTechUpcomingSpecialHours
 };

@@ -283,23 +283,37 @@ const updateTechBusinessHours = (busId, techId, newBusinessHours) => {
 	});
 };
 
-const updateTechSpecialHours = (busId, techId, newSpecialHours) => {
-	return new Promise ((res, rej) => {
-		const techRef = usersRef.doc(busId).collection("technicians").doc(techId)
-		techRef
-		.set({
-			special_hours: newSpecialHours
-		}, {
-			merge: true
-		})
-		.then(() => {
-			res();
-		})
-		.catch((error) => {
-			rej(error);
-		})
-	});
-};
+// const updateTechSpecialHours = (busId, techId, newSpecialHours) => {
+// 	return new Promise ((res, rej) => {
+// 		const techSpeicalHoursRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours");
+// 		const id =  techSpeicalHoursRef.doc().id;
+
+// 		let newSpecialHoursWithDocId = []
+// 		const newHoursLen = newSpecialHours.length;
+// 		let hoursIndex = 0;
+// 		for (hoursIndex; hoursIndex < newHoursLen; hoursIndex++) {
+// 			const id =  techSpeicalHoursRef.doc().id;
+// 			const hours = newSpecialHours[hoursIndex];
+// 			const newHoursWithDocId = {
+// 				id: id,
+// 				date_in_ms: hours.date_in_ms,
+// 				status: hours.status
+// 			}
+// 			techSpeicalHoursRef
+// 			.doc(id)
+// 			.set(
+// 				newHoursWithDocId, 
+// 				{ merge: true }
+// 			);
+// 			newSpecialHoursWithDocId.push(newHoursWithDocId);
+// 		};
+
+// 		if (hoursIndex === newHoursLen) {
+// 			// at last res new special hours with doc id
+// 			res(newSpecialHoursWithDocId)
+// 		} 
+// 	});
+// };
 
 export default { 
 	busUserUpdate, 
@@ -309,5 +323,4 @@ export default {
 	technicianRegister, 
 	technicianDeregister,
 	updateTechBusinessHours,
-	updateTechSpecialHours
 }

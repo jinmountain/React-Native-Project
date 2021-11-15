@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View,
@@ -15,6 +15,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import MainTemplate from '../../components/MainTemplate';
 import HeaderBottomLine from '../../components/HeaderBottomLine';
 import { HeaderForm } from '../../components/HeaderForm';
+import LoadingAlert from '../../components/LoadingAlert';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -26,6 +27,10 @@ import useConvertTime from '../../hooks/useConvertTime';
 // Calendar
 import MonthCalendar from '../../components/businessSchedule/MonthCalendar';
 
+// firebase
+import businessUpdateFire from '../../firebase/businessUpdateFire';
+import businessPostFire from '../../firebase/businessPostFire';
+
 // color
 import color from '../../color';
 
@@ -34,9 +39,12 @@ import expoIcons from '../../expoIcons';
 
 const SetAnotherDayScreen = ({ navigation, route }) => {
   const {
-    userType
+    userType,
+    techId,
+    busId,
   } = route.params;
 
+  console.log(userType);
   // calendar 
   const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
   const [ calendarMove, setCalendarMove ] = useState(0);
@@ -48,30 +56,78 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
   const [ specialDate, setSpecialDate ] = useState(null);
   const [ specialDateStatus, setSpecialDateStatus ] = useState(false);
   
+  // loading screen state
+  const [ showLoadingAlert, setShowLoadingAlert ] = useState(false);
+
   // get calendar dates
   getCalendarDates(calendarDate, dateNow, endTime, setDatesOnCalendar);
 
+  useEffect(() => {
+    return () => {
+      setShowLoadingAlert(false);
+    }
+  }, []);
+
   return (
-    <MainTemplate disableMarginTop={userType === 'tech' ? true : false}>
-      <ScrollView style={styles.mainContainer}>
-        <HeaderForm 
-          leftButtonTitle={"Cancel"}
-          leftButtonIcon={null}
-          headerTitle={"Speical Date"} 
-          rightButtonTitle={"Save"} 
-          leftButtonPress={() => {
-            navigation.goBack();
-          }}
-          rightButtonPress={() => {
-            specialDate && navigation.navigate("SetSpecialHours", {
-              newSpecialDate: specialDate,
-              newSpecialDateStatus: specialDateStatus,
-              userType: userType
-            });
-            console.log("newSpeicalDate: ", specialDate, "newSpecialDateStatus: ", specialDateStatus);
-          }}
-        />
-        <HeaderBottomLine />
+    <View style={styles.mainContainer}>
+      <HeaderForm 
+        addPaddingTop={userType === 'tech' ? false : true}
+        leftButtonTitle={null}
+        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+        headerTitle={"Speical Date"} 
+        rightButtonIcon={"Save"} 
+        leftButtonPress={() => {
+          navigation.goBack();
+        }}
+        rightButtonPress={() => {
+          if (specialDate) {
+            if (userType === 'bus') {
+              // save on firestore and get doc id
+              setShowLoadingAlert(true);
+              const postBusSpecialDate = businessPostFire.postBusSpecialDate(busId, specialDate, specialDateStatus);
+              postBusSpecialDate
+              .then((posted) => {
+                setShowLoadingAlert(false);
+                // and then navigate back
+                navigation.navigate("SetSpecialHours", {
+                  newSpecialDateId: posted.id,
+                  newSpecialDate: posted.date_in_ms,
+                  newSpecialDateStatus: posted.status,
+                  userType: userType,
+                  busId: busId
+                });
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+            }
+
+            if (userType === 'tech') {
+              setShowLoadingAlert(true);
+              const postTechSpecialDate = businessPostFire.postTechSpecialDate(busId, techId, specialDate, specialDateStatus);
+              postTechSpecialDate
+              .then((posted) => {
+                setShowLoadingAlert(false);
+                // and then navigate back
+                navigation.navigate("SetSpecialHours", {
+                  newSpecialDateId: posted.id,
+                  newSpecialDate: posted.date_in_ms,
+                  newSpecialDateStatus: posted.status,
+                  userType: userType,
+                  busId: busId,
+                  techId: techId
+                });
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+            }
+          }
+          
+          console.log("newSpeicalDate: ", specialDate, "newSpecialDateStatus: ", specialDateStatus);
+        }}
+      />
+      <ScrollView style={styles.screenScrollView}>
         <View style={styles.labelContainer}>
           <Text style={styles. labelText}> Select Date and Status</Text>
         </View>
@@ -165,12 +221,20 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
         <View style={{height: RFValue(30)}}>
         </View>
       </ScrollView>
-    </MainTemplate>
+      {
+        showLoadingAlert &&
+        <LoadingAlert />
+      }
+    </View>
   )
 };
 
 const styles = StyleSheet.create({
   mainContainer: {
+    flex: 1,
+    backgroundColor: color.white2
+  },
+  screenScrollView: {
     flex: 1,
     backgroundColor: color.white2
   },

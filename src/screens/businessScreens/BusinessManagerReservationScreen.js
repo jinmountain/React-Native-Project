@@ -733,15 +733,17 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
   				borderRadius: RFValue(100),
   				justifyContent: 'center',
   				alignItems: 'center',
-  				marginTop: windowHeight*0.7,
+  				marginTop: windowHeight*0.685,
   				marginLeft: windowWidth*0.75,
-          shadowOffset: {
-            width: 1,
-            height: -15
-          },
-          shadowOpacity: 0.75,
-          shadowRadius: 16,
-          elevation: 5
+          shadowColor: "#000",
+					shadowOffset: {
+						width: 0,
+						height: 2,
+					},
+					shadowOpacity: 0.25,
+					shadowRadius: 3.84,
+
+					elevation: 5,
   			}}
   		>
   			<View 

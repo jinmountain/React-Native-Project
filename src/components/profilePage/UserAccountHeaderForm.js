@@ -38,106 +38,136 @@ const UserAccountHeaderForm = ({
   firstOnPress, 
   secondOnPress,
   thirdOnPress,
+  addPaddingTop,
+  paddingTopCustomStyle
 }) => {
   const orientation = useOrientation();
 	return (
-		<View style={{ ...styles.accountScreenHeaderContainer, ...{ 
-      height: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), 
-      minHeight: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), } 
-    }}>
-      <View style={styles.compartmentOuter}>
-        <View style={styles.leftCompartmentContainer}>
-          {
-            leftButtonPress &&
-            <View style={styles.leftCompartmentInnerContainer}>
-              <TouchableHighlight 
-                style={ 
-                  styles.compartmentHighlight 
-                }
-                onPress={leftButtonPress}
-                // deplayPressIn={500}
-                // onPressIn={() => {
-                //   console.log("HAHA");
-                // }}
-                underlayColor={color.grey4}
-              >
-                <View style={styles.compartment}>
-                  {
-                    leftButtonIcon &&
-                    <View style={styles.compartmentIconContainer}>
-                      {leftButtonIcon}
-                    </View>
-                  }
-                  {
-                    leftButtonTitle &&
-                    <View style={styles.compartmentTextContainer}>
-                      <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
-                    </View>
-                  }
-                </View>
-              </TouchableHighlight>
-            </View>
-          }
-          <View style={
-            leftButtonPress
+    <View style={styles.headerShadow}>
+      {
+        addPaddingTop &&
+        <View 
+          style={
+            paddingTopCustomStyle
             ?
-            styles.usernameContainer
+            [styles.safeAreaPadding, paddingTopCustomStyle]
             :
-            [ styles.usernameContainer, { paddingLeft: RFValue(17) } ]
-          }>
-            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={styles.compartmentText}>{username}</Text>
-            </View>
+            styles.safeAreaPadding
+          }
+        />
+      }
+  		<View style={{ ...styles.accountScreenHeaderContainer, ...{ 
+        height: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), 
+        minHeight: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), } 
+      }}>
+        <View style={styles.compartmentOuter}>
+          <View style={styles.leftCompartmentContainer}>
             {
-              userActiveState
-              ?
-              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                {userActiveState}
+              leftButtonPress &&
+              <View style={styles.leftCompartmentInnerContainer}>
+                <TouchableHighlight 
+                  style={ 
+                    styles.compartmentHighlight 
+                  }
+                  onPress={leftButtonPress}
+                  // deplayPressIn={500}
+                  // onPressIn={() => {
+                  //   console.log("HAHA");
+                  // }}
+                  underlayColor={color.grey4}
+                >
+                  <View style={styles.compartment}>
+                    {
+                      leftButtonIcon &&
+                      <View style={styles.compartmentIconContainer}>
+                        {leftButtonIcon}
+                      </View>
+                    }
+                    {
+                      leftButtonTitle &&
+                      <View style={styles.compartmentTextContainer}>
+                        <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
+                      </View>
+                    }
+                  </View>
+                </TouchableHighlight>
               </View>
-              :
-              null
             }
+            <View style={
+              leftButtonPress
+              ?
+              styles.usernameContainer
+              :
+              [ styles.usernameContainer, { paddingLeft: RFValue(17) } ]
+            }>
+              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={styles.compartmentText}>{username}</Text>
+              </View>
+              {
+                userActiveState
+                ?
+                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                  {userActiveState}
+                </View>
+                :
+                null
+              }
+            </View>
           </View>
-        </View>
 
-  		  <View style={styles.rightCompartmentContainer}>
-  		    <View style={styles.headerCompartmentContainer}>
-  					<View style={styles.headerElementsInRow}>
-              { firstIcon &&
-                <TouchableOpacity 
-                  onPress={firstOnPress}
-                  style={styles.headerElement}
-                >
-                  {firstIcon}
-                </TouchableOpacity>
-              }
-              { secondIcon &&
-                <TouchableOpacity 
-                  onPress={secondOnPress}
-                  style={styles.headerElement}
-                >
-                  {secondIcon}
-                </TouchableOpacity>
-              }
-  						{
-                thirdIcon &&
-                <TouchableOpacity 
-                  onPress={thirdOnPress}
-                  style={styles.headerElement}
-                >
-                  {thirdIcon}
-                </TouchableOpacity>
-              }
-  					</View>
-  				</View>
-  		  </View>
-      </View>
-      {/*<HeaderBottomLine />*/}
-		</View>
+    		  <View style={styles.rightCompartmentContainer}>
+    		    <View style={styles.headerCompartmentContainer}>
+    					<View style={styles.headerElementsInRow}>
+                { firstIcon &&
+                  <TouchableOpacity 
+                    onPress={firstOnPress}
+                    style={styles.headerElement}
+                  >
+                    {firstIcon}
+                  </TouchableOpacity>
+                }
+                { secondIcon &&
+                  <TouchableOpacity 
+                    onPress={secondOnPress}
+                    style={styles.headerElement}
+                  >
+                    {secondIcon}
+                  </TouchableOpacity>
+                }
+    						{
+                  thirdIcon &&
+                  <TouchableOpacity 
+                    onPress={thirdOnPress}
+                    style={styles.headerElement}
+                  >
+                    {thirdIcon}
+                  </TouchableOpacity>
+                }
+    					</View>
+    				</View>
+    		  </View>
+        </View>
+        {/*<HeaderBottomLine />*/}
+  		</View>
+    </View>
 	)
 };
 
 const styles = StyleSheet.create({
+  headerShadow: {
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // for android
+    elevation: 10,
+    // for ios
+    zIndex: 5,
+  },
 	accountScreenHeaderContainer: {
     justifyContent: 'center',
     // same % as the header form 
@@ -153,6 +183,7 @@ const styles = StyleSheet.create({
     //     marginTop: '7%',
     //   }
     // })
+    height: RFValue(70),
   },
   compartmentOuter: {
     flex: 1, 
@@ -225,6 +256,10 @@ const styles = StyleSheet.create({
   },
   compartmentText: {
     fontSize: RFValue(17),
+  },
+
+  safeAreaPadding: {
+    height: RFValue(30)
   },
 });
 
