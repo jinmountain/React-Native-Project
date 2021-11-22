@@ -11,6 +11,7 @@ import {
 	Dimensions,
 	Image,
 	Animated,
+	Vibration
 } from 'react-native';
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -63,6 +64,117 @@ const techBoxWidth = windowWidth/3;
 // animation
 import { useCardAnimation } from '@react-navigation/stack';
 
+// return the startTime and the endTime and available hours based on all the four arguments on rsvDate
+const getAvailableHours = (busBusinessHours, techBusinessHours, busSpecialHours, techSpecialHours) => {
+	// compare bus and tech and find intersection
+	// cases
+	// 1. tech.startTime | bus.startTime  | tech.endTime | bus.endTime  => change available hours's endTime
+	// 2. bus.startTime  | tech.startTime | tech.endTime | bus.endTime  => change available hours's start and end time
+	// 3. bus.startTime  | tech.startTime | bus.endTime  | tech.endTime => change available hours's startTime
+	
+	// choice 4 would not happen if I make tech only choose their business hours only in range of business's business hours
+	// 4. tech.startTime | bus.startTime  | bus.endTime  | tech.endTime
+
+	// assign business business hours as the default hours
+	// but if business special hours exist it will be the default hours
+	let defaultHours;
+	let availableHours = [];
+	
+	const busHours = busSpecialHours ? busSpecialHours.hours : busBusinessHours.hours;
+	console.log("busHours: ", busHours);
+
+	// assign technician business hours as the default hours
+	// but if technician special hours exist it will be the default hours
+	const techHours = techSpecialHours ? techSpecialHours.hours : techBusinessHours.hours;
+	console.log("techHours: ", techHours)
+
+	let busHoursIndex = 0;
+	const busHoursLen = busHours.length;
+
+	for (busHoursIndex; busHoursIndex < busHoursLen; busHoursIndex++) {
+
+		let techHoursIndex = 0;
+		const techHoursLen = techHours.length;
+		console.log("LEN: ", busHoursLen, techHoursLen);
+		for (techHoursIndex; techHoursIndex < techHoursLen; techHoursIndex++) {
+			const busHoursOpens = busHours[busHoursIndex].opens;
+			const busHoursCloses = busHours[busHoursIndex].closes;
+			const busHoursOpensNumber = useConvertTime.convertHourMinToNumber(busHours[busHoursIndex].opens.hour, busHours[busHoursIndex].opens.min);
+			const busHoursClosesNumber = useConvertTime.convertHourMinToNumber(busHours[busHoursIndex].closes.hour, busHours[busHoursIndex].closes.min);
+			const techHoursOpens = techHours[techHoursIndex].opens;
+			const techHoursCloses = techHours[techHoursIndex].closes;
+			const techHoursOpensNumber = useConvertTime.convertHourMinToNumber(techHours[techHoursIndex].opens.hour, techHours[techHoursIndex].opens.min);
+			const techHoursClosesNumber = useConvertTime.convertHourMinToNumber(techHours[techHoursIndex].closes.hour, techHours[techHoursIndex].closes.min);
+
+			// 1. tech.startTime | bus.startTime | tech.endTime | bus.endTime
+			console.log("COMPARE: ", busHoursOpensNumber, busHoursClosesNumber, techHoursOpensNumber, techHoursClosesNumber)
+			if (
+				techHoursOpensNumber <= busHoursOpensNumber && 
+				busHoursOpensNumber < techHoursClosesNumber && 
+				techHoursClosesNumber < busHoursClosesNumber
+			) {
+				availableHours.push({opens: busHoursOpens, closes: techHoursCloses});
+				console.log(1);
+			}
+			// 2. bus.startTime | tech.startTime | tech.endTime | bus.endTime => change a's start and end time
+			else if (
+				busHoursOpensNumber <= techHoursOpensNumber && 
+				techHoursClosesNumber <= busHoursClosesNumber
+			) {
+				availableHours.push({opens: techHoursOpens, closes: techHoursCloses});
+				console.log(2);
+			}
+			// 3. bus.startTime | tech.startTime | bus.endTime | tech.endTime => change a's startTime
+			else if (
+				busHoursOpensNumber < techHoursOpensNumber && 
+				busHoursClosesNumber <= techHoursClosesNumber &&
+				busHoursOpensNumber < techHoursOpensNumber
+			) {
+				availableHours.push({opens: techHoursCloses, closes: busHoursCloses});
+				console.log(3);
+			}
+			// 4. tech.startTime | bus.startTime | bus.endTime | tech.endTime
+			else if (
+				techHoursOpensNumber <= busHoursOpensNumber &&
+				busHoursClosesNumber <= techHoursClosesNumber
+			) {
+				availableHours.push({opens: busHoursOpens, closes: busHoursCloses});
+				console.log(4);
+			}
+			else {
+				continue
+			}
+		};
+	};
+
+	// let availableHoursIndex = 0;
+	// const availableHoursLen = availableHours.length;
+	// for (availableHoursIndex; availableHoursIndex < availableHoursLen; availableHoursIndex++) {
+	// 	if (startTime) {
+	// 		if (startTime > useConvertTime.convertHourMinToNumber(availableHours[availableHoursIndex].opens.hour, availableHours[availableHoursIndex].opens.min)) {
+	// 			startTime = availableHours[availableHoursIndex].opens;
+	// 		}
+	// 	} else {
+	// 		startTime = availableHours[availableHoursIndex].opens;
+	// 	}
+
+	// 	if (endTime) {
+	// 		if (endTime < useConvertTime.convertHourMinToNumber(availableHours[availableHoursIndex].closes.hour, availableHours[availableHoursIndex].closes.min)) {
+	// 			endTime = availableHours[availableHoursIndex].closes
+	// 		}
+	// 	} else {
+	// 		endTime = availableHours[availableHoursIndex].closes
+	// 	}
+	// };
+
+	// return {
+	// 	// startTime: startTime,
+	// 	// endTime: endTime,
+	// 	availableHours: availableHours
+	// }
+	return availableHours;
+};
+
 const convertEtcToHourMin = (etc) => {
 	if (etc >= 60) {
 		const hour = Math.floor(etc/60)
@@ -78,11 +190,16 @@ const convertEtcToHourMin = (etc) => {
 }
 
 const BusinessScheduleScreen = ({ route, navigation }) => {
+	const vibrationTime = 30;
+
 	const { businessUser } = route.params;
 	const [ dateNow, setDateNow ] = useState(Date.now());
 
 	// business and special hours
-	
+	const [ busBusinessHours, setBusBusinessHours ] = useState(null);
+	const [ techBusinessHours, setTechBusinessHours ] = useState(null);
+	const [ busSpecialHours, setBusSpecialHours ] = useState(null);
+	const [ techSpecialHours, setTechSpecialHours ] = useState(null);
 
 	// date
 	const [ rsvDate, setRsvDate ] = useState( useConvertTime.convertToDateInMs( Date.now() ));
@@ -98,8 +215,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
   const [ alertBoxText, setAlertBoxText ] = useState(null);
 
 	// business info
-	const [ startTime, setStartTime ] = useState(8);
-	const [ endTime, setEndTime ] = useState(17);
+	// const [ startTime, setStartTime ] = useState(8);
+	// const [ endTime, setEndTime ] = useState(17);
 	const [ rsvTimeLimit, setRsvTimeLimit ] = useState(60*60*1000); // default 1 hour
 
 	// picked display post state
@@ -347,78 +464,171 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		}
 	}, [businessUser]);
 
-	// // Calculate 
-	// // - Calander Dates 
-	// // - Dates Left In The Month  
-	// // - Dates of The Following Month in The Last Week of The Month
-	getCalendarDates(calendarDate, dateNow, endTime, setDatesOnCalendar);
+	// Calculate 
+	// - Calander Dates 
+	// - Dates Left In The Month  
+	// - Dates of The Following Month in The Last Week of The Month
+	getCalendarDates(calendarDate, dateNow, 17, setDatesOnCalendar);
 
-	// make schedule grids
+	// get business and technician business and special hours
+	// make schedule grids according to existing reservations, business, and special hours
 	useEffect(() => {
 		let mounted = true;
 		if (pickedDisplayPost && selectedTech) {
-			setChartGridsState(true);
+    	// clear the schedule grids, set chardGridsState to true, set gridExist to false
+    	setChartGridsState(true);
 	  	setChartGrids([[]]);
 	  	setGridExist(false);
-	  	const getRsvsStartAtOfTech = businessGetFire.getRsvTimestampsOfTech(businessUser.id, selectedTech.id, rsvDate, startTime, endTime);
-	  	getRsvsStartAtOfTech
-	  	.then((rsvTimestamps) => {
-				const rsvDateTimestamp = useConvertTime.convertToDateInMs(rsvDate);
-				var startTimeTimestamp = rsvDateTimestamp + (startTime * 60 * 60 *1000) // convert hours to milisecs
-				const displayPostEtc = pickedDisplayPost.data.etc;
 
-				let numOfGrids;
-				numOfGrids = (endTime - startTime) * 60 / 5
+	  	// get business hours if there are not business and technician's business hours
+	  	// then don't make available grids
+  		const getScheduleBusinessSpecialHours = businessGetFire.getScheduleBusinessSpecialHours(businessUser.id, selectedTech.id, rsvDate); 
+    	getScheduleBusinessSpecialHours
+    	.then((result) => {
+    		if (user.business_hours && result.techBusinessHours) {
+	    		// at this point we have business and special hours of the businsess and the technician
+	    		// get the business hours of rsvDate for business and technician
+	    		// - the day index of rsvDate
+	    		const dayIndexOfRsvDate = useConvertTime.getDayIndexFromTimestamp(rsvDate); 
+	    		// - use the day Index to get the business hours of business and technician
+	    		// if dayIndexOfRsvDate is 0 then sun
+	    		// - function to get the right attribute based on the day index
+	    		const getBusinessHoursOnDayIndex = (dayIndex, businessHours) => {
+	    			if (dayIndex === 0) {
+	    				return { open: businessHours.sun_open, hours: businessHours.sun_hours }
+	    			}
+	    			if (dayIndex === 1) {
+	    				return { open: businessHours.mon_open, hours: businessHours.mon_hours }
+	    			}
+	    			if (dayIndex === 2) {
+	    				return { open: businessHours.tue_open, hours: businessHours.tue_hours }
+	    			}
+	    			if (dayIndex === 3) {
+	    				return { open: businessHours.wed_open, hours: businessHours.wed_hours }
+	    			}
+	    			if (dayIndex === 4) {
+	    				return { open: businessHours.thu_open, hours: businessHours.thu_hours }
+	    			}
+	    			if (dayIndex === 5) {
+	    				return { open: businessHours.fri_open, hours: businessHours.fri_hours }
+	    			}
+	    			if (dayIndex === 6) {
+	    				return { open: businessHours.sat_open, hours: businessHours.sat_hours }
+	    			}
+	    		};
+	    		// business hours of rsvDate for business and technician
+	    		const rsvDateBusBusinessHours = getBusinessHoursOnDayIndex(dayIndexOfRsvDate, user.business_hours);
+	    		const rsvDateTechBusinessHours = getBusinessHoursOnDayIndex(dayIndexOfRsvDate, result.techBusinessHours);
+	    		const rsvDateBusSpecialHours = result.busSpecialHours;
+	    		const rsvDateTechSpecialHours = result.techSpecialHours;
 
-				let grids = [[]];
-				let gridIndex;
-				let gridRow = 0; // each row has each hour
-				let gridHour = Math.floor(startTime); // when business begins, the earliest hour of business by flooring it down
-				for (let gridIndex = 0; gridIndex <= numOfGrids; gridIndex++) {
-					// const floorStartTime = Math.floor(startTime);
+	    		setBusBusinessHours(rsvDateBusBusinessHours);
+	    		setTechBusinessHours(rsvDateTechBusinessHours);
+	    		setBusSpecialHours(rsvDateBusSpecialHours);
+	    		setTechSpecialHours(rsvDateTechSpecialHours);
 
-					var gridTimestamp = startTimeTimestamp + (gridIndex * 5 * 60 *1000) // + 5mins
-					var gridEndTimestamp = gridTimestamp + (displayPostEtc - 5) * 60 * 1000;
-					// displayPostEtc - 5 because it is grid like 1:05 - 1:10
+	    		const availableHours = getAvailableHours(
+						rsvDateBusBusinessHours,
+						rsvDateTechBusinessHours,
+						rsvDateBusSpecialHours,
+						rsvDateTechSpecialHours
+					);
+	    		console.log("available hours: ", availableHours);
+	    		// added...
+	    		// another filter below to skip adding a grid 
+	    		// if the grid is not in business and technician's business and special hours
 
-					var gridStartTime = useConvertTime.convertToTime(gridTimestamp);
+	    		const getRsvsStartAtOfTech = businessGetFire.getRsvTimestampsOfTech(businessUser.id, selectedTech.id, rsvDate);
+			  	getRsvsStartAtOfTech
+			  	.then((rsvTimestamps) => {
+			  		let grids = [[]];
+			  		let gridRow = 0; // each row has each hour
+			  		let gridHour = 0; // when business begins, the earliest hour of business by flooring it down
 
-					// last timestamp of grid available is rsvDateTimestamp + endTime in MS - the picked post's etc in MS
-					const lastTimestamp = rsvDateTimestamp + (endTime * 60 * 60 * 1000) - (pickedDisplayPost.data.etc * 60 * 1000)
+		    		const availableHoursLen = availableHours.length;
+		    		let availableHoursIndex = 0;
+		    		// use the available hours and get startTime and end time to get number of grids (numOfGrids)
+		    		for (availableHoursIndex; availableHoursIndex < availableHoursLen; availableHoursIndex++) {
+		    			const opensHour = availableHours[availableHoursIndex].opens.hour
+		    			const opensMin = availableHours[availableHoursIndex].opens.min
+		    			const closesHour = availableHours[availableHoursIndex].closes.hour
+		    			const closesMin = availableHours[availableHoursIndex].closes.min
+		    			const startTime = useConvertTime.convertHourMinToNumber(opensHour, opensMin);
+		    			const endTime = useConvertTime.convertHourMinToNumber(closesHour, closesMin);
 
-					// conditions that exclude grid timestamp
-					const conflictingGrids = rsvTimestamps.filter(rsv => rsv < gridEndTimestamp && rsv > gridTimestamp)
-					// - there is a existing rsv collapsing the new rsv
-					// check 
-					// a grid timestamp OR 
-					// post's estimated timestamp are in the unavailable timestamps OR 
-					// a design can be finished before the business closes
-					if (rsvTimestamps.includes(gridTimestamp) || rsvTimestamps.includes(gridEndTimestamp) || gridTimestamp > lastTimestamp) {
-						continue;
-					} 
-					// - there is a existing rsv btw the start and the end of new rsv
-					else if (conflictingGrids.length > 0) {
-						continue;
-					}
-					else {
-						if ( gridStartTime.hour > gridHour ) {
-							gridHour = gridStartTime.hour;
-							gridRow += 1;
-							grids[gridRow] = [];
-						};
-						// help showing only grids that are bigger than dateNow plus rsvTimeLimit
-						if (gridStartTime.timestamp > (dateNow + rsvTimeLimit)) {
-							grids[gridRow].push({ gridTimestamp: gridTimestamp, gridStartTime: gridStartTime });
-							mounted && setGridExist(true);
-						};
-					}
-			  };
-			  mounted && setChartGridsState(false);
-			  mounted && setChartGrids(grids);
-	  	})
-	  	.catch((error) => {
-	  		console.log("BusinessScheduleScreen: getRsvsStartAtOfTech: ", error);
-	  	})
+		    			console.log("opensHour:", opensHour, "opensMin: ", opensMin);
+		    			console.log("startTime: ", startTime, "endTime: ", endTime);
+		    			if (gridHour === 0) {
+		    				gridHour = opensHour;
+		    			}
+
+		    			const rsvDateTimestamp = useConvertTime.convertToDateInMs(rsvDate);
+							var startTimeTimestamp = rsvDateTimestamp + (startTime * 60 * 60 *1000) // convert hours to milisecs
+							const displayPostEtc = pickedDisplayPost.data.etc;
+
+							let numOfGrids;
+							numOfGrids = (endTime - startTime) * 60 / 5;
+
+							let gridIndex = 0;
+
+							for (gridIndex; gridIndex < numOfGrids; gridIndex++) {
+								// const floorStartTime = Math.floor(startTime);
+								var gridTimestamp = startTimeTimestamp + (gridIndex * 5 * 60 *1000); // + 5mins
+								if (gridIndex === 0) {
+									console.log(useConvertTime.convertToNormHourMin(startTimeTimestamp), useConvertTime.convertToNormHourMin(gridTimestamp));
+								}
+								var gridEndTimestamp = gridTimestamp + (displayPostEtc - 5) * 60 * 1000;
+								// displayPostEtc - 5 because it is grid like 1:05 - 1:10
+
+								var gridStartTime = useConvertTime.convertToTime(gridTimestamp);
+
+								// last timestamp of grid available is rsvDateTimestamp + endTime in MS - the picked post's etc in MS
+								const lastTimestamp = rsvDateTimestamp + (endTime * 60 * 60 * 1000) - (pickedDisplayPost.data.etc * 60 * 1000)
+
+								// conditions that exclude grid timestamp
+								const conflictingGrids = rsvTimestamps.filter(rsv => rsv < gridEndTimestamp && rsv > gridTimestamp)
+								// - there is a existing rsv collapsing the new rsv
+
+								// check the following conditions:
+								// - existing reservations include a grid timestamp OR 
+								// - post's estimated timestamp are in the unavailable timestamps OR 
+								// - a design can be finished before the business closes
+								if (
+									rsvTimestamps.includes(gridTimestamp) ||
+									rsvTimestamps.includes(gridEndTimestamp) ||
+									gridTimestamp > lastTimestamp
+								) {
+									continue;
+								} 
+								// - there is a existing rsv btw the start and the end of new rsv
+								else if (conflictingGrids.length > 0) {
+									continue;
+								}
+								else {
+									if ( gridStartTime.hour > gridHour ) {
+										gridHour = gridStartTime.hour;
+										gridRow += 1;
+										grids[gridRow] = [];
+									};
+									// help showing only grids that are bigger than dateNow plus rsvTimeLimit
+									if (gridStartTime.timestamp > (dateNow + rsvTimeLimit)) {
+										grids[gridRow].push({ gridTimestamp: gridTimestamp, gridStartTime: gridStartTime });
+										mounted && setGridExist(true);
+									};
+								}
+						  };
+		    		}
+		    		mounted && setChartGridsState(false);
+					  mounted && setChartGrids(grids);
+			  	})
+			  	.catch((error) => {
+			  		console.log("BusinessScheduleScreen: getRsvsStartAtOfTech: ", error);
+			  	});
+			  }
+    	})
+    	.catch((error) => {
+    		console.log(error);
+    	});
 		}
 	}, [selectedTech, rsvDate]);
 
@@ -470,7 +680,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 							<Text style={styles.labelText}>Pick a Design</Text>
 						</Animated.View>
 					</View>
-					{/*<HeaderBottomLine />*/}
 				</View>
 				<View>
 					{ 
@@ -539,6 +748,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                  		stretchLabelWidth(firstLabelWidthAnim);
 			                  		stretchLabelHeight(firstLabelHeightAnim);
 			                  		unfoldLabelBorder(firstLabelBorderRadiusAnim);
+			                  		Vibration.vibrate(vibrationTime);
 													}
 		                  	}
 		                  }}
@@ -596,7 +806,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 					}
 				</View>
 				<View style={styles.labelContainer}>
-					<HeaderBottomLine />
 					<View style={
 						pickedDisplayPost
 						?
@@ -625,7 +834,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 							<Text style={styles.labelText}>Pick a Technician</Text>
 						</Animated.View>
 					</View>
-					{/*<HeaderBottomLine />*/}
 				</View>
 				<View style={styles.pickTechContainerOuter}>
 					{
@@ -660,6 +868,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		                  		stretchLabelWidth(secondLabelWidthAnim);
 		                  		stretchLabelHeight(secondLabelHeightAnim);
 		                  		unfoldLabelBorder(secondLabelBorderRadiusAnim);
+		                  		Vibration.vibrate(vibrationTime);
 			                  }
 			                }}
 			                style={styles.techContainer}
@@ -785,7 +994,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 							<Text style={styles.labelText}>Choose Time</Text>
 						</Animated.View>
 					</View>
-					{/*<HeaderBottomLine />*/}
 				</View>
 				<View style={styles.showHoursContainer}>
 				</View>
@@ -867,7 +1075,99 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 								</TouchableOpacity>
 							</View>
 						</View>
-						<HeaderBottomLine />
+					</View>
+				}
+
+				{/*{ open: boolean, hours: array }*/}
+				{
+					pickedDisplayPost && selectedTech &&
+					<View>
+						<View style={styles.hoursInfoContainer}>
+							<View style={styles.hoursInfoBox}>
+								<View style={styles.hoursLabelContainer}>
+									{
+										businessUser.photoURL
+										?
+										<Image
+											style={styles.hoursInfoUserPhoto}
+											source={{ uri: businessUser.photoURL }}
+										/>
+										:
+										<DefaultUserPhoto 
+                      customSizeBorder={RFValue(37)}
+                      customSizeUserIcon={RFValue(25)}
+                    />
+									}
+									<Text style={styles.hoursLabelText}>{businessUser.username} Hours</Text>
+								</View>
+								{
+									busSpecialHours && busSpecialHours.hours.length > 0
+									?
+									busSpecialHours.hours.map((hours, index) => (
+										<View style={styles.showHoursContainer} key={index}>
+											<View>
+												<Text style={styles.hoursText}>* {useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+											</View>
+										</View>
+									))
+									: busBusinessHours && busBusinessHours.hours.length > 0
+									?
+									busBusinessHours.hours.map((hours, index) => (
+										<View style={styles.showHoursContainer} key={index}>
+											<View>
+												<Text style={styles.hoursText}>{useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+											</View>
+										</View>
+									))
+									:
+									<View style={styles.showHoursContainer}>
+										<Text style={styles.hoursText}>Unavailable</Text>
+									</View>
+								}
+							</View>
+							<View style={styles.hoursInfoBox}>
+								<View style={styles.hoursLabelContainer}>
+									{
+										selectedTech.photoURL
+										?
+										<Image
+											style={styles.hoursInfoUserPhoto}
+											source={{ uri: selectedTech.photoURL }}
+										/>
+										:
+										<DefaultUserPhoto 
+                      customSizeBorder={RFValue(37)}
+                      customSizeUserIcon={RFValue(25)}
+                    />
+									}
+									<Text style={styles.hoursLabelText}>{selectedTech.username} Hours</Text>
+								</View>
+								{
+									techSpecialHours && techSpecialHours.hours.length > 0
+									?
+									techSpecialHours.hours.map((hours, index) => (
+										<View style={styles.showHoursContainer} key={index}>
+											<View>
+												<Text style={styles.hoursText}>* {useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+											</View>
+										</View>
+									))
+									: techBusinessHours && techBusinessHours.hours.length > 0
+									?
+									techBusinessHours.hours.map((hours, index) => (
+										<View style={styles.showHoursContainer} key={index}>
+											<View>
+												<Text style={styles.hoursText}>{useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+											</View>
+										</View>
+									))
+									: 
+									<View style={styles.showHoursContainer}>
+										<Text style={styles.hoursText}>Unavailable</Text>
+									</View>
+								}
+							</View>
+						</View>
 					</View>
 				}
 
@@ -888,90 +1188,97 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				}
 				
 				{
-					!showCalendar && pickedDisplayPost && selectedTech
+					!showCalendar && pickedDisplayPost && selectedTech && gridExist
 					?
-					chartGrids.map((gridRow, index) => (
-						<View 
-							style={styles.gridRow}
-							key={index}
-						>
-							<ScrollView 
-								horizontal
-								showsHorizontalScrollIndicator={false}
-							>
-								{
-			      			gridRow.map((item, index) => (
-					      		<View 
-					      			key={index}
-					      			style={styles.gridContainer}
-					      		>
-						      		<TouchableOpacity
-						      			style={styles.gridTouchContainer}
-						      			key={index}
-						      			onPress={() => {
-						      				{
-						      					pickedDisplayPost && selectedTech
-						      					?
-				    								(
-				    									// animate
-			    										navigation.navigate('ReservationRequest', {
-								      					businessUserId: businessUser.id,
-								      					businessUserUsername: businessUser.username,
-								      					businessUserPhotoURL: businessUser.photoURL,
-								      					businessUserLocationType: businessUser.locationType,
-								      					businessUserLocality: businessUser.locality,
+					<View>
+						{
+							chartGrids.map((gridRow, index) => (
+								<View 
+									style={styles.gridRow}
+									key={index}
+								>
+									<ScrollView 
+										horizontal
+										showsHorizontalScrollIndicator={false}
+									>
+										{
+					      			gridRow.map((item, index) => (
+							      		<View 
+							      			key={index}
+							      			style={styles.gridContainer}
+							      		>
+								      		<TouchableOpacity
+								      			style={styles.gridTouchContainer}
+								      			key={index}
+								      			onPress={() => {
+								      				{
+								      					pickedDisplayPost && selectedTech
+								      					?
+						    								(
+						    									// animate
+					    										navigation.navigate('ReservationRequest', {
+										      					businessUserId: businessUser.id,
+										      					businessUserUsername: businessUser.username,
+										      					businessUserPhotoURL: businessUser.photoURL,
+										      					businessUserLocationType: businessUser.locationType,
+										      					businessUserLocality: businessUser.locality,
 
-								      					businessGooglemapsUrl: businessUser.googlemapsUrl,
-								      					businessLocationCoord: { 
-								      						latitude: businessUser.geometry.location.lat, 
-								      						longitude: businessUser.geometry.location.lng 
-								      					},
+										      					businessGooglemapsUrl: businessUser.googlemapsUrl,
+										      					businessLocationCoord: { 
+										      						latitude: businessUser.geometry.location.lat, 
+										      						longitude: businessUser.geometry.location.lng 
+										      					},
 
-								      					selectedTechId: selectedTech.id,
-																selectedTechUsername: selectedTech.username,
-																selectedTechPhotoURL: selectedTech.photoURL,
+										      					selectedTechId: selectedTech.id,
+																		selectedTechUsername: selectedTech.username,
+																		selectedTechPhotoURL: selectedTech.photoURL,
 
-																userId: user.id,
-																pickedDisplayPost: pickedDisplayPost,
-																gridTime: item.gridStartTime,
-								      				}),
-								      				setRsvDate(useConvertTime.convertToDateInMs( Date.now() )),
-															setDateMoveFromToday(0),
-															setCalendarDate(useConvertTime.convertToDateInMs(Date.now() )),
-															setCalendarMove(0),
+																		userId: user.id,
+																		pickedDisplayPost: pickedDisplayPost,
+																		gridTime: item.gridStartTime,
+										      				}),
+										      				setRsvDate(useConvertTime.convertToDateInMs( Date.now() )),
+																	setDateMoveFromToday(0),
+																	setCalendarDate(useConvertTime.convertToDateInMs(Date.now() )),
+																	setCalendarMove(0),
 
-															setPickedDisplayPost(null),
-															setDisplayPostTechs([]),
-															setDisplayPostTechsState(false),
-															setSelectedTech(null),
+																	setPickedDisplayPost(null),
+																	setDisplayPostTechs([]),
+																	setDisplayPostTechsState(false),
+																	setSelectedTech(null),
 
-															setChartGridsState(false),
-															setChartGrids([[]]),
+																	setChartGridsState(false),
+																	setChartGrids([[]]),
 
-															// animate back to default
-															pressLabelWidth(firstLabelWidthAnim),
-															pressLabelHeight(firstLabelHeightAnim),
-															foldLabelBorder(firstLabelBorderRadiusAnim),
-															pressLabelWidth(secondLabelWidthAnim),
-															pressLabelHeight(secondLabelWidthAnim),
-															foldLabelBorder(secondLabelBorderRadiusAnim)
-				    								)
-						      					: console.log("not ready yet")
-						      				}
-						      			}}
-						      		>
-						      			<View style={styles.grid}>
-							      			<Text style={styles.gridText}>
-							      				{item.gridStartTime.normalHour}:{item.gridStartTime.normalMin} {item.gridStartTime.pmOrAm}
-							      			</Text>
-							      		</View>
-						      		</TouchableOpacity>
-						      	</View>
-							    ))
-							  }
-	      			</ScrollView>
-      			</View>
-	      	))
+																	// animate back to default
+																	pressLabelWidth(firstLabelWidthAnim),
+																	pressLabelHeight(firstLabelHeightAnim),
+																	foldLabelBorder(firstLabelBorderRadiusAnim),
+																	pressLabelWidth(secondLabelWidthAnim),
+																	pressLabelHeight(secondLabelWidthAnim),
+																	foldLabelBorder(secondLabelBorderRadiusAnim),
+
+																	Vibration.vibrate(vibrationTime)
+						    								)
+								      					: console.log("not ready yet")
+								      				}
+								      			}}
+								      		>
+								      			<View style={styles.grid}>
+									      			<Text style={styles.gridText}>
+									      				{item.gridStartTime.normalHour}:{item.gridStartTime.normalMin} {item.gridStartTime.pmOrAm}
+									      			</Text>
+									      		</View>
+								      		</TouchableOpacity>
+								      	</View>
+									    ))
+									  }
+			      			</ScrollView>
+		      			</View>
+			      	))
+						}
+						<View style={{ height: RFValue(100) }}/>
+		      </View>
 	      	: 
 	      	null
 	      }
@@ -1226,7 +1533,35 @@ const styles = StyleSheet.create({
   emptyGridText: {
   	fontSize: RFValue(20),
   	fontWeight: 'bold',
-  }
+  },
+
+  showHoursContainer: {
+  	flexDirection: 'row'
+  },
+  hoursInfoContainer: {
+  	flexDirection: 'row',
+  	alignItems: 'center'
+  },
+  hoursInfoBox: {
+  	flex: 1,
+  	alignItems: 'center'
+  },
+  hoursLabelContainer: {
+  	justifyContent: 'center',
+  	alignItems: 'center',
+  	height: RFValue(70)
+  },
+  hoursLabelText: {
+  	fontSize: RFValue(15)
+  },
+  hoursText: {
+  	fontSize: RFValue(17),
+  },
+  hoursInfoUserPhoto: {
+  	height: RFValue(37),
+    width: RFValue(37),
+    borderRadius: RFValue(100),
+  },
 });
 
 export default BusinessScheduleScreen;

@@ -96,7 +96,7 @@ const addPostFire = (newPost) => {
           usersRef,
           { 
             displayPostCount: postCountIncrement,
-            lastUpdated: Date.now()
+            last_display_post_update_at: Date.now()
           }
         );
       // if the post is a regular post without rating
@@ -105,7 +105,7 @@ const addPostFire = (newPost) => {
           usersRef,
           { 
             postCount: postCountIncrement,
-            lastUpdated: Date.now()
+            last_post_update_at: Date.now()
           }
         );
       }

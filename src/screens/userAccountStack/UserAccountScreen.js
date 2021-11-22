@@ -280,7 +280,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 								setUserAccountPostState(false);
 			      	})
 			      } else {
-			      	console.log("UserAccountScreen: scrollView: onScroll: post switch: " + userAccountPostFetchSwitch + " post state: " + userAccountPostState );
+			      	// console.log("UserAccountScreen: scrollView: onScroll: post switch: " + userAccountPostFetchSwitch + " post state: " + userAccountPostState );
 			      };
 			    }}
 			    scrollEventThrottle={1000}

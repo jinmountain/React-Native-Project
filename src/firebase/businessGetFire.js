@@ -212,19 +212,15 @@ const getTechsRating = (techs, busId, postId) => {
 };
 
 // gives grid timestamps that are taken
-const getRsvTimestampsOfTech = (busId, techId, rsvDate, startTime, endTime) => {
+const getRsvTimestampsOfTech = (busId, techId, rsvDate) => {
 	return new Promise ((res, rej) => {
 		const dateInMs = rsvDate;
 
 		let reservations = [];
 
-		const busStartTimestamp = dateInMs + (startTime * 60 * 60 *1000);
-		const busEndTimestamp = dateInMs + (endTime * 60 * 60 * 1000);
 		const getReservations = reservationsRef
 		.where("techId", "==", techId)
 		.where("dateInMs", "==", dateInMs)
-		.where("startAt", ">=", busStartTimestamp) 
-		.where("startAt", "<", busEndTimestamp)
 
 		getReservations
 		.get()
@@ -476,14 +472,14 @@ const getBusUpcomingSpecialHours = (busId, specialHourLast) => {
 			.where("date_in_ms", ">", now)
 			.orderBy("date_in_ms")
 			.startAfter(specialHourLast)
-			.limit(10)
+			.limit(20)
 		} else {
 			getSpecialHours = usersRef
 			.doc(busId)
 			.collection("special_hours")
 			.where("date_in_ms", ">", now)
 			.orderBy("date_in_ms")
-			.limit(10)
+			.limit(20)
 		}
 
 		getSpecialHours
@@ -505,7 +501,7 @@ const getBusUpcomingSpecialHours = (busId, specialHourLast) => {
 					}
 				});
 			} else {
-				res({ rsvs: [], lastRsv: null, fetchSwitch: false });
+				res({ specialHours: [], lastSpecialHour: null, fetchSwitch: false });
 			}
 		})
 		.catch((error) => {
@@ -523,15 +519,21 @@ const getTechUpcomingSpecialHours = (busId, techId, specialHourLast) => {
 		if (specialHourLast) {
 			getSpecialHours = usersRef
 			.doc(busId)
+			.collection("technicians")
+			.doc(techId)
 			.collection("special_hours")
 			.where("date_in_ms", ">", now)
+			.orderBy("date_in_ms")
 			.startAfter(specialHourLast)
 			.limit(20)
 		} else {
 			getSpecialHours = usersRef
 			.doc(busId)
+			.collection("technicians")
+			.doc(techId)
 			.collection("special_hours")
 			.where("date_in_ms", ">", now)
+			.orderBy("date_in_ms")
 			.limit(20)
 		}
 		getSpecialHours
@@ -553,12 +555,65 @@ const getTechUpcomingSpecialHours = (busId, techId, specialHourLast) => {
 					}
 				});
 			} else {
-				res({ rsvs: [], lastRsv: null, fetchSwitch: false });
+				res({ specialHours: [], lastSpecialHour: null, fetchSwitch: false });
 			}
 		})
 		.catch((error) => {
 			rej(error);
 		});
+	});
+};
+
+const getScheduleBusinessSpecialHours = (busId, techId, dateInMs) => {
+	return new Promise (async (res, rej) => {
+		let busSpecialHours;
+		let techSpecialHours;
+
+		const techBusinessHours = await getTechBusinessHours(busId, techId);
+
+		const getBusSpecialHours = usersRef.doc(busId).collection("special_hours").where("date_in_ms", "==", dateInMs).get();
+
+		await getBusSpecialHours
+		.then((querySnapshot) => {
+			const docLength = querySnapshot.docs.length;
+			if (docLength > 0) {
+				querySnapshot.forEach((doc) => {
+					const docData = doc.data();
+					busSpecialHours = docData;
+				});
+			} else {
+				busSpecialHours = null
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		});
+
+		const getTechSpecialHours = usersRef
+		.doc(busId)
+		.collection("technicians")
+		.doc(techId)
+		.collection("special_hours")
+		.where("date_in_ms", "==", dateInMs)
+		.get();
+
+		await getTechSpecialHours
+		.then((querySnapshot) => {
+			const docLength = querySnapshot.docs.length;
+			if (docLength > 0) {
+				querySnapshot.forEach((doc) => {
+					const docData = doc.data();
+					techSpecialHours = docData;
+				});
+			} else {
+				techSpecialHours = null
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		});
+
+		res({ techBusinessHours: techBusinessHours, busSpecialHours: busSpecialHours, techSpecialHours: techSpecialHours })
 	});
 };
 
@@ -569,7 +624,10 @@ export default {
 	getRsvTimestampsOfTech, 
 	getUpcomingRsvsOfBus, 
 	getPreviousRsvsOfBus,
+	getTechBusinessHours,
 
 	getBusUpcomingSpecialHours,
-	getTechUpcomingSpecialHours
+	getTechUpcomingSpecialHours,
+
+	getScheduleBusinessSpecialHours
 };

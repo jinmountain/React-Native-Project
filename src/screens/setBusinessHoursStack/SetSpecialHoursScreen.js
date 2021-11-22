@@ -22,6 +22,7 @@ import HeaderBottomLine from '../../components/HeaderBottomLine';
 import { HeaderForm } from '../../components/HeaderForm';
 import TwoButtonAlert from '../../components/TwoButtonAlert';
 import AlertBoxTop from '../../components/AlertBoxTop';
+import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 
 // Design
 import { FontAwesome } from '@expo/vector-icons';
@@ -29,6 +30,8 @@ import { FontAwesome } from '@expo/vector-icons';
 // firebase
 import businessUpdateFire from '../../firebase/businessUpdateFire';
 import businessGetFire from '../../firebase/businessGetFire';
+import businessDeleteFire from '../../firebase/businessDeleteFire';
+
 // Context
 import { Context as AuthContext } from '../../context/AuthContext';
 
@@ -45,6 +48,10 @@ import expoIcons from '../../expoIcons';
 const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates, userType, techId, busId }) => {
   return (
     <View style={styles.settingContainer}>
+      {
+        index > 0 &&
+        <HeaderBottomLine />
+      }
       <View style={styles.settingTopContainer}>
         <View style={styles.dayContainer}>
           <View style={styles.specialDayIconContainer}>
@@ -66,19 +73,37 @@ const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates
           style={styles.deleteHoursButton}
           onPress={() => {
             console.log('delete');
-            const specialDatesLen = specialDates.length;
-            const newSpecialDates = specialDates.filter((item) => item !== date );
-            /// only one
-            if (specialDatesLen === 1) {
-              setDates(newSpecialDates);
+
+            console.log("userType: ", userType, "busId: ", busId, "docId: ", date.id);
+            let deleteSpecialHours;
+            if (userType === 'bus') {
+
+              deleteSpecialHours = businessDeleteFire.deleteBusSpecialHoursDoc(busId, date.id);
             };
-            // more than one
-            if (specialDatesLen > 1) {
-              setDates([
-                ...specialDates.slice(0, index),
-                ...specialDates.slice(index + 1, specialDatesLen)
-              ]);
+
+            if (userType === 'tech') {
+              deleteSpecialHours = businessDeleteFire.deleteTechSpecialHoursDoc(busId, techId, date.id);
             };
+
+            deleteSpecialHours
+            .then(() => {
+              const specialDatesLen = specialDates.length;
+              const newSpecialDates = specialDates.filter((item) => item !== date );
+              /// only one
+              if (specialDatesLen === 1) {
+                setDates(newSpecialDates);
+              };
+              // more than one
+              if (specialDatesLen > 1) {
+                setDates([
+                  ...specialDates.slice(0, index),
+                  ...specialDates.slice(index + 1, specialDatesLen)
+                ]);
+              };
+            })
+            .catch((error) => {
+              console.log(error);
+            });
           }}
           underlayColor={color.grey4}
         >
@@ -148,23 +173,38 @@ const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates
                       console.log('delete');
 
                       const newHours = date.hours.filter((hour) => hour !== item);
-                      let newSpecialDate = date 
-                      newSpecialDate.hours = newHours;
 
-                      console.log("newSpecialDate: ", newSpecialDate);
+                      // named "update" not "delete" because it updates doc's "hours" attribute to "newHours"
+                      let updateSpecialHoursDocHours;
+                      if (userType === "bus") {
+                        updateSpecialHoursDocHours = businessUpdateFire.updateBusSpecialHoursDocHours(busId, date.id, newHours);
+                      };
+                      if (userType === "tech") {
+                        updateSpecialHoursDocHours = businessUpdateFire.updateTechSpecialHoursDocHours(busId, techId, date.id, newHours);
+                      };
 
-                      // only one
-                      if (specialDatesLen === 1) {
-                        setDates([newSpecialDate]);
-                      };
-                      // more than one
-                      if (specialDatesLen > 1) {
-                        setDates([
-                          ...specialDates.slice(0, index),
-                          newSpecialDate,
-                          ...specialDates.slice(index + 1, specialDatesLen)
-                        ]);
-                      };
+                      // make the change to firestore doc 
+                      updateSpecialHoursDocHours
+                      .then(() => {
+                        // and then change the hours
+                        let newSpecialDate = date 
+                        newSpecialDate.hours = newHours;
+
+                        console.log("newSpecialDate: ", newSpecialDate);
+
+                        // only one
+                        if (specialDatesLen === 1) {
+                          setDates([newSpecialDate]);
+                        };
+                        // more than one
+                        if (specialDatesLen > 1) {
+                          setDates([
+                            ...specialDates.slice(0, index),
+                            newSpecialDate,
+                            ...specialDates.slice(index + 1, specialDatesLen)
+                          ]);
+                        };
+                      });
                     }}
                     underlayColor={color.grey4}
                   >
@@ -184,7 +224,9 @@ const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates
                 specialDateIndex: index,
                 userType: userType,
                 techId: techId,
-                busId: busId
+                busId: busId,
+                docId: date.id,
+                currentHours: date.hours
               })
             }}
             underlayColor={color.grey4}
@@ -363,65 +405,6 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
           navigation.goBack();
         }}
         rightButtonPress={() => {
-          console.log(specialDates);
-          // const compareHours = (currentHours, newHours) => {
-          //   let hoursIndex = 0;
-          //   const currentHoursLen = currentHours.length;
-          //   const newHoursLen = newHours.length;
-          //   // when the two hours have different length then return false
-          //   if (currentHoursLen !== newHoursLen) {
-          //     return true
-          //   }
-          //   // if not compare each hours in the two arrays
-          //   for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
-          //     if (
-          //       currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
-          //       currentHours[hoursIndex].min !== newHours[hoursIndex].min 
-          //     ) {
-          //       return true
-          //     }
-          //   }
-          //   return false;
-          // };
-
-          // let readyToSave = false;
-
-          // if (currentSpecialHours) {
-          //   // compare length 
-          //   const currentSpecialHoursLen = currentSpecialHours.length;
-          //   if (currentSpecialHoursLen !== specialDates.length ) {
-          //     readyToSave = true;
-          //   } else {
-          //     let specialHoursIndex = 0;
-          //     for (specialHoursIndex; specialHoursIndex < currentSpecialHoursLen; specialHoursIndex++) {
-          //       if (currentSpecialHours[specialHoursIndex].date_in_ms !== specialDates[specialHoursIndex].date_in_ms) {
-          //         readyToSave = true;
-          //         break
-          //       };
-
-          //       if (currentSpecialHours[specialHoursIndex].status !== specialDates[specialHoursIndex].status) {
-          //         readyToSave = true;
-          //         break
-          //       }
-
-          //       if (compareHours(currentSpecialHours[specialHoursIndex].hours, specialDates[specialHoursIndex]).hours) {
-          //         readyToSave = true;
-          //         break
-          //       };
-          //     }
-          //   };
-          // } else {
-          //   readyToSave = true;
-          // }
-
-          // if (readyToSave) {
-          //   console.log("ready to save");
-          //   setShowTba(true);
-          // } else {
-          //   setAlertBoxStatus(true);
-          //   setAlertBoxText("Change has not made.");
-          // }
-
           navigation.goBack();
         }}
       />
@@ -448,12 +431,10 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
               .then((result) => {
                 // result
                 // { specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true }
-                if (isMounted) {
-                  setSpecialDates([...specialDates, ...result.specialHours]);
-                  setGetSpecialHoursState(false);
-                  setLastSpecialHour(result.lastSpecialHour);
-                  setSpecialHoursFetchSwitch(result.fetchSwitch);
-                }
+                setGetSpecialHoursState(false);
+                setSpecialDates([...specialDates, ...result.specialHours]);
+                setLastSpecialHour(result.lastSpecialHour);
+                setSpecialHoursFetchSwitch(result.fetchSwitch);
               })
               .catch((error) => {
                 console.log("error: ", error);
@@ -484,6 +465,9 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
             })
           }
           {/*upcoming holidays*/}
+          { getSpecialHoursState &&
+            <SpinnerFromActivityIndicator containerCustomStyle={{ height: RFValue(57) }}/>
+          }
         </ScrollView>
       </View>
       <View style={styles.addAnotherDayContainer}>

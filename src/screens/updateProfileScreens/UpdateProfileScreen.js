@@ -23,7 +23,6 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import UserDataEditButtonForm from '../../components/profilePage/UserDataEditButtonForm';
 
 // firebase
-import authFire from '../../firebase/authFire';
 import { profileUpdateFire } from '../../firebase/profileUpdateFire';
 
 // Contexts
@@ -53,7 +52,6 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 		}, 
 		signout,
 		resetEdit,
-		updateUser,
 		addNewName,
 		addNewUsername,
 		addNewWebsite,
@@ -66,8 +64,8 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 
 	useEffect(() => {
 		// username change timer to limit
-		if (user.usernameTimestamp) {
-			const daysPassed = (Date.now() - user.usernameTimestamp)/(24*60*60*1000);
+		if (user.last_username_change_at) {
+			const daysPassed = (Date.now() - user.last_username_change_at)/(24*60*60*1000);
 			if (daysPassed < 1) {
 				console.log('Blocked to change username.');
 				setAllowUsernameChange(false);
@@ -103,22 +101,13 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 					// allow update when at least one is changed
 					if (newProfileJson !== undefined && newProfileJson !== null) {
 						console.log("update user: ", newProfileJson);
-						const authCheck = authFire.authCheck();
-						authCheck
-						.then((currentUser) => {
-							const currentUserId = currentUser.uid;
-							const newUserData = profileUpdateFire(currentUserId, newProfileJson);
-							newUserData
-							.then(() => {
-								navigation.navigate('Account');
-							})
-							.catch((error) => {
-								console.log(error);
-							});
+						const updateProfile = profileUpdateFire(currentUserId, newProfileJson);
+						updateProfile
+						.then(() => {
+							navigation.navigate('Account');
 						})
 						.catch((error) => {
-							// when authCheck fails
-							signout();
+							console.log(error);
 						});
 					};
 				}} 

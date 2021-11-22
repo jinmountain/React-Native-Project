@@ -15,14 +15,20 @@ export const getCalendarDates = (
   // - Dates of The Following Month in The Last Week of The Month
   useEffect(() => {
     let mounted = true;
+
     const monthInMs = useConvertTime.convertToMonthInMs(calendarDate);
     const time = useConvertTime.convertToTime(monthInMs);
     const monthIndex = time.monthIndex;
     // todays date and when business end today
     const calendarDateInMs = useConvertTime.convertToDateInMs(calendarDate);
     const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
-    const dateNowEndTime = dateNowInMs + endTime * 60 * 60 * 1000;
 
+    // when end time is given
+    let dateNowEndTime;
+    if (endTime) {
+      dateNowEndTime = dateNowInMs + endTime * 60 * 60 * 1000;
+    }
+    
     // days
     // 0 1 2 3 4 5 6
     // add days of the month
@@ -39,7 +45,7 @@ export const getCalendarDates = (
           datesInPreMonth.unshift({ dateInMS: dayInPreMonthTimestamp, time: dayInPreMonthTime, thisMonth: false, past: true });
         }
       };
-    }
+    };
     
     let datesInMonth = []
     let dateInMonthIndex;
@@ -48,7 +54,7 @@ export const getCalendarDates = (
       const dateInMonthTimestamp = useConvertTime.convertToDateInMs(monthInMs + dateInMonthIndex * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000) // to avoid day light savings;
       const dateInMonthTime = useConvertTime.convertToTime(dateInMonthTimestamp);
       // date is in the month and same as today and the current time is bigger than the end time
-      if (dateInMonthTimestamp === dateNowInMs && dateNow > dateNowEndTime) {
+      if (dateInMonthTimestamp === dateNowInMs && dateNowEndTime && dateNow > dateNowEndTime) {
         datesInMonth.push({ 
           dateInMS: dateInMonthTimestamp, 
           time: dateInMonthTime, 
@@ -68,7 +74,7 @@ export const getCalendarDates = (
         });
       }
       // date is in the month and same as today and the current time is less than the end time
-      else if (dateInMonthTimestamp === dateNowInMs && dateNow < dateNowEndTime) {
+      else if (dateInMonthTimestamp === dateNowInMs && dateNowEndTime && dateNow < dateNowEndTime) {
         datesInMonth.push({ 
           dateInMS: dateInMonthTimestamp, 
           time: dateInMonthTime, 

@@ -585,6 +585,7 @@ const postBusSpecialDate = (busId, dateInMs, dateStatus) => {
 			id: newDocId,
 			date_in_ms: dateInMs,
 			status: dateStatus,
+			hours: []
 		}
 		const busSpecialHoursRef = usersRef.doc(busId).collection("special_hours").doc(newDocId);
 		busSpecialHoursRef
@@ -611,8 +612,9 @@ const postTechSpecialDate = (busId, techId, dateInMs, dateStatus) => {
 			id: newDocId,
 			date_in_ms: dateInMs,
 			status: dateStatus,
+			hours: []
 		}
-		const techSpecialHoursRef = usersRef.collection("technicians").doc(techId).collection("special_hours").doc(newDocId);
+		const techSpecialHoursRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc(newDocId);
 		techSpecialHoursRef
 		.set(
 			newSpecialDate, 
@@ -627,7 +629,53 @@ const postTechSpecialDate = (busId, techId, dateInMs, dateStatus) => {
 			rej(error);
 		});
 	});
-}
+};
 
+const postBusSpecialHours = (busId, docId, newHours, currentHours) => {
+	return new Promise (async (res, rej) => {
+		const mergedHours = [...currentHours, newHours];
+		const busSpecialHoursRef = usersRef.doc(busId).collection("special_hours").doc(docId);
+		busSpecialHoursRef
+		.set(
+			{ hours: mergedHours }, 
+			{
+				merge: true
+			}
+		)
+		.then(() => {
+			res(true);
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+};
 
-export default { sendRsvRequest, completeReservation, postBusSpecialDate, postTechSpecialDate };
+const postTechSpecialHours = (busId, techId, docId, newHours, currentHours) => {
+	return new Promise (async (res, rej) => {
+		const mergedHours = [...currentHours, newHours];
+		const busSpecialHoursRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc(docId);
+		busSpecialHoursRef
+		.set(
+			{ hours: mergedHours }, 
+			{
+				merge: true
+			}
+		)
+		.then(() => {
+			res(true);
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+};
+
+export default { 
+	sendRsvRequest, 
+	completeReservation, 
+	postBusSpecialDate, 
+	postTechSpecialDate, 
+	postBusSpecialHours, 
+	postTechSpecialHours 
+};

@@ -143,7 +143,8 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                 userType: userType,
                 hoursType: 'business',
                 businessDay: businessDay,
-                techId: techId
+                techId: techId,
+                currentHours: hours,
               })
             }}
             underlayColor={color.grey4}
@@ -296,22 +297,22 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
       getTechBusinessHours
       .then((currentBusinessHours) => {
         // set to the states
-        if (currentBusinessHours && currentBusinessHours.sun_open) {
-          isMounted && setBusinessHours(currentBusinessHours);
-          isMounted && setSunOpen(currentBusinessHours.sun_open);
-          isMounted && setSunHours(currentBusinessHours.sun_hours);
-          isMounted && setMonOpen(currentBusinessHours.mon_open);
-          isMounted && setMonHours(currentBusinessHours.mon_hours);
-          isMounted && setTueOpen(currentBusinessHours.tue_open);
-          isMounted && setTueHours(currentBusinessHours.tue_hours);
-          isMounted && setWedOpen(currentBusinessHours.wed_open);
-          isMounted && setWedHours(currentBusinessHours.wed_hours);
-          isMounted && setThuOpen(currentBusinessHours.thu_open);
-          isMounted && setThuHours(currentBusinessHours.thu_hours);
-          isMounted && setFriOpen(currentBusinessHours.fri_open);
-          isMounted && setFriHours(currentBusinessHours.fri_hours);
-          isMounted && setSatOpen(currentBusinessHours.sat_open);
-          isMounted && setSatHours(currentBusinessHours.sat_hours);
+        if (currentBusinessHours && currentBusinessHours.sun_open && isMounted) {
+          setBusinessHours(currentBusinessHours);
+          setSunOpen(currentBusinessHours.sun_open);
+          setSunHours(currentBusinessHours.sun_hours);
+          setMonOpen(currentBusinessHours.mon_open);
+          setMonHours(currentBusinessHours.mon_hours);
+          setTueOpen(currentBusinessHours.tue_open);
+          setTueHours(currentBusinessHours.tue_hours);
+          setWedOpen(currentBusinessHours.wed_open);
+          setWedHours(currentBusinessHours.wed_hours);
+          setThuOpen(currentBusinessHours.thu_open);
+          setThuHours(currentBusinessHours.thu_hours);
+          setFriOpen(currentBusinessHours.fri_open);
+          setFriHours(currentBusinessHours.fri_hours);
+          setSatOpen(currentBusinessHours.sat_open);
+          setSatHours(currentBusinessHours.sat_hours);
         }
       })
       .catch((error) => {
@@ -572,10 +573,8 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
               sat_hours: satHours
             };
             if (userType === 'bus') {
-              const updateBusUser = businessUpdateFire.busUserUpdate({
-                business_hours: newBusinessHours
-              });
-              updateBusUser
+              const updateBusBusinessHours = businessUpdateFire.updateBusBusinessHours(newBusinessHours);
+              updateBusBusinessHours
               .then(() => {
                 setBusinessHours(newBusinessHours);
                 setShowTba(false);
@@ -585,7 +584,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
               });
             }
             if (userType === 'tech' && techId) {
-              const updateTechBusinessHours = businessUpdateFire.updateTechBusinessHours(user.id, techId, newBusinessHours);
+              const updateTechBusinessHours = businessUpdateFire.updateTechBusinessHours(techId, newBusinessHours);
               updateTechBusinessHours
               .then(() => {
                 setBusinessHours(newBusinessHours);

@@ -4,9 +4,15 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 import color from '../color';
 
-const SpinnerFromActivityIndicator = ({customSize, customColor}) => {
+const SpinnerFromActivityIndicator = ({containerCustomStyle, customSize, customColor}) => {
 	return (
-		<View style={styles.container}>
+		<View style={
+			containerCustomStyle
+			?
+			styles.container
+			:
+			[styles.container, containerCustomStyle]
+		}>
 			<ActivityIndicator 
 				size={ customSize ? customSize : "large" } 
 				color={ customColor ? customColor : color.black2 } 
@@ -19,7 +25,7 @@ const styles = StyleSheet.create({
 	container: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		elevation: 10,
+		width: '100%',
 	} 
 });
 

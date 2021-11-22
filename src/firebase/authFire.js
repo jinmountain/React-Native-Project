@@ -56,8 +56,8 @@ const signinFire = (email, password) => {
               id: uid,
               email: email,
               emailVerified: response.user.emailVerified,
-              signUp: Date.now(),
-              lastLogin: Date.now()
+              sign_up_at: Date.now(),
+              last_login_at: Date.now()
             };
             const usersRef = Firebase.firestore().collection('users');
 
@@ -82,7 +82,7 @@ const signinFire = (email, password) => {
               delete userData['coordinates']
             }
             usersRef.doc(uid).update({ 
-              lastLogin: Date.now()
+              last_login_at: Date.now()
             });
             res(userData);
           };
@@ -122,7 +122,7 @@ const localSigninFire = () => {
             console.log("fetched the current user's data: ", userData.email);
             // update last login to the current time and the user data before updated is pulled and use it
             usersRef.doc(userData.id).update({ 
-              lastLogin: Date.now()
+              last_login_at: Date.now()
             });
             res(userData);
           })

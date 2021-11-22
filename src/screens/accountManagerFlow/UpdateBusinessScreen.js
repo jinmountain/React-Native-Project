@@ -79,7 +79,9 @@ const UpdateBusinessScreen = ({ navigation }) => {
 					onPress={() => {
 						navigation.navigate('SetBusinessHoursStack', {
 							screen: 'SetBusinessHours',
-							params: { userType: 'bus' }
+							params: { 
+								userType: 'bus'
+							}
 						})
 					}}
 					icon={<MaterialCommunityIcons name="clock-outline" size={RFValue(27)} color={color.black1} />}

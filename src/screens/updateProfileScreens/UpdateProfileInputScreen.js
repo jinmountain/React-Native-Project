@@ -102,10 +102,7 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 			    	newInputCheck !== ''
 				    ?	( 
 				    		console.log( uniqueUsernameControl, rulesUsernameControl ),
-			    			addNewInputToJson({
-				    			username: newInputCheck,
-				    			usernameTimestamp: Date.now()
-				    		}),
+			    			addNewInputToJson({ username: newInputCheck }),
 				    		addNewUsername(newInputCheck),
 			    			navigation.goBack()
 			    		)

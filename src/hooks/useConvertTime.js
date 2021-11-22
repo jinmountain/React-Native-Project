@@ -20,6 +20,13 @@ const getDayIndex = (year, monthIndex, date) => {
 	return dayIndex;
 };
 
+const getDayIndexFromTimestamp = (timestamp) => {
+	var getTime = new Date(timestamp);
+	var dayIndex = getTime.getDay();
+	// dayIndex is number
+	return dayIndex;
+};
+
 const getDateTimestamp = (year, monthIndex, date) => {
 	var dateTimestamp = new Date(year, monthIndex, date).getTime();
 	return dateTimestamp;
@@ -138,6 +145,13 @@ const convertMilitaryToStandard = (hour, min) => {
 	return normalHour + ":" + normalMin + " " + meridiem;
 };
 
+const convertHourMinToNumber = (hour, min) => {
+	const hourNumber = Number(hour);
+	const minNumber = Number(min)/60;
+	const timeNumber = hourNumber + minNumber; 
+	return timeNumber
+};
+
 const convertEtcToHourMin = (etc) => {
 	const etcNumber = Number(etc);
 	if (etcNumber >= 60) {
@@ -253,12 +267,14 @@ var getDaysInMonth = (month, year) => {
 export default { 
 	convertToDateInMs,
 	getDayIndex,
+	getDayIndexFromTimestamp,
 	getDateTimestamp,
 	convertToTime, 
 	getDayMonthDateYear,
 	convertToMDD, 
 	convertToNormHourMin,
 	convertMilitaryToStandard, 
+	convertHourMinToNumber,
 	convertEtcToHourMin, 
 	convertToWeekInMs, 
 	convertToMonthInMs,

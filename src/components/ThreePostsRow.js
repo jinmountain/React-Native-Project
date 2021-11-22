@@ -35,7 +35,7 @@ const ThreePostsRow = ({
   const [defaultPosts, setDefaultPosts] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
 	return (
-    <View style={[styles.container, {paddingBottom: RFValue(57)}]}>
+    <View style={[styles.container, {paddingBottom: RFValue(150)}]}>
     {
       postState && posts.length === 0
       ?

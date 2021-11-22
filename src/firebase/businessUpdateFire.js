@@ -265,21 +265,55 @@ const technicianDeregister = () => {
 	});
 };
 
-const updateTechBusinessHours = (busId, techId, newBusinessHours) => {
+const updateBusBusinessHours = (newBusinessHours) => {
 	return new Promise ((res, rej) => {
-		const techRef = usersRef.doc(busId).collection("technicians").doc(techId)
-		techRef
-		.set({
-			business_hours: newBusinessHours
-		}, {
-			merge: true
-		})
-		.then(() => {
-			res();
+		const authCheck = authFire.authCheck();
+		authCheck
+		.then((currentUser) => {
+			const businessUserRef = usersRef.doc(currentUser.uid)
+			businessUserRef
+			.set({
+				business_hours: newBusinessHours,
+				last_business_hours_update: Date.now()
+			}, {
+				merge: true
+			})
+			.then(() => {
+				res(true);
+			})
+			.catch((error) => {
+				rej(error);
+			})
 		})
 		.catch((error) => {
 			rej(error);
+		});
+	});
+};
+
+const updateTechBusinessHours = (techId, newBusinessHours) => {
+	return new Promise ((res, rej) => {
+		const authCheck = authFire.authCheck();
+		authCheck
+		.then((currentUser) => {
+			const techRef = usersRef.doc(currentUser.uid).collection("technicians").doc(techId)
+			techRef
+			.set({
+				business_hours: newBusinessHours,
+				last_business_hours_update: Date.now()
+			}, {
+				merge: true
+			})
+			.then(() => {
+				res(true);
+			})
+			.catch((error) => {
+				rej(error);
+			})
 		})
+		.catch((error) => {
+			rej(error);
+		});
 	});
 };
 
@@ -315,6 +349,42 @@ const updateTechBusinessHours = (busId, techId, newBusinessHours) => {
 // 	});
 // };
 
+const updateBusSpecialHoursDocHours = (busId, docId, newHours) => {
+	return new Promise ((res, rej) => {
+		const specialHoursDocRef = usersRef.doc(busId).collection("special_hours").doc(docId);
+		specialHoursDocRef
+		.set({
+			hours: newHours
+		}, {
+			merge: true
+		})
+		.then(() => {
+			res();
+		})
+		.catch((error) => {
+			rej(error);
+		})
+	});
+};
+
+const updateTechSpecialHoursDocHours = (busId, techId, docId, newHours) => {
+	return new Promise ((res, rej) => {
+		const specialHoursDocRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc(docId);
+		specialHoursDocRef
+		.set({
+			hours: newHours
+		}, {
+			merge: true
+		})
+		.then(() => {
+			res();
+		})
+		.catch((error) => {
+			rej(error);
+		})
+	});
+};
+
 export default { 
 	busUserUpdate, 
 	businessUpdateLocation, 
@@ -322,5 +392,8 @@ export default {
 	businessDeregister, 
 	technicianRegister, 
 	technicianDeregister,
+	updateBusBusinessHours,
 	updateTechBusinessHours,
+	updateBusSpecialHoursDocHours,
+	updateTechSpecialHoursDocHours
 }
