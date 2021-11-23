@@ -268,7 +268,7 @@ const DisplayPostInfoInputForm = ({
               style={styles.pickAllTechs}
             >
               <View>
-                <AntDesign name="setModalVisible" size={RFValue(27)} color={color.black1} />
+                <AntDesign name="check" size={RFValue(27)} color={color.red2} />
               </View>
             </TouchableOpacity>
             :
@@ -337,7 +337,7 @@ const DisplayPostInfoInputForm = ({
                       
                       </View>
                       <View style={styles.chosenCheck}>
-                        <AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+                        <AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
                       </View>
                     </View>
                     : null

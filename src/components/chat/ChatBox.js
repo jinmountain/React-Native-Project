@@ -239,7 +239,8 @@ const ChatBox = ({
 			<View	
 				style={
 					isKeyboardVisible 
-					? { ...styles.chatBarContainer, ...{ marginBottom: RFValue(33) }} 
+					? { ...styles.chatBarContainer, ...{ marginBottom: RFValue(10) }} 
+					// space between the keyboard and the input bar when the keyboard is visible
 					: styles.chatBarContainer
 				}
 			>

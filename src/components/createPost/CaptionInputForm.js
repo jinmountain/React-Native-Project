@@ -28,7 +28,7 @@ const CaptionInputForm = ({caption, changeCaption}) => {
 				style={styles.captionInput}
 				value={caption} 
 				onChangeText={changeCaption} 
-				placeholderTextColor={color.gray3}
+				placeholderTextColor={color.grey1}
 				placeholder="Write about your new post."
 				multiline={true}
 				maxLength={300}
@@ -36,7 +36,7 @@ const CaptionInputForm = ({caption, changeCaption}) => {
       	autoCorrect={false}
       	underlineColorAndroid="transparent"
 			/>
-			<InputFormBottomLine customStyles={{borderColor: color.gray1, marginTop: RFValue(3)}}/>
+			<InputFormBottomLine customStyles={{backgroundColor: color.red2, marginTop: RFValue(3)}}/>
 		</View>
 	);
 };
@@ -46,18 +46,20 @@ const styles = StyleSheet.create({
 		marginHorizontal: RFValue(10),
 	},
 	textInputLabelContainer: {
-		minHeight: RFValue(25),
-		paddingVertical: RFValue(11),
+		minHeight: RFValue(40),
 	},
   textInputLabel: {
 	  fontSize: RFValue(12),
 	  marginTop: RFValue(10),
-	  color: color.gray3,
+	  color: color.red2,
   },
   captionInput: {
     fontSize: RFValue(17),
-  	paddingHorizontal: 10,
-  	height: RFValue(75),
+    paddingLeft: RFValue(10),
+  	height: RFValue(90),
+  	borderWidth: 1,
+  	borderRadius: RFValue(15),
+  	borderColor: color.red2,
   },
 });
 

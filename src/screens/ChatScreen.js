@@ -353,8 +353,13 @@ const ChatScreen = ({ route, navigation }) => {
 
   if (tryGetChat) {
 		return (
-			<MainTemplate>
+			<KeyboardAvoidingView 
+				style={{ flex: 1 }} 
+				// behavior={Platform.OS == "ios" ? "padding" : "height"}
+			>
 				<UserAccountHeaderForm
+					addPaddingTop={true}
+				  leftButtonTitle={null}
 					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					userActiveState={
@@ -385,294 +390,289 @@ const ChatScreen = ({ route, navigation }) => {
 						null
 					}
 				/>
-				<KeyboardAvoidingView 
-					style={{ flex: 1 }} 
-					behavior={Platform.OS == "ios" ? "padding" : "height"}
-				>
-					{
-						// progress bar
-						progress &&
-						<View style={{ width: '100%', minHeight: '1%' }}>
-							<View style={{ 
-								width: `${progress}%`, 
-								minHeight: '1%', 
-								backgroundColor: sendButtonColor,
-								borderTopRightRadius: RFValue(3),
-								borderBottomLeftRadius: RFValue(3)
-							}}>
-							</View>
+				{
+					// progress bar
+					progress &&
+					<View style={{ width: '100%', minHeight: '1%' }}>
+						<View style={{ 
+							width: `${progress}%`, 
+							minHeight: '1%', 
+							backgroundColor: sendButtonColor,
+							borderTopRightRadius: RFValue(3),
+							borderBottomLeftRadius: RFValue(3)
+						}}>
 						</View>
-					}
-					{
-						// Message Fetch State
-						// show loading spinner when getting earlier messages
-						messageFetchState
-						?
-						<View style={styles.loadingSpinnerContainer}>
-							<SpinnerFromActivityIndicator
-								customColor={sendButtonColor}
-							/>
-						</View>
-						:
-						null
-					}
-					{ 
-						// show display posts if the other user is business and displayPostsShown is true
-						theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length > 0 
-						?
-						<View style={styles.displayPostsContainer}>
-							<FlatList
-								onEndReached={() => {
-									let isMounted = true;
-									if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
-										isMounted && setUserAccountDisplayPostState(true);
-										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chatScreenDisplayPostLast, theOtherUser, user.id);
-										getDisplayPosts
-										.then((posts) => {
-											isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
-											if (posts.lastPost !== undefined) {
-												isMounted && addChatScreenDisplayPostLast(posts.lastPost);
-											} else {
-												isMounted && setUserAccountDisplayPostFetchSwtich(false);
-											};
-											isMounted && setUserAccountDisplayPostState(false);
-										})
-									}
-									return () => {
-										isMounted = false;
-									}
-								}}
-								onEndReachedThreshold={0.01}
-		            horizontal
-		            showsHorizontalScrollIndicator={false}
-		            data={userAccountDisplayPosts}
-		            keyExtractor={(displayPost, index) => index.toString()}
-		            renderItem={({ item }) => {
-		              return (
-		                <TouchableOpacity 
-		                  style={styles.postImageContainer}
-		                  onPress={() => {
-		                  	if (chosenDisplayPostUrls.includes(item.data.files[0])) {
-		                  		cancelChosenDisplayPostUrl(item.data.files[0].url)
-		                  	} else {
-			                  	addChosenDisplayPostUrl(item.data.files[0]);
-		                  	}
-		                  }}
-		                >
-			                <DisplayPostImage
-			                	type={item.data.files[0].type}
-			                	url={item.data.files[0].url}
-			                	imageWidth={windowWidth/2}
-			                />
-			                <DisplayPostInfo
-			                	taggedCount={kOrNo(item.data.taggedCount)}
-			                	title={item.data.title}
-			                	likeCount={kOrNo(item.data.like)}
-			                	etc={item.data.etc}
-			                	price={item.data.price}
-			                	containerWidth={windowWidth/2}
-			                />
-			                { item.data.files.length > 1
-			                	? <MultiplePhotosIndicator
-			                			size={RFValue(24)}
-			                		/>
-			                	: null
-			                }
-			                { 
-			                	chosenDisplayPostUrls.includes(item.data.files[0])
-			                	?
-			                	<View style={styles.chosenStatus}>
-				                	<View style={styles.chosenShadow}>
-				                	
-					                </View>
-					                <View style={styles.chosenCheck}>
-					                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
-					                </View>
-					              </View>
-					              : null
-			                }
-		                </TouchableOpacity>
-		              )
-		            }}
-		          />
-							{ 
-								userAccountDisplayPostState
-								?
-								<View style={styles.displayPostLoadingContainer}>
-									<DisplayPostLoading customColor={sendButtonColor}/>
-								</View>
-								: 
-								null
-							}
-						</View>
-						: theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length === 0
-						?
-							<DisplayPostsDefault/>
-						: null
-					}
-					
-					<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-						<View style={styles.innerContainer}>
-							<ChatBox
-								sendButtonColor={sendButtonColor}
-								pickImage={() => {
-									pickImage('chat');
-								}}
-								onPressShort={(item) => {
-			    				item.image
-			    				?
-			    				navigation.navigate('ImageZoomin', 
-                  {
-                    file: {
-                      type: "image",
-                      url: item.image
-                    }
-                  })
-                  : item.video
-                  ?
-                  navigation.navigate('ImageZoomin', 
-                  {
-                    file: {
-                      type: "video",
-                      url: item.video
-                    }
-                  })
-                  : null
-			    			}}
-								showExtendedActions={showExtendedActions}
-								setShowExtendedActions={setShowExtendedActions}
-								isKeyboardVisible={isKeyboardVisible}
-								files={files}
-								messages={ messages }
-								userId={ user.id }
-								theOtherUserPhotoURL={ theOtherUser.photoURL }
-								message={ message }
-								setMessage={ setMessage }
-								onSend={() => {
-									// when chat does not exist make chat first then send
-									if (message.length > 0 || files.length > 0 || chosenDisplayPostUrls.length > 0 ) {
-										if (tryGetChat && chat === null) {
-											const openChat = chatPostFire.openChat(theOtherUser.id, user.id)
-											openChat
-											.then((chat) => {
-												addChat(chat, true);
-												chatPostFire.sendMessageFire(
-									 				chat.id,
-									 				chat.data.firstUserId,
-									 				chat.data.secondUserId,
-									 				theOtherUser.id, 
-									 				user.id, 
-									 				message, 
-									 				files, 
-									 				chosenDisplayPostUrls, 
-									 				false, // orignally, chatDoc.theOtherUserActive
-									 				setProgress
-									 			);
-									 			clearFilesChat();
-									 			setMessage('');
-									 			clearChosenDisplayPostUrls();
-									 			setDisplayPostsShown(false);
-											})
-											.catch((error) => {
-												console.log("ChatScreen: chatPostFire: openChat: ", error);
-											});
+					</View>
+				}
+				{
+					// Message Fetch State
+					// show loading spinner when getting earlier messages
+					messageFetchState
+					?
+					<View style={styles.loadingSpinnerContainer}>
+						<SpinnerFromActivityIndicator
+							customColor={sendButtonColor}
+						/>
+					</View>
+					:
+					null
+				}
+				{ 
+					// show display posts if the other user is business and displayPostsShown is true
+					theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length > 0 
+					?
+					<View style={styles.displayPostsContainer}>
+						<FlatList
+							onEndReached={() => {
+								let isMounted = true;
+								if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
+									isMounted && setUserAccountDisplayPostState(true);
+									const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chatScreenDisplayPostLast, theOtherUser, user.id);
+									getDisplayPosts
+									.then((posts) => {
+										isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+										if (posts.lastPost !== undefined) {
+											isMounted && addChatScreenDisplayPostLast(posts.lastPost);
 										} else {
+											isMounted && setUserAccountDisplayPostFetchSwtich(false);
+										};
+										isMounted && setUserAccountDisplayPostState(false);
+									})
+								}
+								return () => {
+									isMounted = false;
+								}
+							}}
+							onEndReachedThreshold={0.01}
+	            horizontal
+	            showsHorizontalScrollIndicator={false}
+	            data={userAccountDisplayPosts}
+	            keyExtractor={(displayPost, index) => index.toString()}
+	            renderItem={({ item }) => {
+	              return (
+	                <TouchableOpacity 
+	                  style={styles.postImageContainer}
+	                  onPress={() => {
+	                  	if (chosenDisplayPostUrls.includes(item.data.files[0])) {
+	                  		cancelChosenDisplayPostUrl(item.data.files[0].url)
+	                  	} else {
+		                  	addChosenDisplayPostUrl(item.data.files[0]);
+	                  	}
+	                  }}
+	                >
+		                <DisplayPostImage
+		                	type={item.data.files[0].type}
+		                	url={item.data.files[0].url}
+		                	imageWidth={windowWidth/2}
+		                />
+		                <DisplayPostInfo
+		                	taggedCount={kOrNo(item.data.taggedCount)}
+		                	title={item.data.title}
+		                	likeCount={kOrNo(item.data.like)}
+		                	etc={item.data.etc}
+		                	price={item.data.price}
+		                	containerWidth={windowWidth/2}
+		                />
+		                { item.data.files.length > 1
+		                	? <MultiplePhotosIndicator
+		                			size={RFValue(24)}
+		                		/>
+		                	: null
+		                }
+		                { 
+		                	chosenDisplayPostUrls.includes(item.data.files[0])
+		                	?
+		                	<View style={styles.chosenStatus}>
+			                	<View style={styles.chosenShadow}>
+			                	
+				                </View>
+				                <View style={styles.chosenCheck}>
+				                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+				                </View>
+				              </View>
+				              : null
+		                }
+	                </TouchableOpacity>
+	              )
+	            }}
+	          />
+						{ 
+							userAccountDisplayPostState
+							?
+							<View style={styles.displayPostLoadingContainer}>
+								<DisplayPostLoading customColor={sendButtonColor}/>
+							</View>
+							: 
+							null
+						}
+					</View>
+					: theOtherUser.type === 'business' && displayPostsShown && userAccountDisplayPosts.length === 0
+					?
+						<DisplayPostsDefault/>
+					: null
+				}
+				
+				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+					<View style={styles.innerContainer}>
+						<ChatBox
+							sendButtonColor={sendButtonColor}
+							pickImage={() => {
+								pickImage('chat');
+							}}
+							onPressShort={(item) => {
+		    				item.image
+		    				?
+		    				navigation.navigate('ImageZoomin', 
+                {
+                  file: {
+                    type: "image",
+                    url: item.image
+                  }
+                })
+                : item.video
+                ?
+                navigation.navigate('ImageZoomin', 
+                {
+                  file: {
+                    type: "video",
+                    url: item.video
+                  }
+                })
+                : null
+		    			}}
+							showExtendedActions={showExtendedActions}
+							setShowExtendedActions={setShowExtendedActions}
+							isKeyboardVisible={isKeyboardVisible}
+							files={files}
+							messages={ messages }
+							userId={ user.id }
+							theOtherUserPhotoURL={ theOtherUser.photoURL }
+							message={ message }
+							setMessage={ setMessage }
+							onSend={() => {
+								// when chat does not exist make chat first then send
+								if (message.length > 0 || files.length > 0 || chosenDisplayPostUrls.length > 0 ) {
+									if (tryGetChat && chat === null) {
+										const openChat = chatPostFire.openChat(theOtherUser.id, user.id)
+										openChat
+										.then((chat) => {
+											addChat(chat, true);
 											chatPostFire.sendMessageFire(
-												chat.id,
-												chat.data.firstUserId,
+								 				chat.id,
+								 				chat.data.firstUserId,
 								 				chat.data.secondUserId,
-												theOtherUser.id, 
-												user.id, 
-												message, 
-												files, 
-												chosenDisplayPostUrls, 
-												chatDoc.theOtherUserActive, 
-												setProgress
-											);
-											clearFilesChat();
-											setMessage('');
-											clearChosenDisplayPostUrls();
-											setDisplayPostsShown(false);
-										}
+								 				theOtherUser.id, 
+								 				user.id, 
+								 				message, 
+								 				files, 
+								 				chosenDisplayPostUrls, 
+								 				false, // orignally, chatDoc.theOtherUserActive
+								 				setProgress
+								 			);
+								 			clearFilesChat();
+								 			setMessage('');
+								 			clearChosenDisplayPostUrls();
+								 			setDisplayPostsShown(false);
+										})
+										.catch((error) => {
+											console.log("ChatScreen: chatPostFire: openChat: ", error);
+										});
 									} else {
-										console.log("send button pushed");
+										chatPostFire.sendMessageFire(
+											chat.id,
+											chat.data.firstUserId,
+							 				chat.data.secondUserId,
+											theOtherUser.id, 
+											user.id, 
+											message, 
+											files, 
+											chosenDisplayPostUrls, 
+											chatDoc.theOtherUserActive, 
+											setProgress
+										);
+										clearFilesChat();
+										setMessage('');
+										clearChosenDisplayPostUrls();
+										setDisplayPostsShown(false);
 									}
-								}}
-								loadMore={() => {
-									if (chat) {
-							    	if (messageFetchSwitch && messageFetchState === false) {
-							    		setMessageFetchState(true);
-							    		const getMessages = chatGetFire.getMessages(
-								    		chatFound.id, 
-								    		theOtherUser.id, 
-								    		theOtherUser.name, 
-								    		theOtherUser.photoURL, 
-								    		appendEarlierMessages,
-								    		setMessageLast,
-												setMessageFetchSwitch,
-												messageLast,
-												dateToCompare,
-												addDateToCompare,
-								    	);
-							    		getMessages
-								    	.then(() => {
-								    		setMessageFetchState(false);
-								    	});
-							    	} else {
-											console.log(
-												"messageFetchSwitch: " 
-												+ messageFetchSwitch
-												+ "messageFetchState: "
-												+ messageFetchState
-											);
-										}
-						    	}
-								}}
-							/>
-							{
-								files.length > 0
-								?
-								<View style={styles.pickImageContainer}>
-							    <FlatList
-							      horizontal
-							      showsHorizontalScrollIndicator={false}
-							      data={files}
-							      keyExtractor={(image) => image.id}
-							      renderItem={({ item }) => {
-							        return (
-							          <TouchableOpacity 
-							            onPress={() => {navigation.navigate('ImageZoomin', 
-							                {
-							                  imageUri: item.uri,
-							                  currentScreen: 'Chat',
-							                }
-							              );
-							            }}
-							            style={styles.imageContainer}
-							          >
-							            <CancelButton onPressFunction={() => cancelFileChat(item.id)}/>
-							            <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
-							          </TouchableOpacity>
-							        )
-							      }}
-							    />
-							    { 
-							    	files.length <= 4 && 
-							      <TouchableHighlight 
-							        style={styles.pickImageButton} 
-							        onPress={() => {pickImage('chat');}}
-							        underlayColor={color.grey1}
-							      >
-							        <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
-							      </TouchableHighlight>
-							    }
-							  </View>
-								: null
-							}
-						</View>
-					</TouchableWithoutFeedback>
-				</KeyboardAvoidingView>
-			</MainTemplate>
+								} else {
+									console.log("send button pushed");
+								}
+							}}
+							loadMore={() => {
+								if (chat) {
+						    	if (messageFetchSwitch && messageFetchState === false) {
+						    		setMessageFetchState(true);
+						    		const getMessages = chatGetFire.getMessages(
+							    		chatFound.id, 
+							    		theOtherUser.id, 
+							    		theOtherUser.name, 
+							    		theOtherUser.photoURL, 
+							    		appendEarlierMessages,
+							    		setMessageLast,
+											setMessageFetchSwitch,
+											messageLast,
+											dateToCompare,
+											addDateToCompare,
+							    	);
+						    		getMessages
+							    	.then(() => {
+							    		setMessageFetchState(false);
+							    	});
+						    	} else {
+										console.log(
+											"messageFetchSwitch: " 
+											+ messageFetchSwitch
+											+ "messageFetchState: "
+											+ messageFetchState
+										);
+									}
+					    	}
+							}}
+						/>
+						{
+							files.length > 0
+							?
+							<View style={styles.pickImageContainer}>
+						    <FlatList
+						      horizontal
+						      showsHorizontalScrollIndicator={false}
+						      data={files}
+						      keyExtractor={(image) => image.id}
+						      renderItem={({ item }) => {
+						        return (
+						          <TouchableOpacity 
+						            onPress={() => {navigation.navigate('ImageZoomin', 
+						                {
+						                  imageUri: item.uri,
+						                  currentScreen: 'Chat',
+						                }
+						              );
+						            }}
+						            style={styles.imageContainer}
+						          >
+						            <CancelButton onPressFunction={() => cancelFileChat(item.id)}/>
+						            <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
+						          </TouchableOpacity>
+						        )
+						      }}
+						    />
+						    { 
+						    	files.length <= 4 && 
+						      <TouchableHighlight 
+						        style={styles.pickImageButton} 
+						        onPress={() => {pickImage('chat');}}
+						        underlayColor={color.grey1}
+						      >
+						        <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
+						      </TouchableHighlight>
+						    }
+						  </View>
+							: null
+						}
+					</View>
+				</TouchableWithoutFeedback>
+			</KeyboardAvoidingView>
 		)
 	} else {
 		return (

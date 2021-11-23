@@ -14,6 +14,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 // Sign in Sign up
 import SigninScreen from './src/screens/SigninScreen';
 import SignupScreen from './src/screens/SignupScreen';
+
 import PasswordResetScreen from './src/screens/PasswordResetScreen';
 import EmailVerificationScreen from './src/screens/EmailVerificationScreen';
 import ResolveAuthScreen from './src/screens/ResolveAuthScreen';
@@ -22,6 +23,7 @@ import ImageUploadMethodModal from './src/screens/ImageUploadMethodModal';
 import ImageZoominScreen from './src/screens/ImageZoominScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import PostDetailScreen from './src/screens/PostDetailScreen';
+import ContentCreateScreen from './src/screens/ContentCreateScreen';
 
 // navigation stacks
 import ChatListStack from './src/navigations/ChatListStack';
@@ -119,6 +121,13 @@ const MainFlow = () => {
       <Stack.Screen 
         name="Chat" 
         component={ChatScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ContentCreate" 
+        component={ContentCreateScreen}
         options={{
           headerShown: false,
         }}

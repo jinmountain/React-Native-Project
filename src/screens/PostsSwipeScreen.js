@@ -1,3 +1,7 @@
+// developer's note
+// - collect data of how far a user goes down on the scroll view to know usually where a user stops
+// - if a user goes farther than one's average then collect the posts' tags as one's interests
+
 import React, { useContext, useState, useEffect } from 'react';
 import { 
   View,

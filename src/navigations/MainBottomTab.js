@@ -7,6 +7,9 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
+// Screen
+import SnailScreen from '../screens/SnailScreen';
+
 // Stacks
 import HomeStack from './HomeStack';
 import SearchStack from './SearchStack';
@@ -67,8 +70,8 @@ const MainBottomTab = () => {
         }} 
       />
       <BottomTab.Screen 
-        name="ContentCreateTab" 
-        component={CreateStack}
+        name="SnailTab" 
+        component={SnailScreen}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             focused

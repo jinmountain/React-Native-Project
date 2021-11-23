@@ -30,36 +30,35 @@ import { AntDesign } from '@expo/vector-icons';
 import color from '../../color';
 
 const SearchBar = ({ 
-  usersFound, 
-  clearUserUsernameInput, 
-  clearSearchUser, 
-  changeUserUsernameInput,
-  userUsernameInput
+  searchUserUsername,
+  setSearchUserUsername,
+  setUsersFound
 }) => {
   return (
     <View style={styles.searchBarTextInputContainer}>
       <TextInput 
         style={[styles.searchBarTextInput, 
-          userUsernameInput
+          searchUserUsername
           ? {width: '80%'}
           : {width: '94%'}
         ]}
         placeholder="Search a shop"
         placeholderTextColor="#aaaaaa"
-        onChangeText={(text) => changeUserUsernameInput(text.trim())}
-        value={userUsernameInput}
+        onChangeText={(text) => setSearchUserUsername(text.trim())}
+        value={searchUserUsername}
         maxLength={30}
         multiline={false}
         underlineColorAndroid="transparent"
         autoCapitalize="none"
       />
-      { userUsernameInput 
+      { 
+        searchUserUsername 
         ? 
         <TouchableHighlight
           style={styles.closeButtonContainer}
           onPress={() => {
-            clearUserUsernameInput();
-            clearSearchUser();
+            setSearchUserUsername(null);
+            setUsersFound([]);
           }}
           underlayColor={color.grey4}
         >
@@ -85,8 +84,8 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   searchBarTextInput: {
-    fontSize: RFValue(15),
-    height: RFValue(45),
+    fontSize: RFValue(19),
+    height: RFValue(55),
     overflow: 'hidden',
     paddingLeft: RFValue(15),
     backgroundColor: "#F1F1F1",

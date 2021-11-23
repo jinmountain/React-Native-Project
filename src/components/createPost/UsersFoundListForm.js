@@ -21,7 +21,12 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 // Color
 import color from '../../color';
 
-const UsersFoundListForm = ({ usersFound, clearSearchUser, clearUserUsernameInput, chooseUser }) => {
+const UsersFoundListForm = ({ 
+  usersFound,
+  setUsersFound,
+  setSearchUserUsername,
+  setChosenUser,
+}) => {
   return (
     <View style={styles.usersFoundContainer}>
       <FlatList
@@ -39,10 +44,9 @@ const UsersFoundListForm = ({ usersFound, clearSearchUser, clearUserUsernameInpu
               }
               onPress={() => {
                 if (item.displayPostCount > 0) {
-                  clearSearchUser();
-                  clearUserUsernameInput();
-                  console.log("chose user: ", item.id);
-                  chooseUser(item);
+                  setUsersFound([]);
+                  setSearchUserUsername(null);
+                  setChosenUser(item);
                 } else {
                   null
                 }

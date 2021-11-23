@@ -63,8 +63,9 @@ const UserAccountHeaderForm = ({
         <View style={styles.compartmentOuter}>
           <View style={styles.leftCompartmentContainer}>
             {
-              leftButtonPress &&
-              <View style={styles.leftCompartmentInnerContainer}>
+              leftButtonIcon
+              ?
+              <View style={styles.leftButtonContainer}>
                 <TouchableHighlight 
                   style={ 
                     styles.compartmentHighlight 
@@ -76,30 +77,21 @@ const UserAccountHeaderForm = ({
                   // }}
                   underlayColor={color.grey4}
                 >
-                  <View style={styles.compartment}>
-                    {
-                      leftButtonIcon &&
-                      <View style={styles.compartmentIconContainer}>
-                        {leftButtonIcon}
-                      </View>
-                    }
-                    {
-                      leftButtonTitle &&
-                      <View style={styles.compartmentTextContainer}>
-                        <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
-                      </View>
-                    }
+                  <View style={styles.compartmentIconContainer}>
+                    {leftButtonIcon}
                   </View>
                 </TouchableHighlight>
               </View>
-            }
-            <View style={
-              leftButtonPress
-              ?
-              styles.usernameContainer
               :
-              [ styles.usernameContainer, { paddingLeft: RFValue(17) } ]
-            }>
+              <View style={{ width: RFValue(17) }}/>
+            }
+            {
+              leftButtonTitle &&
+              <View style={styles.leftTitleContainer}>
+                <Text style={styles.leftTitleText}>{leftButtonTitle}</Text>
+              </View>
+            }
+            <View style={styles.usernameContainer}>
               <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={styles.compartmentText}>{username}</Text>
               </View>
@@ -123,7 +115,7 @@ const UserAccountHeaderForm = ({
                     onPress={firstOnPress}
                     style={styles.headerElement}
                   >
-                    {firstIcon}
+                    <Text style={styles.iconText}>{firstIcon}</Text>
                   </TouchableOpacity>
                 }
                 { secondIcon &&
@@ -131,7 +123,7 @@ const UserAccountHeaderForm = ({
                     onPress={secondOnPress}
                     style={styles.headerElement}
                   >
-                    {secondIcon}
+                    <Text style={styles.iconText}>{secondIcon}</Text>
                   </TouchableOpacity>
                 }
     						{
@@ -140,7 +132,7 @@ const UserAccountHeaderForm = ({
                     onPress={thirdOnPress}
                     style={styles.headerElement}
                   >
-                    {thirdIcon}
+                    <Text style={styles.iconText}>{thirdIcon}</Text>
                   </TouchableOpacity>
                 }
     					</View>
@@ -195,10 +187,18 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
   },
-  leftCompartmentInnerContainer: {
+  leftButtonContainer: {
     paddingLeft: RFValue(65),
     justifyContent: 'center',
     alignItems: 'center',
+    paddingRight: RFValue(17),
+  },
+  leftTitleContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  leftTitleText: {
+    fontSize: RFValue(19)
   },
   usernameContainer: {
     flexDirection: 'row',
@@ -241,8 +241,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    width: RFValue(50),
-    height: RFValue(50),
+    width: RFValue(70),
+    height: RFValue(70),
     borderRadius: RFValue(100),
   },
   compartment: {
@@ -260,6 +260,11 @@ const styles = StyleSheet.create({
 
   safeAreaPadding: {
     height: RFValue(30)
+  },
+
+  iconText: {
+    color: color.black1,
+    fontSize: RFValue(19)
   },
 });
 

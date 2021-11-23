@@ -19,6 +19,9 @@ import { colorByRating } from '../hooks/colorByRating';
 // Color
 import color from '../color';
 
+// icons
+import expoIcons from '../expoIcons';
+
 const TagLine = ({ tags }) => {
   return (
     <View style={styles.tagBoxContainer}>
@@ -35,6 +38,7 @@ const TagLine = ({ tags }) => {
             >
               <View style={styles.unitContainer}>
                 <View style={styles.tagsContainer}>
+                  {expoIcons.snailShell(RFValue(15), color.red2)}
                   <Text style={styles.tagText}>
                     {item}
                   </Text>

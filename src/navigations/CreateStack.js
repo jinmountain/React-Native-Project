@@ -2,7 +2,6 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 
 // Screens
-import SearchUsersScreen from '../screens/SearchUsersScreen';
 import ContentCreateScreen from '../screens/ContentCreateScreen';
 
 const Stack = createStackNavigator();
@@ -18,10 +17,6 @@ const CreateStack = () => {
       <Stack.Screen 
         name="ContentCreate" 
         component={ContentCreateScreen}
-      />
-      <Stack.Screen 
-        name="SearchUsers" 
-        component={SearchUsersScreen}
       />
     </Stack.Navigator>
   );

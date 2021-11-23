@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
 	container: {
 		backgroundColor: '#fff',
 		flex: 1,
+		paddingTop: RFValue(70)
 	},
 	actionBarContainer: {
 		flex: 1,

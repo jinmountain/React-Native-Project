@@ -68,23 +68,20 @@ import { useCardAnimation } from '@react-navigation/stack';
 const getAvailableHours = (busBusinessHours, techBusinessHours, busSpecialHours, techSpecialHours) => {
 	// compare bus and tech and find intersection
 	// cases
-	// 1. tech.startTime | bus.startTime  | tech.endTime | bus.endTime  => change available hours's endTime
-	// 2. bus.startTime  | tech.startTime | tech.endTime | bus.endTime  => change available hours's start and end time
-	// 3. bus.startTime  | tech.startTime | bus.endTime  | tech.endTime => change available hours's startTime
-	
-	// choice 4 would not happen if I make tech only choose their business hours only in range of business's business hours
-	// 4. tech.startTime | bus.startTime  | bus.endTime  | tech.endTime
+	// 1. tech.startTime | bus.startTime  | tech.endTime | bus.endTime  
+	// 2. bus.startTime  | tech.startTime | tech.endTime | bus.endTime  
+	// 3. bus.startTime  | tech.startTime | bus.endTime  | tech.endTime 
+	// 4. tech.startTime | bus.startTime  | bus.endTime  | tech.endTime 
 
 	// assign business business hours as the default hours
-	// but if business special hours exist it will be the default hours
-	let defaultHours;
+	// but if business special hours exist it will be the hours
 	let availableHours = [];
 	
 	const busHours = busSpecialHours ? busSpecialHours.hours : busBusinessHours.hours;
 	console.log("busHours: ", busHours);
 
 	// assign technician business hours as the default hours
-	// but if technician special hours exist it will be the default hours
+	// but if technician special hours exist it will be the hours
 	const techHours = techSpecialHours ? techSpecialHours.hours : techBusinessHours.hours;
 	console.log("techHours: ", techHours)
 
@@ -146,32 +143,6 @@ const getAvailableHours = (busBusinessHours, techBusinessHours, busSpecialHours,
 			}
 		};
 	};
-
-	// let availableHoursIndex = 0;
-	// const availableHoursLen = availableHours.length;
-	// for (availableHoursIndex; availableHoursIndex < availableHoursLen; availableHoursIndex++) {
-	// 	if (startTime) {
-	// 		if (startTime > useConvertTime.convertHourMinToNumber(availableHours[availableHoursIndex].opens.hour, availableHours[availableHoursIndex].opens.min)) {
-	// 			startTime = availableHours[availableHoursIndex].opens;
-	// 		}
-	// 	} else {
-	// 		startTime = availableHours[availableHoursIndex].opens;
-	// 	}
-
-	// 	if (endTime) {
-	// 		if (endTime < useConvertTime.convertHourMinToNumber(availableHours[availableHoursIndex].closes.hour, availableHours[availableHoursIndex].closes.min)) {
-	// 			endTime = availableHours[availableHoursIndex].closes
-	// 		}
-	// 	} else {
-	// 		endTime = availableHours[availableHoursIndex].closes
-	// 	}
-	// };
-
-	// return {
-	// 	// startTime: startTime,
-	// 	// endTime: endTime,
-	// 	availableHours: availableHours
-	// }
 	return availableHours;
 };
 
@@ -215,8 +186,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
   const [ alertBoxText, setAlertBoxText ] = useState(null);
 
 	// business info
-	// const [ startTime, setStartTime ] = useState(8);
-	// const [ endTime, setEndTime ] = useState(17);
 	const [ rsvTimeLimit, setRsvTimeLimit ] = useState(60*60*1000); // default 1 hour
 
 	// picked display post state
@@ -549,10 +518,10 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		    		let availableHoursIndex = 0;
 		    		// use the available hours and get startTime and end time to get number of grids (numOfGrids)
 		    		for (availableHoursIndex; availableHoursIndex < availableHoursLen; availableHoursIndex++) {
-		    			const opensHour = availableHours[availableHoursIndex].opens.hour
-		    			const opensMin = availableHours[availableHoursIndex].opens.min
-		    			const closesHour = availableHours[availableHoursIndex].closes.hour
-		    			const closesMin = availableHours[availableHoursIndex].closes.min
+		    			const opensHour = availableHours[availableHoursIndex].opens.hour;
+		    			const opensMin = availableHours[availableHoursIndex].opens.min;
+		    			const closesHour = availableHours[availableHoursIndex].closes.hour;
+		    			const closesMin = availableHours[availableHoursIndex].closes.min;
 		    			const startTime = useConvertTime.convertHourMinToNumber(opensHour, opensMin);
 		    			const endTime = useConvertTime.convertHourMinToNumber(closesHour, closesMin);
 

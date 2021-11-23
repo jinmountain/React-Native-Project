@@ -203,251 +203,241 @@ const ChatListScreen = ({ navigation }) => {
   }, []);
 
 	return (
-		<MainTemplate>
-		{ 
-			screenReady && chatList.length > 0
-			?
-			<View style={styles.mainContainer}>
-				{
-					selectChatToDelete
-					?
-					<View style={styles.deleteChatHeaderContainer}>
-						<View style={styles.deleteChatHeaderInner}>
-							<View style={styles.deleteChatNumSelected}>
-								<Text style={styles.deleteChatNumSelectedText}>{selectedChatIdsToDelete.length} Selected</Text>
-							</View>
-							<View style={styles.deleteChatHeaderButtonContainer}>
-								<TouchableOpacity
-									onPress={() => {
-										deleteChat(selectedChatIdsToDelete);
-										setSelectedChatIdsToDelete([]);
-										setSelectChatToDelete(false);
-
-										chatPostFire.deleteChat(selectedChatsToDelete);
-									}}
-								>
-									<View style={styles.deleteChatButton}>
-										<Text style={styles.deleteChatButtonText}>Delete</Text>
-									</View>
-								</TouchableOpacity>
-								<TouchableOpacity
-									onPress={() => {
-										setSelectChatToDelete(!selectChatToDelete);
-									}}
-								>
-									<View style={styles.deleteChatButton}>
-										<Text style={styles.deleteChatButtonText}>Cancel</Text>
-									</View>
-								</TouchableOpacity>
-							</View>
-						</View>
-					</View>
-					:
-					<UserAccountHeaderForm
-						leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
-						leftButtonPress={() => { navigation.goBack() }}
-						username={user.username}
-						firstIcon={
-							expoIcons.antdesignBars(RFValue(27), color.black1)
-						}
-						secondIcon={
-							expoIcons.entypoNewMessage(RFValue(27), color.black1)
-						}
-						firstOnPress={() => {
-							setSelectChatToDelete(!selectChatToDelete);
-						}}
-						secondOnPress={
-							null
-						}
-					/>
-				}
-				<FlatList
-          onEndReached={() => {
-            if (chatFetchState === false && chatFetchSwitch === true) {
-            	setChatFetchState(true);
-            	const getChatsUserIn = chatGetFire.getChatsUserIn(
-								user.id, 
-								addChatList, 
-								setChatLast,
-								setChatFetchSwitch,
-								chatLast,  
-								isFocused
-							)
-							getChatsUserIn
-							.then((chatsFetched) => {
-								addChatList(chatsFetched);
-								setChatFetchState(false);
-							});
-            }
-          }}
-          
-          // JSON of chat
-       		// const chat = { 
-			    // 	_id: docId, 
-			    // 	createdAt: docData.createdAt,
-			    // 	firstUserId: docData.firstUserId,
-			    // 	secondUserId: docData.secondUserId,
-			    // 	lastMessageTime: docData.lastMessageTime, 
-			    // 	lastMessage: docData.lastMessage,
-			    // 	notificationCount: notificationCount,
-			    // 	theOtherUser: {
-			    // 		id: theOtherUserData.id,
-			    // 		username: theOtherUserData.username,
-			    // 		photoURL: theOtherUserData.photoURL,
-			    // 		type: theOtherUserData.type,
-			    // 	}
-			    // }
-
-          onEndReachedThreshold={0.01}
-          vertical
-          showsVerticalScrollIndicator={true}
-          data={chatList}
-          keyExtractor={(chat, index) => index.toString()}
-          renderItem={({ item, index }) => {
-            return (
-              <View style={styles.chatContainer}>
-              	{
-              		selectChatToDelete &&
-              		<View style={styles.selectChatButtonContainer}>
-              			{
-              				selectedChatIdsToDelete.includes(item._id)
-              				?
-		              		<TouchableOpacity
-		              			style={styles.selectChatButton}
-		              			onPress={() => {
-		              				setSelectedChatIdsToDelete([ ...selectedChatIdsToDelete.filter((chatId) => chatId !== item._id) ]);
-		              				setSelectedChatsToDelete([ ...selectedChatsToDelete.filter((chat) => item) ]);
-		              			}}
-		              		>
-		              			{expoIcons.mcCheckCircle(RFValue(27), color.black1)}
-		              		</TouchableOpacity>
-		              		:
-		              		<TouchableOpacity
-		              			style={styles.selectChatButton}
-		              			onPress={() => {
-		              				setSelectedChatIdsToDelete([ ...selectedChatIdsToDelete, item._id ]);
-		              				setSelectedChatsToDelete([ ...selectedChatsToDelete, item ]);
-		              			}}
-		              		>
-		              			{expoIcons.mcCheckBoxBlankCircle(RFValue(27), color.black1)}
-		              		</TouchableOpacity>
-	              		}
-	              	</View>
-              	}
-	              <TouchableOpacity 
-	              	style={styles.enterChatContainer}
-	                onPress={() => {
-	                  navigation.navigate('Chat',
-	                  {
-	                    theOtherUser: item.theOtherUser
-	                  });
-	                }}
-	              >
-	                <View style={styles.userPhotoContainer}>
-	                  { 
-	                  	item.theOtherUser && item.theOtherUser.photoURL
-	                  	?
-	                    <Image 
-	                      source={{uri: item.theOtherUser.photoURL}}
-	                      style={styles.userPhoto}
-	                    />
-	                    :
-	                    <DefaultUserPhoto 
-			                  customSizeBorder={RFValue(57)}
-			                  customSizeUserIcon={RFValue(40)}
-			                />
-	                  }
-	                </View>
-	                <View style={styles.chatInfoContainer}>
-	                	<View style={styles.upperCompartment}>
-	                		<View style={styles.usernameContainer}>
-		                    { item.theOtherUser && 
-		                      <Text 
-			                      numberOfLines={1} 
-			                      style={styles.usernameText}
-			                    >
-		                      	{item.theOtherUser.username}
-		                      </Text>
-		                    }
-		                  </View>
-		                  <View style={styles.lastTimeContainer}>
-		                    { item.lastMessageTime && 
-		                      <Text style={styles.timeText}>{getModifiedTime(item.lastMessageTime)}</Text>
-		                    }
-		                  </View>
-	                	</View>
-	                	<View style={styles.bottomCompartment}>
-		                  <View style={styles.lastMessageContainer}>
-		                    { 
-		                    	item.lastMessage.length > 0 && 
-		                      <Text 
-		                      	style={styles.lastMessageText}
-		                      	numberOfLines={1}
-		                      >
-		                      	{item.lastMessage}
-		                      </Text>
-		                    }
-		                  </View>
-		                  <View style={styles.notificationCountContainer}>
-		                    { item.notificationCount > 0 && 
-	                    		<View style={styles.notificationCount}>
-	                      		<Text 
-	                      			style={styles.notificationCountText}
-	                      			numberOfLines={1}
-	                      		>
-	                      			{item.notificationCount}
-	                      		</Text>
-	                      	</View>
-		                    }
-		                  </View>
-		                </View>
-	                </View>
-	              </TouchableOpacity>
-	            </View>
-            )
-          }}
-        />
-			</View>
-			: screenReady
-			?
-			<View style={styles.mainContainer}>
+		screenReady && chatList.length > 0
+		?
+		<View style={styles.mainContainer}>
+			{
+				selectChatToDelete
+				?
 				<UserAccountHeaderForm
+					addPaddingTop={true}
+				  leftButtonTitle={`${selectedChatIdsToDelete.length} Selected`}
+	      	leftButtonIcon={null}
+				  leftButtonPress={null}
+					username={null}
+					title={null}
+					firstIcon={
+						"Delete"
+					}
+					secondIcon={
+						"Cancel"
+					}
+					firstOnPress={() => {
+						deleteChat(selectedChatIdsToDelete);
+						setSelectedChatIdsToDelete([]);
+						setSelectChatToDelete(false);
+
+						chatPostFire.deleteChat(selectedChatsToDelete);
+					}}
+					secondOnPress={() => {
+						setSelectChatToDelete(!selectChatToDelete);
+					}}
+				/>
+				:
+				<UserAccountHeaderForm
+					addPaddingTop={true}
 					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					username={user.username}
+					firstIcon={
+						expoIcons.antdesignBars(RFValue(27), color.black1)
+					}
 					secondIcon={
 						expoIcons.entypoNewMessage(RFValue(27), color.black1)
 					}
+					firstOnPress={() => {
+						setSelectChatToDelete(!selectChatToDelete);
+					}}
 					secondOnPress={() => {
 						navigation.navigate("WriteNewMessage");
 					}}
 				/>
-				<View style={styles.noChatMainContainer}>
-					<View style={styles.noChatTitleContainer}>
-						<Text style={styles.noChatTitleText}>Send a message,</Text>
-						<Text style={styles.noChatTitleText}>Ask about a design</Text>
-					</View>
-					<View style={styles.noChatMessageContainer}>
-						<Text style={styles.noChatMessageText}>Direct Messages are private converstaions between you and other people on Wonder. Ask about designs and more!</Text>
-					</View>
-					<View style={styles.writeNewMessageButtonContainer}>
-						<TouchableOpacity
-							style={styles.writeNewMessageButton}
-							onPress={() => {
-								navigation.navigate("WriteNewMessage");
-							}}
-						>
-							<View style={styles.writeNewMessageButtonInner}>
-								<Text style={styles.writeNewMessageButtonText}>Write a message</Text>
-							</View>
-						</TouchableOpacity>
-					</View>
+			}
+			<FlatList
+        onEndReached={() => {
+          if (chatFetchState === false && chatFetchSwitch === true) {
+          	setChatFetchState(true);
+          	const getChatsUserIn = chatGetFire.getChatsUserIn(
+							user.id, 
+							addChatList, 
+							setChatLast,
+							setChatFetchSwitch,
+							chatLast,  
+							isFocused
+						)
+						getChatsUserIn
+						.then((chatsFetched) => {
+							addChatList(chatsFetched);
+							setChatFetchState(false);
+						});
+          }
+        }}
+        
+        // JSON of chat
+     		// const chat = { 
+		    // 	_id: docId, 
+		    // 	createdAt: docData.createdAt,
+		    // 	firstUserId: docData.firstUserId,
+		    // 	secondUserId: docData.secondUserId,
+		    // 	lastMessageTime: docData.lastMessageTime, 
+		    // 	lastMessage: docData.lastMessage,
+		    // 	notificationCount: notificationCount,
+		    // 	theOtherUser: {
+		    // 		id: theOtherUserData.id,
+		    // 		username: theOtherUserData.username,
+		    // 		photoURL: theOtherUserData.photoURL,
+		    // 		type: theOtherUserData.type,
+		    // 	}
+		    // }
+
+        onEndReachedThreshold={0.01}
+        vertical
+        showsVerticalScrollIndicator={true}
+        data={chatList}
+        keyExtractor={(chat, index) => index.toString()}
+        renderItem={({ item, index }) => {
+          return (
+            <View style={styles.chatContainer}>
+            	{
+            		selectChatToDelete &&
+            		<View style={styles.selectChatButtonContainer}>
+            			{
+            				selectedChatIdsToDelete.includes(item._id)
+            				?
+	              		<TouchableOpacity
+	              			style={styles.selectChatButton}
+	              			onPress={() => {
+	              				setSelectedChatIdsToDelete([ ...selectedChatIdsToDelete.filter((chatId) => chatId !== item._id) ]);
+	              				setSelectedChatsToDelete([ ...selectedChatsToDelete.filter((chat) => item) ]);
+	              			}}
+	              		>
+	              			{expoIcons.mcCheckCircle(RFValue(27), color.black1)}
+	              		</TouchableOpacity>
+	              		:
+	              		<TouchableOpacity
+	              			style={styles.selectChatButton}
+	              			onPress={() => {
+	              				setSelectedChatIdsToDelete([ ...selectedChatIdsToDelete, item._id ]);
+	              				setSelectedChatsToDelete([ ...selectedChatsToDelete, item ]);
+	              			}}
+	              		>
+	              			{expoIcons.mcCheckBoxBlankCircle(RFValue(27), color.black1)}
+	              		</TouchableOpacity>
+              		}
+              	</View>
+            	}
+              <TouchableOpacity 
+              	style={styles.enterChatContainer}
+                onPress={() => {
+                  navigation.navigate('Chat',
+                  {
+                    theOtherUser: item.theOtherUser
+                  });
+                }}
+              >
+                <View style={styles.userPhotoContainer}>
+                  { 
+                  	item.theOtherUser && item.theOtherUser.photoURL
+                  	?
+                    <Image 
+                      source={{uri: item.theOtherUser.photoURL}}
+                      style={styles.userPhoto}
+                    />
+                    :
+                    <DefaultUserPhoto 
+		                  customSizeBorder={RFValue(57)}
+		                  customSizeUserIcon={RFValue(40)}
+		                />
+                  }
+                </View>
+                <View style={styles.chatInfoContainer}>
+                	<View style={styles.upperCompartment}>
+                		<View style={styles.usernameContainer}>
+	                    { item.theOtherUser && 
+	                      <Text 
+		                      numberOfLines={1} 
+		                      style={styles.usernameText}
+		                    >
+	                      	{item.theOtherUser.username}
+	                      </Text>
+	                    }
+	                  </View>
+	                  <View style={styles.lastTimeContainer}>
+	                    { item.lastMessageTime && 
+	                      <Text style={styles.timeText}>{getModifiedTime(item.lastMessageTime)}</Text>
+	                    }
+	                  </View>
+                	</View>
+                	<View style={styles.bottomCompartment}>
+	                  <View style={styles.lastMessageContainer}>
+	                    { 
+	                    	item.lastMessage.length > 0 && 
+	                      <Text 
+	                      	style={styles.lastMessageText}
+	                      	numberOfLines={1}
+	                      >
+	                      	{item.lastMessage}
+	                      </Text>
+	                    }
+	                  </View>
+	                  <View style={styles.notificationCountContainer}>
+	                    { item.notificationCount > 0 && 
+                    		<View style={styles.notificationCount}>
+                      		<Text 
+                      			style={styles.notificationCountText}
+                      			numberOfLines={1}
+                      		>
+                      			{item.notificationCount}
+                      		</Text>
+                      	</View>
+	                    }
+	                  </View>
+	                </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )
+        }}
+      />
+		</View>
+		: screenReady
+		?
+		<View style={styles.mainContainer}>
+			<UserAccountHeaderForm
+				leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+				leftButtonPress={() => { navigation.goBack() }}
+				username={user.username}
+				secondIcon={
+					expoIcons.entypoNewMessage(RFValue(27), color.black1)
+				}
+				secondOnPress={() => {
+					navigation.navigate("WriteNewMessage");
+				}}
+			/>
+			<View style={styles.noChatMainContainer}>
+				<View style={styles.noChatTitleContainer}>
+					<Text style={styles.noChatTitleText}>Send a message,</Text>
+					<Text style={styles.noChatTitleText}>Ask about a design</Text>
+				</View>
+				<View style={styles.noChatMessageContainer}>
+					<Text style={styles.noChatMessageText}>Direct Messages are private converstaions between you and other people on Wonder. Ask about designs and more!</Text>
+				</View>
+				<View style={styles.writeNewMessageButtonContainer}>
+					<TouchableOpacity
+						style={styles.writeNewMessageButton}
+						onPress={() => {
+							navigation.navigate("WriteNewMessage");
+						}}
+					>
+						<View style={styles.writeNewMessageButtonInner}>
+							<Text style={styles.writeNewMessageButtonText}>Write a message</Text>
+						</View>
+					</TouchableOpacity>
 				</View>
 			</View>
-			: 
-			<ChatListDefault />
-		}
-		</MainTemplate>
+		</View>
+		: 
+		<ChatListDefault />
 	);
 };
 

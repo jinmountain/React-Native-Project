@@ -66,82 +66,82 @@ const WriteNewMessageScreen = ({ navigation }) => {
   }, [usernameTextInput]);
 
   return (
-    <MainTemplate>
+    <View style={styles.mainContainer}>
       <HeaderForm 
+        addPaddingTop={true}
         leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
         headerTitle={"New message"}
         leftButtonPress={() => { navigation.goBack() }}
       />
-      <View style={styles.mainContainer}>
-        <View style={styles.searchBarTextInputContainer}>
-          <TextInput 
-            style={[styles.searchBarTextInput, 
-              usernameTextInput
-              ? {width: '80%'}
-              : {width: '94%'}
-            ]}
-            placeholder="Search a user"
-            placeholderTextColor="#aaaaaa"
-            onChangeText={(text) => setUsernameTextInput(text.trim())}
-            value={usernameTextInput}
-            maxLength={30}
-            multiline={false}
-            underlineColorAndroid="transparent"
-            autoCapitalize="none"
-          />
-          { usernameTextInput 
-            ? 
-            <TouchableHighlight
-              style={styles.closeButtonContainer}
-              onPress={() => {
-                setUsernameTextInput('');
-                setUsersFound([]);
-                // clearUserUsernameInput();
-                // clearSearchUser();
-              }}
-              underlayColor={color.grey4}
-            >
-              <AntDesign name="closecircleo" size={RFValue(27)} color={color.black1} />
-            </TouchableHighlight>
-            : null
-          }
-        </View>
-        <View style={styles.usersFoundContainer}>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={usersFound}
-            keyExtractor={( user, index ) => index.toString()}
-            renderItem={({ item }) => {
-              return (
-                <TouchableOpacity
-                  style={styles.usersList}
-                  onPress={() => {
-                    setUsersFound([]);
-                    setUsernameTextInput('');
-                    console.log("chose user: ", item.id);
-                    navigation.navigate("Chat", {
-                      theOtherUser: item
-                    });
-                  }} 
-                >
-                  <View style={styles.userPhotoContainer}>
-                    { 
-                      item.photoURL
-                      ?
-                      <Image style={styles.userPhoto} source={{ uri: item.photoURL }}/>
-                      : <DefaultUserPhoto customSizeBorder={RFValue(68)}/>
-                    }
-                  </View>
-                  <View style={styles.userInfoContainer}>
-                    <Text style={styles.usernameText}>@{item.username}</Text>
-                  </View>
-                </TouchableOpacity>
-              )
+
+      <View style={styles.searchBarTextInputContainer}>
+        <TextInput 
+          style={[styles.searchBarTextInput, 
+            usernameTextInput
+            ? {width: '80%'}
+            : {width: '94%'}
+          ]}
+          placeholder="Search a user"
+          placeholderTextColor="#aaaaaa"
+          onChangeText={(text) => setUsernameTextInput(text.trim())}
+          value={usernameTextInput}
+          maxLength={30}
+          multiline={false}
+          underlineColorAndroid="transparent"
+          autoCapitalize="none"
+        />
+        { usernameTextInput 
+          ? 
+          <TouchableHighlight
+            style={styles.closeButtonContainer}
+            onPress={() => {
+              setUsernameTextInput('');
+              setUsersFound([]);
+              // clearUserUsernameInput();
+              // clearSearchUser();
             }}
-          />
-        </View>
+            underlayColor={color.grey4}
+          >
+            <AntDesign name="closecircleo" size={RFValue(27)} color={color.black1} />
+          </TouchableHighlight>
+          : null
+        }
       </View>
-    </MainTemplate>
+      <View style={styles.usersFoundContainer}>
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={usersFound}
+          keyExtractor={( user, index ) => index.toString()}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity
+                style={styles.usersList}
+                onPress={() => {
+                  setUsersFound([]);
+                  setUsernameTextInput('');
+                  console.log("chose user: ", item.id);
+                  navigation.navigate("Chat", {
+                    theOtherUser: item
+                  });
+                }} 
+              >
+                <View style={styles.userPhotoContainer}>
+                  { 
+                    item.photoURL
+                    ?
+                    <Image style={styles.userPhoto} source={{ uri: item.photoURL }}/>
+                    : <DefaultUserPhoto customSizeBorder={RFValue(68)}/>
+                  }
+                </View>
+                <View style={styles.userInfoContainer}>
+                  <Text style={styles.usernameText}>@{item.username}</Text>
+                </View>
+              </TouchableOpacity>
+            )
+          }}
+        />
+      </View>
+    </View>
   )
 };
 
@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.white2,
   },
   searchBarTextInputContainer: {
+    paddingTop: RFValue(15),
     backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',

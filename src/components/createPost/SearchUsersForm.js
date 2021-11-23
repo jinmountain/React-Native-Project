@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FlatList,
   Image,
@@ -35,6 +35,9 @@ import businessGetFire from '../../firebase/businessGetFire';
 // import { navigate } from '../../navigationRef';
 import { kOrNo } from '../../hooks/kOrNo';
 
+// firebase
+import contentGetFire from '../../firebase/contentGetFire';
+
 // Designs
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
@@ -51,33 +54,64 @@ const selectedDisplayAndTechWidth = windowWidth/3;
 const SearchUsersForm = ({
   userId,
   usersFound,
+  setUsersFound,
   rating,
+  setRating,
   chosenUser,
-  userUsernameInput,
+  setChosenUser,
+  searchUserUsername,
+  setSearchUserUsername,
+  chosenDisplayPost,
+  setChosenDisplayPost,
+  chosenTech,
+  setChosenTech,
 
-  getCpDisplayPosts,
-  cpDisplayPosts,
-  selectDisplayPost,
-  selectedDisplayPost,
-  clearDisplayPost,
-  cpDisplayPostState,
-  cpDisplayPostFetchSwitch,
-  cpDisplayPostLast,
+  displayPostTechs, 
+  setDisplayPostTechs,
+  displayPostTechsState,
+  setDisplayPostTechsState,
 
-  clearChosenUser,
-  rateTech,
-  setRateTech,
-  clearRating,
-  changeRating,
-  clearUserUsernameInput,
-  clearSearchUser,
-  changeUserUsernameInput,
+  chosenUserDisplayPosts,
+  setChosenUserDisplayPosts,
+  chosenUserDisplayPostLast,
+  setChosenUserDisplayPostLast,
+  chosenUserDisplayPostFetchSwitch,
+  setChosenUserDisplayPostFetchSwtich,
+  chosenUserDisplayPostState,
+  setChosenUserDisplayPostState
 }) => {
-  const [ hideWTRBox, setHideWTRBox ] = useState(false);
 
-  // techs states
-  const [ displayPostTechs, setDisplayPostTechs ] = useState([]);
-  const [ displayPostTechsState, setDisplayPostTechsState ] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    if (
+      chosenUser && 
+      chosenUser.type === "business" && 
+      chosenUserDisplayPostFetchSwitch && 
+      !chosenUserDisplayPostState
+    ) {
+      const getChosenUserDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, chosenUser, null);
+      getChosenUserDisplayPosts
+      .then((posts) => {
+        mounted && setChosenUserDisplayPosts([ ...posts.fetchedPosts ]);
+        if (posts.lastPost !== undefined) {
+          mounted && setChosenUserDisplayPostLast(posts.lastPost);
+        } else {
+          mounted && setChosenUserDisplayPostFetchSwtich(false);
+        };
+        mounted && setChosenUserDisplayPostState(false);
+      })
+    };
+    return () => {
+      mounted = false;
+      setDisplayPostTechs([]);
+      setDisplayPostTechsState(false);
+      setChosenUserDisplayPosts([]);
+      setChosenUserDisplayPostLast(null);
+      setChosenUserDisplayPostFetchSwtich(true);
+      setChosenUserDisplayPostState(false);
+    }
+  }, [chosenUser]);
 
   return (
     <View style={styles.userSearchFormContainer}>
@@ -86,28 +120,26 @@ const SearchUsersForm = ({
           ?
           <SearchBarChosenUser
             chosenUser={chosenUser}
-            clearChosenUser={clearChosenUser} 
-            clearRating={clearRating}
+            setChosenUser={setChosenUser} 
+            setRating={setRating}
           /> 
           :
           <SearchBar
-            usersFound={usersFound}
-            clearUserUsernameInput={clearUserUsernameInput} 
-            clearSearchUser={clearSearchUser}
-            changeUserUsernameInput={changeUserUsernameInput}
-            userUsernameInput={userUsernameInput}
+            searchUserUsername={searchUserUsername}
+            setSearchUserUsername={setSearchUserUsername}
+            setUsersFound={setUsersFound}
           />
         }
       </View>
       {
-        chosenUser && selectedDisplayPost && rateTech && rating 
+        chosenUser && chosenDisplayPost && chosenTech && rating 
         ?
         <TouchableOpacity 
           style={{ flexDirection: 'row', justifyContent: 'center' }}
           onPress={() => {
-            clearDisplayPost();
-            setRateTech(null);
-            clearRating();
+            setChosenDisplayPost(null);
+            setChosenTech(null);
+            setRating(null);
           }}
         >
           <View style={styles.summaryElementContainer}>
@@ -118,25 +150,25 @@ const SearchUsersForm = ({
             </View>
             <View style={styles.summaryInfoContainer}>
               { 
-                selectedDisplayPost.data.files[0].type === 'video'
+                chosenDisplayPost.data.files[0].type === 'video'
                 ?
                 <View style={styles.selectedPostImage}>
                   <Video
                     // ref={video}
                     style={styles.selectedPostImage}
                     source={{
-                      uri: selectedDisplayPost.data.files[0].url,
+                      uri: chosenDisplayPost.data.files[0].url,
                     }}
                     useNativeControls={false}
                     resizeMode="contain"
                     shouldPlay={false}
                   />
                 </View>
-                : selectedDisplayPost.data.files[0].type === 'image'
+                : chosenDisplayPost.data.files[0].type === 'image'
                 ?
                 <Image 
                   style={styles.selectedPostImage} 
-                  source={{ uri: selectedDisplayPost.data.files[0].url }}
+                  source={{ uri: chosenDisplayPost.data.files[0].url }}
                 />
                 : null
               }
@@ -152,9 +184,9 @@ const SearchUsersForm = ({
             <View style={styles.summaryInfoContainer}>
               <View style={styles.techInnerContainer}>
                 { 
-                  rateTech.techData.photoURL
+                  chosenTech.techData.photoURL
                   ?
-                  <Image style={styles.techImage} source={{ uri: rateTech.techData.photoURL }}/>
+                  <Image style={styles.techImage} source={{ uri: chosenTech.techData.photoURL }}/>
                   : 
                   <DefaultUserPhoto 
                     customSizeBorder={RFValue(57)}
@@ -174,7 +206,7 @@ const SearchUsersForm = ({
             <View style={styles.summaryInfoContainer}>
               <StarRating 
                 rating={rating} 
-                changeRating={changeRating} 
+                changeRating={setRating} 
               />
             </View>
           </View>
@@ -184,8 +216,8 @@ const SearchUsersForm = ({
           { // tag display post 
             chosenUser 
             && chosenUser.type === "business" 
-            && cpDisplayPosts.length > 0 
-            && selectedDisplayPost === null
+            && chosenUserDisplayPosts.length > 0 
+            && chosenDisplayPost === null
             ? 
             <View style={styles.rateAndTagContainer}>
               <View style={styles.labelContainer}>
@@ -196,23 +228,31 @@ const SearchUsersForm = ({
               <View style={styles.displayPostsContainer}>
                 <FlatList
                   onEndReached={() => {
-                    if (cpDisplayPostFetchSwitch && !cpDisplayPostState) {
-                      getCpDisplayPosts(cpDisplayPostLast, chosenUser, userId);
-                    } else {
-                      null
+                    if (chosenUserDisplayPostFetchSwitch && !chosenUserDisplayPostState) {
+                      const getChosenUserDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chosenUserDisplayPostLast, chosenUser, null);
+                      getChosenUserDisplayPosts
+                      .then((posts) => {
+                        mounted && setChosenUserDisplayPosts([ ...chosenUserDisplayPosts, ...posts.fetchedPosts ]);
+                        if (posts.lastPost !== undefined) {
+                          mounted && setChosenUserDisplayPostLast(posts.lastPost);
+                        } else {
+                          mounted && setChosenUserDisplayPostFetchSwtich(false);
+                        };
+                        mounted && setChosenUserDisplayPostState(false);
+                      });
                     }
                   }}
                   onEndReachedThreshold={0.01}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  data={cpDisplayPosts}
+                  data={chosenUserDisplayPosts}
                   keyExtractor={(displayPost, index) => index.toString()}
                   renderItem={({ item }) => {
                     return (
                       <TouchableOpacity 
                         style={styles.postImageContainer}
                         onPress={() => {
-                          selectDisplayPost(item);
+                          setChosenDisplayPost(item);
                           if (!displayPostTechsState) {
                             const getDisplayPostTechs = businessGetFire.getTechniciansByIds(item.data.techs);
                             getDisplayPostTechs
@@ -252,7 +292,7 @@ const SearchUsersForm = ({
                   }}
                 />
                 { 
-                  cpDisplayPostState
+                  chosenUserDisplayPostState
                   ?
                   <GetDisplayPostLoading />
                   : 
@@ -260,38 +300,38 @@ const SearchUsersForm = ({
                 }
               </View>
             </View>
-            : selectedDisplayPost
+            : chosenDisplayPost
             ? 
             <View style={styles.rateAndTagContainer}>
-              <View style={styles.selectedDisplayPostContainer}>
+              <View style={styles.chosenDisplayPostContainer}>
                 <TouchableOpacity 
                   style={styles.selectedPostImageContainer}
                   onPress={() => {
-                    clearDisplayPost();
-                    clearRating();
-                    setRateTech(null);
+                    setChosenUserDisplayPosts([]);
+                    setRating(null);
+                    setChosenTech(null);
                   }}
                 >
                 { 
-                  selectedDisplayPost.data.files[0].type === 'video'
+                  chosenDisplayPost.data.files[0].type === 'video'
                   ?
                   <View style={styles.selectedPostImage}>
                     <Video
                       // ref={video}
                       style={styles.selectedPostImage}
                       source={{
-                        uri: selectedDisplayPost.data.files[0].url,
+                        uri: chosenDisplayPost.data.files[0].url,
                       }}
                       useNativeControls={false}
                       resizeMode="contain"
                       shouldPlay={false}
                     />
                   </View>
-                  : selectedDisplayPost.data.files[0].type === 'image'
+                  : chosenDisplayPost.data.files[0].type === 'image'
                   ?
                   <Image 
                     style={styles.selectedPostImage} 
-                    source={{ uri: selectedDisplayPost.data.files[0].url }}
+                    source={{ uri: chosenDisplayPost.data.files[0].url }}
                   />
                   : null
                 }
@@ -300,12 +340,12 @@ const SearchUsersForm = ({
                     
                     </View>
                     <View style={styles.chosenCheck}>
-                      <AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+                      <AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
                     </View>
                   </View>
                 </TouchableOpacity>
               </View>
-              <View style={styles.selectedDisplayPostCheckContainer}>
+              <View style={styles.chosenDisplayPostCheckContainer}>
               </View>
             </View>
             :
@@ -313,11 +353,11 @@ const SearchUsersForm = ({
           }
 
           {
-            selectedDisplayPost && 
+            chosenDisplayPost && 
             chosenUser && 
             chosenUser.type === "business" && 
             !displayPostTechsState && 
-            !rateTech
+            !chosenTech
             ?
             <View style={styles.labelContainer}>
               <View style={styles.guideTextContainer}>
@@ -328,11 +368,11 @@ const SearchUsersForm = ({
           }
 
           { // rate
-            selectedDisplayPost && 
+            chosenDisplayPost && 
             chosenUser && 
             chosenUser.type === "business" && 
             !displayPostTechsState && 
-            !rateTech
+            !chosenTech
             ? 
             <View style={styles.pickTechContainer}>
               <FlatList
@@ -343,7 +383,7 @@ const SearchUsersForm = ({
                 renderItem={({ item, index }) => {
                   return (
                     <TouchableHighlight 
-                      onPress={() => { setRateTech(item) }}
+                      onPress={() => { setChosenTech(item) }}
                       style={styles.techContainer}
                       underlayColor={color.grey4}
                     >
@@ -369,20 +409,20 @@ const SearchUsersForm = ({
                 }}
               />
             </View>
-            : selectedDisplayPost && chosenUser && chosenUser.type === "business" && !displayPostTechsState && rateTech
+            : chosenDisplayPost && chosenUser && chosenUser.type === "business" && !displayPostTechsState && chosenTech
             ? 
             <View style={styles.pickTechContainer}>
               <TouchableOpacity 
                 onPress={() => { 
-                  setRateTech(null) 
+                  setChosenTech(null) 
                 }}
                 style={styles.techContainer}
               >
                 <View style={styles.techInnerContainer}>
                   { 
-                    rateTech.techData.photoURL
+                    chosenTech.techData.photoURL
                     ?
-                    <Image style={styles.techImage} source={{ uri: rateTech.techData.photoURL }}/>
+                    <Image style={styles.techImage} source={{ uri: chosenTech.techData.photoURL }}/>
                     : 
                     <DefaultUserPhoto 
                       customSizeBorder={RFValue(57)}
@@ -391,7 +431,7 @@ const SearchUsersForm = ({
                   }
                   <View style={styles.techInfoContainer}>
                     <Text style={styles.techUsernameText}>
-                      {rateTech.techData.username}
+                      {chosenTech.techData.username}
                     </Text>
                   </View>
                 </View>
@@ -400,12 +440,12 @@ const SearchUsersForm = ({
                   
                   </View>
                   <View style={styles.chosenCheck}>
-                    <AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+                    <AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
                   </View>
                 </View>
               </TouchableOpacity>
             </View>
-            : selectedDisplayPost && chosenUser && chosenUser.type === "business" && displayPostTechsState
+            : chosenDisplayPost && chosenUser && chosenUser.type === "business" && displayPostTechsState
             ?
             <View style={styles.techsLoadingContainer}>
               <SpinnerFromActivityIndicator/>
@@ -414,7 +454,7 @@ const SearchUsersForm = ({
           }
           
           { // rate
-            selectedDisplayPost && chosenUser && chosenUser.type === "business" && rateTech
+            chosenDisplayPost && chosenUser && chosenUser.type === "business" && chosenTech
             ? 
             <View style={styles.rateAndTagContainer}>
               <InputFormBottomLine customStyles={{borderColor: color.gray1, backgroundColor: '#fff'}}/>
@@ -425,7 +465,7 @@ const SearchUsersForm = ({
               </View>
               <StarRating 
                 rating={rating} 
-                changeRating={changeRating} 
+                changeRating={setRating} 
               />
               <View style={{ paddingBottom: RFValue(13) }}>
               </View>
@@ -483,7 +523,6 @@ const styles = StyleSheet.create({
     width: '100%',
     shadowColor: '#ccc',
     backgroundColor: '#fff',
-    elevation: 10,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 5,
@@ -494,7 +533,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 2,
   },
-  selectedDisplayPostContainer: {
+  chosenDisplayPostContainer: {
     height: windowWidth/5,
     width: '100%',
     justifyContent: 'center',

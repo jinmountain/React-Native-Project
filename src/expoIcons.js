@@ -130,6 +130,10 @@ const fontAwesomeCalendarPlusO = (size, color) => {
 	return <FontAwesome name="calendar-plus-o" size={size} color={color} />
 };
 
+const snailShell = (size, color) => {
+	return <Ionicons name="md-at-circle-outline" size={size} color={color} />
+}
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -160,5 +164,6 @@ export default {
 	clockIcon,
 	matClockTimeEightOutline,
 	fontAwesomeCalendarO,
-	fontAwesomeCalendarPlusO
+	fontAwesomeCalendarPlusO,
+	snailShell
 };

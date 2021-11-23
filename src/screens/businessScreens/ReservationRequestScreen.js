@@ -11,6 +11,7 @@ import {
 	TouchableHighlight,
 	ScrollView,
 	Dimensions,
+	Vibration
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { useCardAnimation } from '@react-navigation/stack';
@@ -270,6 +271,7 @@ const ConfirmationPage = ({
 const paymentTypes = [ "payAtStore", "defaultCard", "preferredCard", "applePay" ];
 
 const ReservationRequestScreen = ({ route, navigation }) => {
+	const vibrationTime = 30;
 	const { 
 		businessUserId, 
 		businessUserUsername, 
@@ -295,7 +297,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 	const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
 
 	// Select payment type 
-	const [ selectPaymentType, setSelectPaymentType ] = useState("defaultCard");
+	const [ selectPaymentType, setSelectPaymentType ] = useState("payAtStore");
 
 	// rsv request state
 	const [ rsvRequestState, setRsvRequestState ] = useState(false);
@@ -353,7 +355,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 						:
 						<View style={{ flex: 1, padding: RFValue(10) }}>
 							<View style={styles.titleContainer}>
-								<Text style={styles.titleText}>Reservation</Text>
+								<Text style={styles.titleText}>Reservation Preview</Text>
 							</View>
 							<HeaderBottomLine />
 							<View style={styles.businessContainer}>
@@ -465,7 +467,9 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 													console.log("Pay at Store");
 												}} 
 												value={ selectPaymentType === "payAtStore" ? true : false }
-												valueEffect ={{ backgroundColor: color.blue1 }}
+												valueEffect={{ borderColor: color.red2, borderWidth: RFValue(2) }}
+												valueEffectText={{ color: color.red2 }}
+												valueEffectIcon={<AntDesign name="check" size={RFValue(15)} color={color.red2} />}
 											/>
 										</View>
 										<View style={styles.paymentTypeContainer}>
@@ -476,7 +480,9 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 													console.log("Pay at Store");
 												}} 
 												value={ selectPaymentType === "atStore" ? true : false }
-												valueEffect ={{ backgroundColor: color.blue1 }}
+												valueEffect={{ borderColor: color.red2, borderWidth: RFValue(2) }}
+												valueEffectText={{ color: color.red2 }}
+												valueEffectIcon={<AntDesign name="check" size={RFValue(15)} color={color.red2} />}
 											/>
 										</View>
 										<View style={styles.paymentTypeContainer}>
@@ -487,7 +493,9 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 													console.log("Pay at Store");
 												}} 
 												value={ selectPaymentType === "atStore" ? true : false }
-												valueEffect ={{ backgroundColor: color.blue1 }}
+												valueEffect={{ borderColor: color.red2, borderWidth: RFValue(2) }}
+												valueEffectText={{ color: color.red2 }}
+												valueEffectIcon={<AntDesign name="check" size={RFValue(15)} color={color.red2} />}
 											/>
 										</View>
 									</ScrollView>
@@ -503,6 +511,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 										} 
 									}}
 									onPress={() => {
+										Vibration.vibrate(vibrationTime);
 										setRsvRequestState(true);
 										const sendRsvRequest = businessPostFire
 										.sendRsvRequest(
@@ -558,6 +567,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 									}}
 									onPress={() => {
 										navigation.goBack();
+										Vibration.vibrate(vibrationTime);
 									}}
 									underlayColor={color.grey4}
 								>

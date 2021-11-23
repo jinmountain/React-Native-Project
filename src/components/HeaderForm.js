@@ -74,9 +74,10 @@ const HeaderForm = (
         }
       >
         <View style={styles.compartmentOuter}>
-          {leftButtonIcon &&
-            <View style={styles.leftCompartmentContainer}>
-              <View style={styles.leftCompartmentInnerContainer}>
+          <View style={styles.leftCompartmentContainer}>
+            <View style={styles.leftCompartmentInnerContainer}>
+              {
+                leftButtonIcon &&
                 <TouchableHighlight 
                   style={ 
                     styles.compartmentHighlight 
@@ -98,15 +99,15 @@ const HeaderForm = (
                     <Text style={styles.buttonIconText}>{leftButtonIcon}</Text>
                   </View>
                 </TouchableHighlight>
-                {
-                  leftButtonTitle &&
-                  <View style={styles.compartmentTextContainer}>
-                    <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
-                  </View>
-                }
-              </View>
+              }
+              {
+                leftButtonTitle &&
+                <View style={styles.compartmentTextContainer}>
+                  <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
+                </View>
+              }
             </View>
-          }
+          </View>
           <View style={styles.middleCompartmentContainer}>
             <View
               style={styles.middleTitleTextContainer}
@@ -132,21 +133,23 @@ const HeaderForm = (
                   <Text style={styles.compartmentText}>{rightButtonTitle}</Text>
                 </View>
               }
-              <TouchableHighlight 
-                style={styles.compartmentHighlight}
-                onPress={rightButtonPress}
-                underlayColor={
-                  customUnderlayColor
-                  ?
-                  customUnderlayColor
-                  :
-                  color.grey4
-                }
-              >
-                <View style={styles.compartmentIconContainer}>
-                  <Text style={styles.buttonIconText}>{rightButtonIcon}</Text>
-                </View>
-              </TouchableHighlight>
+              { rightButtonIcon &&
+                <TouchableHighlight 
+                  style={styles.compartmentHighlight}
+                  onPress={rightButtonPress}
+                  underlayColor={
+                    customUnderlayColor
+                    ?
+                    customUnderlayColor
+                    :
+                    color.grey4
+                  }
+                >
+                  <View style={styles.compartmentIconContainer}>
+                    <Text style={styles.buttonIconText}>{rightButtonIcon}</Text>
+                  </View>
+                </TouchableHighlight>
+              }
             </View>
           </View>
         </View>

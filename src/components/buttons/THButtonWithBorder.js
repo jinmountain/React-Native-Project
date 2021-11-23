@@ -9,7 +9,7 @@ import {
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import color from '../../color';
 
-const THButtonWithBorder = ({ icon, text, onPress, value, valueEffect }) => {
+const THButtonWithBorder = ({ icon, text, onPress, value, valueEffect, valueEffectTextStyle, valueEffectIcon }) => {
 	return (
     value
     ?
@@ -19,8 +19,8 @@ const THButtonWithBorder = ({ icon, text, onPress, value, valueEffect }) => {
       underlayColor={color.grey4}
     >
       <View style={styles.button}>
-        {icon}
-        <Text style={styles.buttonText}>
+        {valueEffectIcon}
+        <Text style={[ styles.buttonText, valueEffectTextStyle ]}>
           {text}
         </Text>
       </View>
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: "#FFF",
     borderRadius: RFValue(10),
-    borderWidth: RFValue(0.5),
+    borderWidth: RFValue(1),
     borderColor: color.grey1,
     paddingHorizontal: RFValue(13),
     paddingVertical: RFValue(9),
@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
+    color: color.black1,
   	paddingHorizontal: RFValue(3),
     fontSize: RFValue(17),
   }

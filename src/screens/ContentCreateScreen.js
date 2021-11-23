@@ -51,39 +51,119 @@ import { EvilIcons } from '@expo/vector-icons';
 
 // Firebase
 import businessGetFire from '../firebase/businessGetFire';
+import usersGetFire from '../firebase/usersGetFire';
+import contentPostFire from '../firebase/contentPostFire';
 
 // Color
 import color from '../color';
 
-const ratingCheck = (rating, chosenBusiness) => {
-  if (chosenBusiness !== null) {
-    if (rating === null) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-};
-
-const createTwoButtonAlert = (title, message, okAction, cancelAction, navigate) => {
-  Alert.alert(
-    title,
-    message,
-    [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel"
-      },
-      { text: "OK", onPress: () => { 
-        okAction(); 
-        if (navigate) {
-          navigate();
+const AddPost = ({
+  userId,  
+  files, 
+  tags, 
+  caption,
+  chosenUser,
+  selectedDisplayPost,
+  chosenTech,
+  rating,
+  display,
+  postService,
+  postTitle,
+  postPrice,
+  postETC,
+  selectedTechs,
+  changeProgress,
+  setPostState
+}) => {
+  return new Promise((res, rej) => {
+    setPostState(true);
+    const getFileURL = new Promise (async (res, rej) => {
+      const fileURLs = []
+      let fileIndex = 0;
+      for (fileIndex; fileIndex < files.length; fileIndex++) {
+        const URL = await contentPostFire.uploadFileAsyncFire(
+          userId, 
+          files[fileIndex].id,
+          files[fileIndex].type,
+          files[fileIndex].uri, 
+          changeProgress
+        );
+        if (files[fileIndex].type === 'video') {
+          fileURLs.push({ type: 'video', url: URL });
         }
-      }}
-    ],
-    { cancelable: false }
-  );
+        else if (files[fileIndex].type === 'image') {
+          fileURLs.push({ type: 'image', url: URL });
+        } else {
+          return
+        }
+      };
+      res(fileURLs);
+    });
+
+    // After we get the photo URLs...
+    getFileURL
+    .then((fileURLs) => {
+      console.log("File URLs: ", fileURLs);
+      let newPost;
+
+      newPost = {
+        uid: userId,
+        createdAt: Date.now(),
+        files: fileURLs,
+        tags: tags,
+        caption: caption,
+        likeCount: 0,
+        heat: 0,
+      }
+
+      // if the post is a dipslay post
+      if (display) {
+        newPost = { 
+          ...newPost, 
+          ...{ 
+            display: true, 
+            service: postService, 
+            title: postTitle, 
+            price: Number(postPrice), 
+            etc: Number(postETC), 
+            techs: selectedTechs 
+          }
+        }
+      } else {
+        newPost = { ...newPost, ...{ display: false }}
+      }
+
+      // if the post is to rate another post
+      if (taggedUser) {
+        newPost = { 
+          ...newPost, 
+          ...{ 
+            tid: taggedUser.id,
+            ratedPostId: selectedDisplayPost.id,
+            ratedTechId: rateTech.techData.id,
+            rating: rating
+          }
+        }
+      }
+      
+      // Firestore | posts | post.id | newPost
+      // await until the post is made.
+      const addPost = contentPostFire.addPostFire(newPost);
+      addPost
+      .then((post) => {
+        if (post) {
+          console.log("added new post: ", post.id);
+        }
+        setPostState(false);
+      })
+      .catch((error) => {
+        rej(error);
+      });
+    })
+    .catch((error) => {
+      rej(error);
+    });
+  })
 };
 
 const ContentCreateScreen = ({ route, navigation }) => {
@@ -104,54 +184,116 @@ const ContentCreateScreen = ({ route, navigation }) => {
   const [ postETC, setPostETC ] = useState(null);
   // Technicians for the nail design of this post
   const [ selectedTechs, setSelectedTechs ] = useState([]);
-  // 
-  const [ rateTech, setRateTech ] = useState(null);
+  const [ chosenTech, setChosenTech ] = useState(null);
+  const [ rating, setRating ] = useState(null);
+  const [ chosenUser, setChosenUser ] = useState(null);
+  const [ chosenDisplayPost, setChosenDisplayPost ] = useState(null);
+  const [ searchUserUsername, setSearchUserUsername ] = useState(null);
+  const [ usersFound, setUsersFound ] = useState(null);
+  const [ tags, setTags ] = useState([]);
+  const [ caption, setCaption ] = useState('');
+  const [ files, setFiles ] = useState([]);
+  const [ display, setDisplay ] = useState(false);
+  // Progress
+  const [ progress, setProgress ] = useState(null);
+  const [ postState, setPostState ] = useState(false);
+  const changeProgress = useCallback((progress) => {
+      setProgress(progress);
+  },[]);
+  const [ techFetchLast, setTechFetchLast ] = useState(null);
+  const [ techFetchState, setTechFetchState ] = useState(false);
+  const [ techFetchSwitch, setTechFetchSwitch ] = useState(true);
+  const [ currentTechs, setCurrentTechs ] = useState([]);
+  const appendTechs = useCallback((techs) => {
+      setCurrentTechs([ ...currentTechs, ...techs ]);
+  }, []);
+  // display post techs states
+  const [ displayPostTechs, setDisplayPostTechs ] = useState([]);
+  const [ displayPostTechsState, setDisplayPostTechsState ] = useState(false);
+  // chosen user display posts
+  const [ chosenUserDisplayPosts, setChosenUserDisplayPosts ] = useState([]);
+  const [ chosenUserDisplayPostLast, setChosenUserDisplayPostLast ] = useState(null);
+  const [ chosenUserDisplayPostFetchSwitch, setChosenUserDisplayPostFetchSwtich ] = useState(true);
+  const [ chosenUserDisplayPostState, setChosenUserDisplayPostState ] = useState(false);
+
+
+  const Reset = () => {
+    setAlertBoxStatus(false);
+    setAlertBoxText(null);
+    setTbaStatus(false);
+    setPostService(null);
+    setPostTitle(null);
+    setPostETC(null);
+    setSelectedTechs([]);
+    setChosenTech(null);
+    setRating(null);
+    setChosenUser(null);
+    setChosenDisplayPost(null);
+    setSearchUserUsername(null);
+    setUsersFound(null);
+    setTags([]);
+    setCaption('');
+    setFiles([]);
+    setDisplay(false);
+    setProgress(null);
+    setPostState(false);
+    setTechFetchLast(null);
+    setTechFetchState(false);
+    setTechFetchSwitch(true);
+    setCurrentTechs([]);
+
+    setDisplayPostTechs([]);
+    setDisplayPostTechsState(false);
+    setChosenUserDisplayPosts([]);
+    setChosenUserDisplayPostLast(null);
+    setChosenUserDisplayPostFetchSwtich(true);
+    setChosenUserDisplayPostState(false);
+  };
 
   const { 
     state: { 
       // post
-      caption, 
-      files, 
-      tags, 
+      //caption, 
+      //files, 
+      //tags, 
       // progress,
-      display,
+      //display,
       // display posts
-      cpDisplayPosts,
-      cpDisplayPostLast,
-      cpDisplayPostFetchSwitch,
-      cpDisplayPostState,
+      //cpDisplayPosts,
+      //cpDisplayPostLast,
+      //cpDisplayPostFetchSwitch,
+      //cpDisplayPostState,
 
-      selectedDisplayPost,
+      //selectedDisplayPost,
 
       // user search
-      usersFound,
-      rating,
-      chosenUser,
-      userUsernameInput, 
+      //usersFound,
+      //rating,
+      //chosenUser,
+      //userUsernameInput, 
     }, 
     // post
-    changeCaption,
-    addPost,
-    addImage,
-    cancelFile,
-    setDisplay,
+    //changeCaption,
+    //addPost,
+    //cancelFile,
+    //setDisplay,
     // get display posts
-    getCpDisplayPosts,
-    clearFirstAndGetCpDisplayPosts,
-    selectDisplayPost,
-    clearDisplayPost,
+    //getCpDisplayPosts,
+    //clearFirstAndGetCpDisplayPosts,
+    //selectDisplayPost,
+    //clearDisplayPost,
 
-    resetPost,
+    //resetPost,
 
     // user search
-    chooseUser,
-    clearSearchUser,
-    searchUsers,
-    clearChosenUser,
-    changeRating,
-    clearRating,
-    changeUserUsernameInput,
-    clearUserUsernameInput,
+    //chooseUser,
+    //clearSearchUser,
+    //searchUsers,
+    //clearChosenUser,
+    //changeRating,
+    //clearRating,
+    //changeUserUsernameInput,
+    //clearUserUsernameInput,
     // changeProgress,
 
   } = useContext(PostContext);
@@ -165,40 +307,40 @@ const ContentCreateScreen = ({ route, navigation }) => {
     //   pickImage('nav');
     // }
     return () => {
-      setPostTitle(null);
-      setPostPrice(null);
-      setPostETC(null);
-      setSelectedTechs([]);
-      setRateTech(null);
-      resetPost();
+
+      Reset();
       setProgress(null);
     }
   }, [])
 
   // user search
   useEffect(() => {
-    if (userUsernameInput.length >= 1) {
-      console.log("length: ", userUsernameInput.length, " input: ", userUsernameInput);
-      searchUsers(userUsernameInput);
-    } else {
-      // Clear when the input length became 0 from 1
-      clearUserUsernameInput();
-      clearSearchUser();
-    }
-  }, [userUsernameInput])
+    if (searchUserUsername && searchUserUsername.length >= 1) {
+      setUsersFound(null);
+      console.log("length: ", searchUserUsername.length, " input: ", searchUserUsername);
+      const searchUsers = usersGetFire.getSearchUsersFire(searchUserUsername, "bus");
+      searchUsers
+      .then((users) => {
+        console.log('Search users: ', users.length);
+        if (users.length < 1) {
+          setUsersFound(null);
+          console.log('An user not found.');
+          // when there isn't a user clear the previous list for an update
+          // dispatch({ type: 'clear_search'});
+        } else {
+          setUsersFound(users);
+          // dispatch({ type: 'search_users', payload: users});
+        };
+      });
 
-  useEffect(() => {
-    if (
-      chosenUser && 
-      chosenUser.type === "business" && 
-      cpDisplayPostFetchSwitch && 
-      !cpDisplayPostState
-    ) {
-      clearFirstAndGetCpDisplayPosts(chosenUser, user.id);
     } else {
-      return;
+      setSearchUserUsername(null);
+      setUsersFound(null);
+      // Clear when the input length became 0 from 1
+      // clearUserUsernameInput();
+      // clearSearchUser();
     }
-  }, [chosenUser]);
+  }, [searchUserUsername])
 
   // check price is number
   useEffect(() => {
@@ -211,15 +353,6 @@ const ContentCreateScreen = ({ route, navigation }) => {
   // get the list of techs when display is true
   
   // get current techs
-  const [ techFetchLast, setTechFetchLast ] = useState(null);
-  const [ techFetchState, setTechFetchState ] = useState(false);
-  const [ techFetchSwitch, setTechFetchSwitch ] = useState(true);
-  const [ currentTechs, setCurrentTechs ] = useState([]);
-  const appendTechs = useCallback((techs) => {
-      setCurrentTechs([ ...currentTechs, ...techs ]);
-    },
-    []
-  );
   useEffect(() => {
     if (display) {
       // get current technicians
@@ -248,19 +381,13 @@ const ContentCreateScreen = ({ route, navigation }) => {
     }
   }, [display]);
 
-  // Progress
-  const [ progress, setProgress ] = useState(null);
-
-  const changeProgress = useCallback((progress) => {
-      setProgress(progress);
-  },[]);
-
   return (
     <View style={styles.screenContainer}>
       { progress
         ? <LoadingAlert progress={progress}/>
         : null
       }
+      
       <HeaderForm 
         leftButtonTitle={null}
         // leftButtonIcon={null}
@@ -277,7 +404,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
             ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
             : chosenUser && !selectedDisplayPost 
             ? (setAlertBoxStatus(true), setAlertBoxText(`Select the nail design you got at ${chosenUser.username}`))
-            : chosenUser && !rateTech
+            : chosenUser && !chosenTech
             ? (setAlertBoxStatus(true), setAlertBoxText(`Choose your technician at ${chosenUser.username}`))
             : chosenUser && !rating
             ? (setAlertBoxStatus(true), setAlertBoxText(`Rate your experience at ${chosenUser.username}`))
@@ -302,7 +429,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
 
               chosenUser,
               selectedDisplayPost,
-              rateTech,
+              chosenTech,
               rating,
               
               display,
@@ -319,238 +446,259 @@ const ContentCreateScreen = ({ route, navigation }) => {
         addPaddingTop={true}
         paddingTopCustomStyle={{backgroundColor: color.red2}}
       />
-      { usersFound
-        ? 
-        <UsersFoundListForm
-          usersFound={usersFound}
-          clearSearchUser={clearSearchUser}
-          clearUserUsernameInput={clearUserUsernameInput}
-          chooseUser={chooseUser}
-        />
-        :
-        <KeyboardAwareScrollView>
-          { 
-            display === true
-            ? null
-            :
-            <SearchUsersForm 
-              userId={user.id}
-              usersFound={usersFound ? true : false }
-              rating={rating}
-              chosenUser={chosenUser}
-              userUsernameInput={userUsernameInput}
+      <KeyboardAwareScrollView>
+        { usersFound
+          ? 
+          <UsersFoundListForm
+            usersFound={usersFound}
+            setUsersFound={setUsersFound}
+            setSearchUserUsername={setSearchUserUsername}
+            setChosenUser={setChosenUser}
+          />
+          :
+          <View>
+            { 
+              display === true
+              ? null
+              :
+              <SearchUsersForm 
+                userId={user.id}
+                usersFound={usersFound ? true : false }
+                setUsersFound={setUsersFound}
+                rating={rating}
+                setRating={setRating}
+                chosenUser={chosenUser}
+                setChosenUser={setChosenUser}
+                searchUserUsername={searchUserUsername}
+                setSearchUserUsername={setSearchUserUsername}
+                // selectDisplayPost={selectDisplayPost}
+                chosenDisplayPost={chosenDisplayPost}
+                // selectedDisplayPost={selectedDisplayPost}
+                setChosenDisplayPost={setChosenDisplayPost}
+                chosenTech={chosenTech}
+                setChosenTech={setChosenTech}
 
-              getCpDisplayPosts={getCpDisplayPosts}
-              cpDisplayPosts={cpDisplayPosts}
-              selectDisplayPost={selectDisplayPost}
-              selectedDisplayPost={selectedDisplayPost}
-              clearDisplayPost={clearDisplayPost}
-              cpDisplayPostState={cpDisplayPostState}
-              cpDisplayPostFetchSwitch={cpDisplayPostFetchSwitch}
-              cpDisplayPostLast={cpDisplayPostLast}
+                displayPostTechs={displayPostTechs}
+                setDisplayPostTechs={setDisplayPostTechs}
+                displayPostTechsState={displayPostTechsState}
+                setDisplayPostTechsState={setDisplayPostTechsState}
 
-              clearChosenUser={clearChosenUser}
-              rateTech={rateTech}
-              setRateTech={setRateTech}
-              clearRating={clearRating}
-              changeRating={changeRating}
-              clearUserUsernameInput={clearUserUsernameInput}
-              clearSearchUser={clearSearchUser}
-              changeUserUsernameInput={changeUserUsernameInput}
-            />
-          }
-          {
-            user.type === "business" && chosenUser === null
-            ?
-            <View style={styles.optionContainer}>
-              {
-                postTitle && postPrice && postETC && selectedTechs.length > 0
-                ? <AntDesign name="checkcircleo" size={RFValue(23)} color={color.blue1} />
-                : <AntDesign name="checkcircleo" size={RFValue(23)} color={color.black1} />
-              }
-              <Text style={styles.optionText}>
-                Is this a display post?
-              </Text>
-              <THButtonWithBorder
-                onPress={() => {
-                  setDisplay(true);
-                }}
-                text={"Yes"}
-                value={display === true}
-                valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
+                chosenUserDisplayPosts={chosenUserDisplayPosts}
+                setChosenUserDisplayPosts={setChosenUserDisplayPosts}
+                chosenUserDisplayPostLast={chosenUserDisplayPostLast}
+                setChosenUserDisplayPostLast={setChosenUserDisplayPostLast}
+                chosenUserDisplayPostFetchSwitch={chosenUserDisplayPostFetchSwitch}
+                setChosenUserDisplayPostFetchSwtich={setChosenUserDisplayPostFetchSwtich}
+                chosenUserDisplayPostState={chosenUserDisplayPostState}
+                setChosenUserDisplayPostState={setChosenUserDisplayPostState}
               />
-              <THButtonWithBorder
-                onPress={() => {
-                  setDisplay(false);
-                }}
-                text={"No"}
-                value={display === false}
-                valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
+            }
+            {
+              user.type === "business" && chosenUser === null
+              ?
+              <View style={styles.optionContainer}>
+                {
+                  postTitle && postPrice && postETC && selectedTechs.length > 0
+                  ? <AntDesign name="checkcircleo" size={RFValue(23)} color={color.red2} />
+                  : <AntDesign name="checkcircleo" size={RFValue(23)} color={color.black1} />
+                }
+                <Text style={styles.optionText}>
+                  Is this a display post?
+                </Text>
+                <THButtonWithBorder
+                  onPress={() => {
+                    setDisplay(true);
+                  }}
+                  text={"Yes"}
+                  value={display === true}
+                  valueEffect={{ borderWidth: RFValue(2), borderColor: color.red2 }}
+                  valueEffectText={{ color: color.red2 }}
+                />
+                <THButtonWithBorder
+                  onPress={() => {
+                    setDisplay(false);
+                  }}
+                  text={"No"}
+                  value={display === false}
+                  valueEffect={{ borderWidth: RFValue(2), borderColor: color.red2 }}
+                  valueEffectText={{ color: color.red2 }}
+                />
+              </View>
+              :
+              null
+            }
+            {
+              display &&
+              <DisplayPostInfoInputForm 
+                postPrice={postPrice}
+                setPostPrice={setPostPrice}
+                postETC={postETC}
+                setPostETC={setPostETC}
+                currentTechs={currentTechs}
+                selectedTechs={selectedTechs}
+                setSelectedTechs={setSelectedTechs}
+                postTitle={postTitle}
+                setPostTitle={setPostTitle}
+                postService={postService}
+                setPostService={setPostService}
               />
-            </View>
-            :
-            null
-          }
-          {
-            display &&
-            <DisplayPostInfoInputForm 
-              postPrice={postPrice}
-              setPostPrice={setPostPrice}
-              postETC={postETC}
-              setPostETC={setPostETC}
-              currentTechs={currentTechs}
-              selectedTechs={selectedTechs}
-              setSelectedTechs={setSelectedTechs}
-              postTitle={postTitle}
-              setPostTitle={setPostTitle}
-              postService={postService}
-              setPostService={setPostService}
-            />
-          }
-          <InputFormBottomLine customStyles={{borderColor: color.grey1, marginBottom: 15,}}/>
-          
-          {/*content upload box*/}
-          <View style={styles.pickImageContainer}>
-            {files && 
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={files}
-                keyExtractor={(image) => image.id}
-                renderItem={({ item }) => {
-                  return (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        navigation.navigate('ImageZoomin', 
-                          {
-                            file: {
-                              type: item.type,
-                              url: item.uri
+            }
+            <InputFormBottomLine customStyles={{backgroundColor: color.red2, marginBottom: RFValue(15),}}/>
+            
+            {/*content upload box*/}
+            <View style={styles.pickImageContainer}>
+              {files && 
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={files}
+                  keyExtractor={(image) => image.id}
+                  renderItem={({ item }) => {
+                    return (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          navigation.navigate('ImageZoomin', 
+                            {
+                              file: {
+                                type: item.type,
+                                url: item.uri
+                              }
                             }
+                          );
+                          // setModalImage([{uri: item.uri, type: item.type}]);
+                          // setImageZoomModalVisible(true);
+                        }}
+                        style={styles.imageContainer}
+                      >
+                        <CancelButton 
+                          onPressFunction={() => 
+                            setFiles([ ...files.filter((file) => file.id !== item.id) ])
                           }
-                        );
-                        // setModalImage([{uri: item.uri, type: item.type}]);
-                        // setImageZoomModalVisible(true);
-                      }}
-                      style={styles.imageContainer}
-                    >
-                      <CancelButton onPressFunction={() => cancelFile(item.id)}/>
-                      <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
-                    </TouchableOpacity>
+                        />
+                        <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
+                      </TouchableOpacity>
+                    )
+                  }}
+                />
+              }
+              { files.length <= 4 && 
+                <TouchableHighlight 
+                  style={styles.pickImageButton} 
+                  onPress={() => {
+                    const getFile = pickImage();
+                    getFile
+                    .then((file) => {
+                      setFiles([ ...files, {id: file.id, type: file.type, uri: file.uri}])
+                    })
+                    .catch((error) => {
+                      console.log(error);
+                    });
+                  }}
+                  underlayColor={color.grey1}
+                >
+                  <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
+                </TouchableHighlight>
+              }
+            </View>
+            { files.length >= 5 &&
+              <View style={styles.limitWarningContainer}>
+                <Text style={{fontSize: 15,}}>The limit is {files.length} of pictures or videos.</Text>
+              </View>
+            }
+            <InputFormBottomLine customStyles={{marginTop: RFValue(15), backgroundColor: color.red2}}/>
+            <View style={styles.tagCaptionInputContainer}>
+              <TagInputForm 
+                tags={tags}
+                setTags={setTags}
+              />
+              <CaptionInputForm caption={caption} changeCaption={setCaption} />
+            </View>
+            <View style={[ styles.buttonContainer, { paddingTop: RFValue(30) }]}>
+              <TouchableOpacity
+                onPress={() => {
+                  files.length < 1
+                  ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
+                  : chosenUser && !selectedDisplayPost 
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Choose a post of ${chosenUser.username}`))
+                  : chosenUser && !rating
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Rate the post of ${chosenUser.username}`))
+                  : display && !postTitle
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Write the title of your post"))
+                  : display && !postPrice
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
+                  : display && !postETC
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose the time of your post"))
+                  : display && !selectedTechs.length > 0
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
+                  :
+                  addPost(
+                    navigation.goBack, 
+                    user.id,  
+                    files, 
+                    tags, 
+                    caption,
+
+                    chosenUser,
+                    selectedDisplayPost,
+                    chosenTech,
+                    rating,
+                    
+                    display,
+                    postService,
+                    postTitle,
+                    postPrice,
+                    postETC,
+                    selectedTechs,
+                    
+                    changeProgress,
                   )
                 }}
-              />
-            }
-            { files.length <= 4 && 
-              <TouchableHighlight 
-                style={styles.pickImageButton} 
-                onPress={() => {pickImage('post');}}
-                underlayColor={color.grey1}
               >
-                <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
-              </TouchableHighlight>
-            }
-          </View>
-          { files.length >= 5 &&
-            <View style={styles.limitWarningContainer}>
-              <Text style={{fontSize: 15,}}>The limit is {files.length} of pictures or videos.</Text>
+                <View style={styles.button}>
+                  <Text style={styles.buttonText}>POST</Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          }
-          <InputFormBottomLine customStyles={{marginTop: 15, borderColor: color.grey1}}/>
-          <View style={styles.tagCaptionInputContainer}>
-            <TagInputForm />
-            <CaptionInputForm caption={caption} changeCaption={changeCaption} />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  setTbaStatus(true);
+                }}
+              >
+                <View style={styles.button}>
+                  <Text style={styles.buttonText}>Reset</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={{ height: RFValue(50) }}/>
           </View>
-          <View style={[ styles.buttonContainer, { paddingTop: RFValue(30) }]}>
-            <TouchableOpacity
-              onPress={() => {
-                files.length < 1
-                ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
-                : chosenUser && !selectedDisplayPost 
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Choose a post of ${chosenUser.username}`))
-                : chosenUser && !rating
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Rate the post of ${chosenUser.username}`))
-                : display && !postTitle
-                ? (setAlertBoxStatus(true), setAlertBoxText("Write the title of your post"))
-                : display && !postPrice
-                ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
-                : display && !postETC
-                ? (setAlertBoxStatus(true), setAlertBoxText("Choose the time of your post"))
-                : display && !selectedTechs.length > 0
-                ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
-                :
-                addPost(
-                  navigation.goBack, 
-                  user.id,  
-                  files, 
-                  tags, 
-                  caption,
-
-                  chosenUser,
-                  selectedDisplayPost,
-                  rateTech,
-                  rating,
-                  
-                  display,
-                  postService,
-                  postTitle,
-                  postPrice,
-                  postETC,
-                  selectedTechs,
-                  
-                  changeProgress,
-                )
-              }}
-            >
-              <View style={styles.button}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                setTbaStatus(true);
-              }}
-            >
-              <View style={styles.button}>
-                <Text style={styles.buttonText}>Reset</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={{ height: RFValue(50) }}/>
-        </KeyboardAwareScrollView>
-      }
-      { 
-        // put this at the last so it can be on the top of others
-        alertBoxStatus
-        ?
-        <AlertBoxTop 
-          setAlert={setAlertBoxStatus}
-          alertText={alertBoxText}
-        />
-        : null
-      }
-      { 
-        tbaStatus
-        && 
-        <TwoButtonAlert 
-          title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
-          message={"Reset the posting process?"}
-          buttonOneText={"Yes"}
-          buttonTwoText={"No"}
-          buttonOneAction={() => { 
-            setPostTitle(null);
-            setPostPrice(null);
-            setPostETC(null);
-            setSelectedTechs([]);
-            setRateTech(null);
-            resetPost();
-            setTbaStatus(false); 
-          }}
-          buttonTwoAction={() => { setTbaStatus(false)}}
-        />
-      }
+        }
+        { 
+          // put this at the last so it can be on the top of others
+          alertBoxStatus
+          ?
+          <AlertBoxTop 
+            setAlert={setAlertBoxStatus}
+            alertText={alertBoxText}
+          />
+          : null
+        }
+        { 
+          tbaStatus
+          && 
+          <TwoButtonAlert 
+            title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
+            message={"Reset the posting process?"}
+            buttonOneText={"Yes"}
+            buttonTwoText={"No"}
+            buttonOneAction={() => { 
+              Reset();
+              setTbaStatus(false); 
+            }}
+            buttonTwoAction={() => { setTbaStatus(false)}}
+          />
+        }
+      </KeyboardAwareScrollView>
     </View>
   );
 };
@@ -620,8 +768,8 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 5,
     backgroundColor: '#fff',
-    width: RFValue(200),
-    height: RFValue(38),
+    width: RFValue(250),
+    height: RFValue(50),
     justifyContent: 'center',
     alignItems: 'center',
     padding: RFValue(10),
@@ -629,7 +777,7 @@ const styles = StyleSheet.create({
   buttonText: {
     backgroundColor: '#fff',
     color: color.black1,
-    fontSize: RFValue(17),
+    fontSize: RFValue(23),
   },
   optionContainer: {
     flexDirection: 'row',

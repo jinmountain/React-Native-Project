@@ -15,12 +15,15 @@ import { AntDesign } from '@expo/vector-icons';
 // Color
 import color from '../../color';
 
-const TagInputForm = () => {
-  const { 
-    state: { tags }, 
-    makeNewTag, 
-    deleteTag 
-  } = useContext(PostContext);
+// icons
+import expoIcons from '../../expoIcons';
+
+const TagInputForm = ({ tags, setTags }) => {
+  // const { 
+  //   state: { tags }, 
+  //   makeNewTag, 
+  //   deleteTag 
+  // } = useContext(PostContext);
   const [tagTextInput, setTagTextInput] = useState('');
 
   const timestamp = () => {
@@ -32,12 +35,12 @@ const TagInputForm = () => {
       const trimmedString = s.trim();
       if (trimmedString.length > 0) {
         let stringLeft = trimmedString;
-        while (stringLeft.indexOf(' ') > 0) {
-          const firstWord = stringLeft.substr(0, stringLeft.indexOf(' '));
-          stringLeft = stringLeft.substr(stringLeft.indexOf(' ')).trim();
-          makeNewTag(String(firstWord));
+        if (stringLeft.indexOf(' ') > 0) {
+          const words = stringLeft.split(" ");
+          setTags([...tags, ...words]);
+        } else {
+          setTags([...tags, String(stringLeft)]);
         }
-        makeNewTag(String(stringLeft));
         setTagTextInput('');
       } else {
         setTagTextInput('');
@@ -64,12 +67,12 @@ const TagInputForm = () => {
                   return (
                     <TouchableOpacity 
                       onPress={() => {
-                        deleteTag(item);
+                        setTags([...tags.filter((tag) => tag !== item)]);
                       }}
                     >
                       <View style={styles.unitContainer}>
                         <View style={styles.tagsContainer}>
-                          <AntDesign name="tagso" size={RFValue(12)} color={color.black1}/>
+                          {expoIcons.snailShell(RFValue(15), color.red2)}
                           <Text style={styles.tagText}>
                             {item}
                           </Text>
@@ -85,7 +88,7 @@ const TagInputForm = () => {
       <TextInput
         style={styles.input}
         placeholder={'Insert each tag using a space'}
-        placeholderTextColor={color.gray3}
+        placeholderTextColor={color.grey1}
         onChangeText={(text) => setTagTextInput(text)}
         value={tagTextInput}
         maxLength={50}
@@ -94,7 +97,7 @@ const TagInputForm = () => {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      <InputFormBottomLine customStyles={{borderColor: color.gray1, marginTop: RFValue(3)}} />
+      <InputFormBottomLine customStyles={{backgroundColor: color.red2, marginTop: RFValue(3)}} />
     </View>
   );
 };
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
   textInputLabel: {
     fontSize: RFValue(12),
     marginTop: RFValue(10),
-    color: color.gray3
+    color: color.red2
   },
   textInputLabelContainer: {
     minHeight: RFValue(25),
@@ -121,7 +124,7 @@ const styles = StyleSheet.create({
   },
   unitContainer: {
     borderWidth: 0.5,
-    borderColor: color.gray3,
+    borderColor: color.grey3,
     borderRadius: RFValue(8),
     marginRight: RFValue(5),
     paddingVertical: RFValue(5),

@@ -222,7 +222,7 @@ const AccountScreen = ({ navigation }) => {
 				secondIcon={<AntDesign name="message1" size={RFValue(27)} color={color.black1} />}
 				thirdIcon={<Feather name="menu" size={RFValue(27)} color={color.black1} />}
 				firstOnPress={() => {
-					navigation.navigate("ContentCreateTab");
+					navigation.navigate("ContentCreate");
 				}}
 				secondOnPress={() => {
 					navigation.navigate("ChatListStack");

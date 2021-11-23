@@ -23,15 +23,15 @@ import { AntDesign } from '@expo/vector-icons';
 
 const SearchBarChosenUser = ({
 	chosenUser, 
-	clearChosenUser, 
-	clearRating,
+	setChosenUser, 
+	setRating,
 }) => {
 	return (
 		<TouchableOpacity 
 		  style={styles.chosenUserContainer}
 		  onPress={() => {
-		    clearChosenUser();
-		    clearRating();
+		    setChosenUser(null);
+		    setRating(null);
 		  }}
 		>
 			<View style={styles.chosenUserInner}>
