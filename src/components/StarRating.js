@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
 	},
   buttonContainer: {
-    borderRadius: 10,
+    borderRadius: RFValue(3),
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: RFValue(3),

@@ -436,3 +436,43 @@ if (tryGetChat) {
   </View>
 	: null
 }
+
+{/*<PanGestureHandler
+	onGestureEvent={
+		Animated.event(
+			[
+				{
+					nativeEvent: { translationX: translateX,translationY: translateY }
+				}
+			], 
+			{ useNativeDriver: true }
+		)
+	}
+>
+	<PinchGestureHandler
+    onGestureEvent={
+    	Animated.event(
+      	[
+		      {
+		        nativeEvent: { scale: scale }
+		      }
+		    ],
+		    { useNativeDriver: true }
+	    )
+    }
+    // onHandlerStateChange={onPinchStateChange}
+ 	>
+		<Animated.Image 
+      source={{ uri: file.url }}
+      style={[
+      	styles.image, 
+      	{ transform: [
+      			{ scale: scale },
+      			{ translateY : translateY },
+            { translateX : translateX }
+      		]}
+      ]}
+      resizeMode='contain'
+    />
+  </PinchGestureHandler>
+</PanGestureHandler>*/}

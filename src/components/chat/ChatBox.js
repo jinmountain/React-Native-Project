@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { 
 	View, 
 	FlatList,
@@ -32,22 +32,81 @@ import color from '../../color';
 
 const { width, height } = Dimensions.get("window");
 
+const giveDateToCompare = (timestamp) => {
+	var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+	var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+	var getNewTimeDate = new Date(timestamp);
+  var newTimeYear = getNewTimeDate.getFullYear();
+  var newTimeMonthIndex = getNewTimeDate.getMonth();
+  var newTimeMonth = months[getNewTimeDate.getMonth()];
+  var newTimeDate = getNewTimeDate.getDate();
+  var newTimeDayIndex = getNewTimeDate.getDay();
+  var newTimeDay = days[getNewTimeDate.getDay()];
+
+  return { 
+		year: newTimeYear,
+		monthIndex: newTimeMonthIndex,
+		month: newTimeMonth,
+		date: newTimeDate,
+		dayIndex: newTimeDayIndex,
+		day: newTimeDay,
+		timestamp: timestamp
+	};
+};
+
+const timeCompare = (newTimeTimestamp, previousTimeDateTimestamp) => {
+	const newTimeDate = giveDateToCompare(newTimeTimestamp);
+	const previousTimeDate = giveDateToCompare(previousTimeDateTimestamp);
+	if (previousTimeDate.year < newTimeDate.year) {
+		return true
+	} 
+	else if (
+		previousTimeDate.year === newTimeDate.year 
+		&& previousTimeDate.monthIndex < newTimeDate.monthIndex
+	) {
+  	return true
+  } 
+  else if (
+		previousTimeDate.year === newTimeDate.year 
+		&& previousTimeDate.monthIndex === newTimeDate.monthIndex 
+		&& previousTimeDate.date < newTimeDate.date
+	) {
+		return true
+	} else {
+		return false;
+	}
+};
+
 const getTime = (timestamp) => {
 	var a = new Date(timestamp);
 	var hour = a.getHours();
 	var normalHour;
   var min = a.getMinutes();
+  var normalMin;
   var pmOrAm;
   if (hour > 12) {
   	pmOrAm = 'PM';
   	normalHour = hour - 12;
   } else {
-  	pmOrAm = 'AM';
-  	normalHour = hour;
+  	if (hour === 0) {
+  		pmOrAm = 'AM';
+  		normalHour = 12;
+  	} else {
+  		pmOrAm = 'AM';
+  		normalHour = hour;
+  	}
   }
-  var time = normalHour + ':' + min + ' ' + pmOrAm;
+
+  if (min < 10) {
+  	normalMin = `0${min}`;
+  } else {
+  	normalMin = min;
+  }
+
+  var time = normalHour + ':' + normalMin + ' ' + pmOrAm;
   return time;
-}
+};
 
 const timeConverter = (timestamp) => {
   var a = new Date(timestamp);
@@ -60,23 +119,24 @@ const timeConverter = (timestamp) => {
   var sec = a.getSeconds();
   var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
   return time;
-}
+};
 
-const giveDateSign = (item) => {
+const giveDateSign = (timestamp) => {
+	const time = giveDateToCompare(timestamp);
 	return (
 		<View style={styles.dateSignContainer}>
 			<View style={styles.dateSignInner}>
 				<Text style={styles.dateSignText}>
-					{item.dateSign.day},
+					{time.day},
 				</Text>
 				<Text style={styles.dateSignText}>
-					{item.dateSign.month}
+					{time.month}
 				</Text>
 				<Text style={styles.dateSignText}>
-					{item.dateSign.date},
+					{time.date},
 				</Text>
 				<Text style={styles.dateSignText}>
-					{item.dateSign.year}
+					{time.year}
 				</Text>
 			</View>
 		</View>
@@ -84,13 +144,11 @@ const giveDateSign = (item) => {
 };
 
 const ChatBox = ({
-	sendButtonColor,
 	pickImage,
 	onPressShort,
 	showExtendedActions, 
 	setShowExtendedActions,
 	isKeyboardVisible,
-	files, 
 	messages, 
 	userId, 
 	theOtherUser, 
@@ -98,11 +156,15 @@ const ChatBox = ({
 	setMessage, 
 	onSend,
 	loadMore,
+	addFileChat,
 }) => {
+	const chatBoxRef = useRef();
 	return (
 		<View style={styles.mainContainer}>
 			<View style={styles.chatContainer}>
 				<FlatList
+					ref={chatBoxRef}
+          //onContentSizeChange={() => chatBoxRef.current.scrollToIndex(0)}
 					onEndReached={loadMore}
 					onEndReachedThreshold={0.01}
 				  vertical
@@ -110,7 +172,7 @@ const ChatBox = ({
 				  showsVerticalScrollIndicator={true}
 				  data={messages}
 				  keyExtractor={(message) => message._id}
-				  renderItem={({ item }) => {
+				  renderItem={({ item, index }) => {
 				    return (
 				    	// dateSign json attributes
 			    		// addToMessage: true
@@ -126,6 +188,16 @@ const ChatBox = ({
 					    			onPressShort(item)
 					    		}}
 					    	>
+					    		{	
+					    			!messages[index + 1]
+						      	? 
+						      	giveDateSign(item.createdAt)
+						      	:
+					      		messages[index+1] && timeCompare(item.createdAt, messages[index+1].createdAt)
+						      	? 
+						      	giveDateSign(item.createdAt)
+						      	: null
+						      }
 					    		<View style={styles.userMesssageInnerContainer}>
 						    		<View style={styles.userBodyContainer}>
 							    		<View style={styles.contentContainer}>
@@ -165,10 +237,19 @@ const ChatBox = ({
 							    	</View>
 							    </View>
 					    	</TouchableOpacity>
-					    	{item.dateSign && giveDateSign(item)}
 					    </View>
 				    	:
 				    	<View>
+				    		{	
+				    			!messages[index + 1]
+					      	? 
+					      	giveDateSign(item.createdAt)
+					      	:
+				      		messages[index+1] && timeCompare(item.createdAt, messages[index+1].createdAt)
+					      	? 
+					      	giveDateSign(item.createdAt)
+									: null
+					      }
 					    	<TouchableOpacity 
 					    		style={styles.theOtherUserMessageContainer}
 					    		onPress={() => {
@@ -182,7 +263,7 @@ const ChatBox = ({
 						  				<View style={styles.headContainer}>
 							        	<Image 
 							        		defaultSource={require('../../../img/defaultImage.jpeg')}
-										    	style={styles.userPhoto} 
+										    	style={styles.userPhoto}
 										    	source={{ uri: item.user.avatar }}
 										    />
 										  </View>
@@ -196,31 +277,32 @@ const ChatBox = ({
 								  	}
 								  	<View style={styles.theOtherUserBodyContainer}>
 							    		<View style={styles.contentContainer}>
-							    			{ item.text
+							    			{ 
+							    				item.text
 							    				?
 								    			<Text style={styles.messageText}>{item.text} </Text>
 								    			:item.video
-								            ?
-								            <View style={{width: RFValue(100), height: RFValue(100)}}>
-								              <Video
-								                // ref={video}
-								                style={{backgroundColor: color.white2, borderWidth: 0, width: RFValue(100), height: RFValue(100)}}
-								                source={{
-								                  uri: item.video,
-								                }}
-								                useNativeControls={false}
-								                resizeMode="contain"
-								                shouldPlay={false}
-								              />
-								            </View>
-								            : item.image
-								            ?
-								            <Image 
-								              source={{uri: item.image}}
-								              style={{width: RFValue(100), height: RFValue(100)}}
-								            />
-								            : null
-								          }
+							            ?
+							            <View style={{width: RFValue(100), height: RFValue(100)}}>
+							              <Video
+							                // ref={video}
+							                style={{backgroundColor: color.white2, borderWidth: 0, width: RFValue(100), height: RFValue(100)}}
+							                source={{
+							                  uri: item.video,
+							                }}
+							                useNativeControls={false}
+							                resizeMode="contain"
+							                shouldPlay={false}
+							              />
+							            </View>
+							            : item.image
+							            ?
+							            <Image 
+							              source={{uri: item.image}}
+							              style={{width: RFValue(100), height: RFValue(100)}}
+							            />
+							            : null
+							          }
 							    		</View>
 							    		<View style={styles.timeContainer}>
 							    			<Text style={styles.timeText}>
@@ -230,7 +312,6 @@ const ChatBox = ({
 							    	</View>
 							    </View>
 					      </TouchableOpacity>
-					      {item.dateSign && giveDateSign(item)}
 					    </View>
 				    )
 				  }}
@@ -278,7 +359,16 @@ const ChatBox = ({
 					>
 						<TouchableOpacity 
 							style={styles.extendedActionButtonContainer}
-							onPress={pickImage}
+							onPress={() => {
+								const getFile = pickImage();
+								getFile
+                .then((file) => {
+                  addFileChat(file.id, file.type, file.uri);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+							}}
 						>
 							<Feather name="image" size={RFValue(27)} color="black" />
 						</TouchableOpacity>
@@ -301,7 +391,7 @@ const ChatBox = ({
 		      underlayColor={color.grey4}
 				>
 					<View>
-						<Ionicons name="send" size={RFValue(21)} color={sendButtonColor} />
+						<Ionicons name="send" size={RFValue(21)} color={color.red2} />
 					</View>
 				</TouchableHighlight>
 			</View>
@@ -354,7 +444,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		flexDirection: 'row',
 		borderRadius: RFValue(7),
-		backgroundColor: color.grey1
+		backgroundColor: color.grey8
 	},
 	dateSignText: {
 		color: '#fff',
@@ -375,7 +465,7 @@ const styles = StyleSheet.create({
 		padding: RFValue(5),
 		borderTopLeftRadius: RFValue(7),
 		borderBottomLeftRadius: RFValue(7),
-		backgroundColor: '#E7DDFF',
+		backgroundColor: color.red4
 	},
 	messageText: {
 		// color: '#fff',

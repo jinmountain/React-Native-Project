@@ -15,17 +15,25 @@ import color from '../color';
 const GetPostLoading = () => {
 	return (
 		<View style={styles.postsLoadingContainer}>
-			<SpinnerFromActivityIndicator customColor={color.gray1}/>
+			<SpinnerFromActivityIndicator customColor={color.grey1}/>
+			<View style={styles.background}/>
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	postsLoadingContainer: {
+		// position: "absolute",
 		justifyContent: 'center', 
 		alignItems: 'center',
-		marginVertical: RFValue(17),
 		width: "100%",
+	},
+	background: {
+		position: "absolute",
+		opacity: 0.7,
+		width: "100%",
+		height: "100%",
+		backgroundColor: color.white2,
 	},
 });
 

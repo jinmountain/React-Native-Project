@@ -11,6 +11,7 @@ export default {
 	red1: '#F4212E', // red button background color | alert color
 	red2: '#E44753', // noti color | like color | main red
 	red3: '#CC0001', // noti color | subordinate red
+	red4: '#FCE4DE', // white like red | chat body background color
 
 	grey1: '#E0E0E0', // for incomplete, guide line,
 	grey2: '#909090', // medium grey, grey buttons

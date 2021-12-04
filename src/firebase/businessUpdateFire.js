@@ -144,7 +144,7 @@ const businessRegister = (businessServiceType) => {
 			.set({ 
 				type: "business", 
 				service: businessServiceType, 
-				businessRegistered: Date.now(), 
+				businessRegisteredAt: Date.now(), 
 				techs: [],
 				business_hours: [],
 			}, { merge: true })
@@ -185,7 +185,7 @@ const businessDeregister = () => {
 		  	.doc(currentUser.uid)
 		  	.update({ 
 		  		type: "preBusiness", 
-		  		businessDeregistered: Date.now(),
+		  		businessDeregisteredAt: Date.now(),
 		  		// delete following fields
 		  		coordinates: firebase.firestore.FieldValue.delete(),
 		  		formatted_address: firebase.firestore.FieldValue.delete(),
@@ -225,7 +225,7 @@ const technicianRegister = (userId) => {
 			.doc(currentUser.uid)
 			.update({ 
 				type: "technician", 
-				technicianRegistered: Date.now() 
+				technicianRegisteredAt: Date.now() 
 			})
 			.then(() => {
 				console.log("Registered a new technician user.");
@@ -250,7 +250,7 @@ const technicianDeregister = () => {
 			// first change type to preBusiness
 	  	usersRef
 	  	.doc(currentUser.uid)
-	  	.update({ type: "preTechnician", technicianDeregistered: Date.now() })
+	  	.update({ type: "preTechnician", technicianDeregisteredAt: Date.now() })
 	  	.then(() => {
 	  		console.log("Deregisted a technician user.");
 	  		res();

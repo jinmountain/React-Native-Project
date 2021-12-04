@@ -14,7 +14,7 @@ const likePostFire = (postId, uid) => {
     getLike
     .then((doc) => {
       if (doc.exists) {
-        console.log("already liked: ", postId,)
+        // console.log("already liked: ", postId,)
         res(false);
       } else {
         const getPostData = postsRef.doc(postId).get();
@@ -26,7 +26,7 @@ const likePostFire = (postId, uid) => {
           // 1000 is a second
           const timePassedInSec = (Date.now() - postData.createdAt) / 1000;
           const newHeat = Number((postData.likeCount + 1) / timePassedInSec);
-          console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
+          // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
           // make a new doc in linkes
           usersLikesRef.doc(postId).set({});
           // Posts Ref
@@ -43,15 +43,13 @@ const likePostFire = (postId, uid) => {
 
           res(true);
         })
-        .catch(function(error) {
-          console.log("Error occured: firebase: like: likeFire: likePostFire: getPostData: ", error);
-          res(false);
+        .catch((error) =>{
+          rej(error);
         });
       }
     })
     .catch((error) => {
-      console.log("Error occured: firebase: like: likeFire: likePostFire: getLike: ", error);
-      res(false);
+      rej(error);
     });
 	});
 };
@@ -74,7 +72,7 @@ const undoLikePostFire = (postId, uid) => {
           // 1000 is a second
           const timePassedInSec = (Date.now() - postData.createdAt) / 1000;
           const newHeat = Number((postData.likeCount - 1) / timePassedInSec);
-          console.log("likeFire: " + postId + " like - 1 "+  "new heat: ", newHeat);
+          // console.log("likeFire: " + postId + " like - 1 "+  "new heat: ", newHeat);
           // delete the doc in likes
           usersLikesRef.doc(postId).delete();
 
@@ -94,8 +92,7 @@ const undoLikePostFire = (postId, uid) => {
           res(true);
         })
         .catch((error) => {
-          console.log("Error occured: firebase: likeFire: undoLikePostFire: getPostData: ", error);
-          res(false);
+          rej(error);
         });
       } else {
         console.log("already undid like: ", postId);
@@ -103,8 +100,7 @@ const undoLikePostFire = (postId, uid) => {
       }
     })
     .catch((error) => {
-      console.log("Error occured: firebase: likeFire: undoLikePostFire: getLike: ", error);
-      res(false);
+      res(error);
     })
   });
 };

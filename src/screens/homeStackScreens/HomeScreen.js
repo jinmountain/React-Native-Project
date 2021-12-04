@@ -4,7 +4,7 @@ import {
 	FlatList,
 	ScrollView,
 	View, 
-	Button, 
+	Button,
 	StyleSheet, 
 	TouchableOpacity,
 	Image,
@@ -67,12 +67,13 @@ const HomeScreen = ({ navigation }) => {
 	const [ hotPostLast, setHotPostLast ] = useState(null);
 	const [ hotPostFetchSwitch, setHotPostFetchSwitch ] = useState(true);
 	const [ hotPostState, setHotPostState ] = useState(false);
-	
+	// tags states
+	const [trendingTags, setTrendingTags] = useState([]);
 	useEffect(() => {
 		let isMounted = true;
 		if( hotPostFetchSwitch && !hotPostState) {
 			isMounted && setHotPostState(true);
-			const getHotPosts = contentGetFire.getHotPostsFire(hotPostLast, user.id);
+			const getHotPosts = contentGetFire.getHotPostsFire(null, user.id);
 			getHotPosts
 			.then((posts) => {
 				isMounted && setHotPosts([ ...hotPosts, ...posts.fetchedPosts ]);
@@ -83,6 +84,9 @@ const HomeScreen = ({ navigation }) => {
 				};
 				isMounted && setHotPostState(false);
 			})
+			.catch((error) => {
+				console.log(error);
+			});
 		}
 
 		const tagsHot = tagGetFire.getTagsHotFire();
@@ -120,23 +124,6 @@ const HomeScreen = ({ navigation }) => {
 			receivedNotificationResponse
 		},
   } = useContext(SocialContext);
-
-	const [trendingTags, setTrendingTags] = useState([]);
-
-	// useEffect(() => {
-	// 	// Good Here
-	// 	// const tagsHot = tagGetFire.getTagsHotFire();
-	// 	// tagsHot
-	// 	// .then((tags) => {
-	// 	// 	setTrendingTags(tags);
-	// 	// 	console.log("fetched hot tags", trendingTags);
-	// 	// })
-	// 	// .catch((error) => {
-	// 	// 	console.log("failed to fetch tags hot: ", error);
-	// 	// });
-
-	// 	// clearFirstAndGetHotPosts(user.id);
-	// }, []);
 
 	// when received new notification
 	useEffect(() => {

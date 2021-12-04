@@ -43,14 +43,15 @@ const PostsSwipeStack = () => {
         component={PostsSwipeScreen}
         initialParams={{ 
           cardIndex: 0, 
-          targetUser: null,
           postSource: 'default',
-          targetUser: null,
+
           posts: [],
           postState: false,
           postFetchSwitch: true,
           postLast: null,
-          businessUserSearch: null,
+
+          accountUserId: null,
+          businessUserId: null,
         }}
       />
       <Stack.Screen 

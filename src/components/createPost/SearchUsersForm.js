@@ -80,7 +80,18 @@ const SearchUsersForm = ({
   chosenUserDisplayPostState,
   setChosenUserDisplayPostState
 }) => {
-
+  const ResetRatingProcess = () => {
+    setChosenUser(null);
+    setChosenTech(null);
+    setChosenDisplayPost(null);
+    setRating(null);
+    setDisplayPostTechs([]);
+    setDisplayPostTechsState(false);
+    setChosenUserDisplayPosts([]);
+    setChosenUserDisplayPostLast(null);
+    setChosenUserDisplayPostFetchSwtich(true);
+    setChosenUserDisplayPostState(false);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -104,12 +115,6 @@ const SearchUsersForm = ({
     };
     return () => {
       mounted = false;
-      setDisplayPostTechs([]);
-      setDisplayPostTechsState(false);
-      setChosenUserDisplayPosts([]);
-      setChosenUserDisplayPostLast(null);
-      setChosenUserDisplayPostFetchSwtich(true);
-      setChosenUserDisplayPostState(false);
     }
   }, [chosenUser]);
 
@@ -122,6 +127,7 @@ const SearchUsersForm = ({
             chosenUser={chosenUser}
             setChosenUser={setChosenUser} 
             setRating={setRating}
+            ResetRatingProcess={ResetRatingProcess}
           /> 
           :
           <SearchBar
@@ -137,9 +143,7 @@ const SearchUsersForm = ({
         <TouchableOpacity 
           style={{ flexDirection: 'row', justifyContent: 'center' }}
           onPress={() => {
-            setChosenDisplayPost(null);
-            setChosenTech(null);
-            setRating(null);
+            ResetRatingProcess();
           }}
         >
           <View style={styles.summaryElementContainer}>
@@ -232,13 +236,13 @@ const SearchUsersForm = ({
                       const getChosenUserDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chosenUserDisplayPostLast, chosenUser, null);
                       getChosenUserDisplayPosts
                       .then((posts) => {
-                        mounted && setChosenUserDisplayPosts([ ...chosenUserDisplayPosts, ...posts.fetchedPosts ]);
+                        setChosenUserDisplayPosts([ ...chosenUserDisplayPosts, ...posts.fetchedPosts ]);
                         if (posts.lastPost !== undefined) {
-                          mounted && setChosenUserDisplayPostLast(posts.lastPost);
+                          setChosenUserDisplayPostLast(posts.lastPost);
                         } else {
-                          mounted && setChosenUserDisplayPostFetchSwtich(false);
+                          setChosenUserDisplayPostFetchSwtich(false);
                         };
-                        mounted && setChosenUserDisplayPostState(false);
+                        setChosenUserDisplayPostState(false);
                       });
                     }
                   }}
@@ -257,7 +261,6 @@ const SearchUsersForm = ({
                             const getDisplayPostTechs = businessGetFire.getTechniciansByIds(item.data.techs);
                             getDisplayPostTechs
                             .then((techs) => {
-                              console.log(techs);
                               setDisplayPostTechs(techs);
                               setDisplayPostTechsState(false);
                             })
@@ -307,7 +310,7 @@ const SearchUsersForm = ({
                 <TouchableOpacity 
                   style={styles.selectedPostImageContainer}
                   onPress={() => {
-                    setChosenUserDisplayPosts([]);
+                    setChosenDisplayPost(null);
                     setRating(null);
                     setChosenTech(null);
                   }}

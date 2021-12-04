@@ -36,7 +36,7 @@ const CaptionInputForm = ({caption, changeCaption}) => {
       	autoCorrect={false}
       	underlineColorAndroid="transparent"
 			/>
-			<InputFormBottomLine customStyles={{backgroundColor: color.red2, marginTop: RFValue(3)}}/>
+			{/*<InputFormBottomLine customStyles={{backgroundColor: color.red2, marginTop: RFValue(3)}}/>*/}
 		</View>
 	);
 };

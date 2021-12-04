@@ -37,10 +37,6 @@ const socialReducer = (state, action) => {
 			return { ...state, messages: [ ...state.messages, ...action.payload ] };
 		case 'clear_messages':
 			return { ...state, messages: [] };
-		case 'add_date_sign':
-			return { ...state, dateSign: action.payload };
-		case 'clear_date_sign':
-			return { ...state, dateSign: null };
 
 		// ChatListScreen
 		case 'clear_chat_list':
@@ -116,11 +112,8 @@ const setMessages = dispatch => (message) => {
 	dispatch({ type: 'add_messages', payload: message });
 };
 
-const sendMessage = dispatch => (chatId, currentUserId, message) => {
-	chatPostFire.sendMessageFire(chatId, currentUserId, message);
-};
-
 const addFileChat = dispatch => (id, type, uri) => {
+	console.log(id, type, uri);
 	dispatch({ type: 'add_file', payload: {id: id, type: type, uri: uri} });
 };
 
@@ -135,7 +128,6 @@ const changeProgress = dispatch => (progress) => {
 
 const clearFilesChat = dispatch => () => {
 	dispatch({ type: 'clear_files' });
-	console.log('files >> []');
 };
 
 // help sending a user to a screen related to the notification
@@ -178,15 +170,6 @@ const appendEarlierMessages = dispatch => (previousMessages) => {
 const clearMessages = dispatch => () => {
 	dispatch({ type: 'clear_messages' });
 	console.log("messages >> []");
-};
-
-const addDateToCompare = dispatch => (currentDate) => {
-	dispatch({ type: 'add_date_sign', payload: currentDate });
-	// console.log("dateSign >> ", currentDate);
-};
-
-const clearDateToCompare = dispatch => () => {
-	dispatch({ type: 'clear_date_sign' });
 };
 
 // ChatListScreen
@@ -241,7 +224,6 @@ export const { Provider, Context } = createDataContext(
 		openChat,
 		addChat,
 		clearChat,
-		sendMessage,
 		setMessages,
 		addFileChat,
 		cancelFileChat,
@@ -255,8 +237,6 @@ export const { Provider, Context } = createDataContext(
 		appendMessages,
 		appendEarlierMessages,
 		clearMessages,
-		addDateToCompare,
-		clearDateToCompare,
 
 		// ChatListScreen
 		clearChatList,
@@ -283,7 +263,6 @@ export const { Provider, Context } = createDataContext(
 
 		// Messaging
 		messages: [],
-		dateToCompare: null,
 
 		// ChatListScreen
 		chatList: [],

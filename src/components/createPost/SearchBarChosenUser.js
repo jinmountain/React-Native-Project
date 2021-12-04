@@ -25,13 +25,13 @@ const SearchBarChosenUser = ({
 	chosenUser, 
 	setChosenUser, 
 	setRating,
+	ResetRatingProcess
 }) => {
 	return (
 		<TouchableOpacity 
 		  style={styles.chosenUserContainer}
 		  onPress={() => {
-		    setChosenUser(null);
-		    setRating(null);
+		    ResetRatingProcess();
 		  }}
 		>
 			<View style={styles.chosenUserInner}>

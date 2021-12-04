@@ -26,9 +26,13 @@ import { AntDesign } from '@expo/vector-icons';
 
 // Hooks
 import useConvertTime from '../../hooks/useConvertTime';
+import { capitalizeFirstLetter } from '../../hooks/capitalizeFirstLetter';
 
 // Color
 import color from '../../color';
+
+// expo icons
+import expoIcons from '../../expoIcons';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -44,18 +48,26 @@ const VerticalScrollModal = ({ children }) => {
   )
 };
 
-const VerticalScrollModalButton = ({ label, value, onPress, setModalVisible }) => {
+const VerticalScrollModalButton = ({ label, value, onPress, setModalVisible, showBackButton }) => {
   return (
     <TouchableHighlight
-      style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center', }}
+      style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
       onPress={() => {
         onPress(value);
         setModalVisible(false);
       }}
       underlayColor={color.grey4}
     >
-      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
+      <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%", flexDirection: 'row'}}>
+        {
+          showBackButton &&
+          <View style={styles.modalCloseContainer}>
+            {expoIcons.chevronBack(RFValue(27), color.black1)}
+          </View>
+        }
+        <View>
+          <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
+        </View>
       </View>
     </TouchableHighlight>
   )
@@ -64,7 +76,7 @@ const VerticalScrollModalButton = ({ label, value, onPress, setModalVisible }) =
 const ChooseServiceModal = ({ setValue, setModalVisible }) => {
   return (
     <VerticalScrollModal>
-      <VerticalScrollModalButton label="Choose Service Type" value={null} onPress={setValue} setModalVisible={setModalVisible} />
+      <VerticalScrollModalButton label="Choose Service Type" value={null} onPress={setValue} setModalVisible={setModalVisible} showBackButton={true}/>
       <VerticalScrollModalButton label="Nail" value="nail" onPress={setValue} setModalVisible={setModalVisible} />
       <VerticalScrollModalButton label="Hair" value="hair" onPress={setValue} setModalVisible={setModalVisible} />
       <VerticalScrollModalButton label="Eyelash" value="eyelash" onPress={setValue} setModalVisible={setModalVisible} />
@@ -76,7 +88,7 @@ const ChooseServiceModal = ({ setValue, setModalVisible }) => {
 const ChooseTimeModal = ({setValue, setModalVisible}) => {
   return (
     <VerticalScrollModal>
-      <VerticalScrollModalButton label="Choose Time" value={null} onPress={setValue} setModalVisible={setModalVisible} />
+      <VerticalScrollModalButton label="Choose Time" value={null} onPress={setValue} setModalVisible={setModalVisible} showBackButton={true}/>
       <VerticalScrollModalButton label="10 mins" value="10" onPress={setValue} setModalVisible={setModalVisible} />
       <VerticalScrollModalButton label="15 mins" value="15" onPress={setValue} setModalVisible={setModalVisible} />
       <VerticalScrollModalButton label="20 mins" value="20" onPress={setValue} setModalVisible={setModalVisible} />
@@ -152,7 +164,7 @@ const DisplayPostInfoInputForm = ({
               postService
               ?
               <View style={styles.timeInputContainer}>
-                <Text style={styles.timeInputText}>{postService}</Text>
+                <Text style={styles.timeInputText}>{capitalizeFirstLetter(postService)}</Text>
               </View>
               :
               <View style={styles.timeInputContainer}>
@@ -207,6 +219,7 @@ const DisplayPostInfoInputForm = ({
             multiline={false}
             underlineColorAndroid="transparent"
             autoCapitalize="none"
+            keyboardType="numeric"
           />
         </View>
       </View>
@@ -394,8 +407,7 @@ const styles = StyleSheet.create({
     paddingVertical: RFValue(3),
   },
   pickTechLabelText: {
-    fontWeight: 'bold',
-    fontSize: RFValue(15),
+    fontSize: RFValue(13),
   },
   pickTechContainer: {
     height: techBoxWidth,
@@ -502,6 +514,10 @@ const styles = StyleSheet.create({
   },
   timeInputText: {
     fontSize: RFValue(17),
+  },
+
+  modalCloseContainer: {
+
   },
 });
 

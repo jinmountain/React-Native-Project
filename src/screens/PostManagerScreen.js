@@ -1,3 +1,8 @@
+// note
+// - if the source of the post is account and the user owns the post the user can see edit and delete functions
+// - if the user owns the post the user can not see report and block (the post is the user's)
+// - share button is visible to all types and sources
+
 import React, { useState, useRef } from 'react';
 import { 
 	Text, 
@@ -76,35 +81,45 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
         </View>
       </TouchableOpacity>
       <HeaderBottomLine />
-			<TouchableOpacity
-        onPress={() => {
 
-        }}
-        style={styles.bsButtonTouch}
-      >
-        <View style={styles.bsButton}>
-          <Text style={styles.bsButtonText}>Block</Text>
-        </View>
-      </TouchableOpacity>
-      <HeaderBottomLine />
-			<TouchableOpacity
-        onPress={() => {
-
-        }}
-        style={styles.bsButtonTouch}
-      >
-        <View style={styles.bsButton}>
-          <Text style={styles.bsButtonText}>Report</Text>
-        </View>
-      </TouchableOpacity>
       {
-      	postUserId === currentUserId &&
-	      <HeaderBottomLine />
+        postUserId === currentUserId
+        ? null
+        : 
+        <View>
+          <TouchableOpacity
+            onPress={() => {
+
+            }}
+            style={styles.bsButtonTouch}
+          >
+            <View style={styles.bsButton}>
+              <Text style={styles.bsButtonText}>Block</Text>
+            </View>
+          </TouchableOpacity>
+          <HeaderBottomLine />
+          <TouchableOpacity
+            onPress={() => {
+
+            }}
+            style={styles.bsButtonTouch}
+          >
+            <View style={styles.bsButton}>
+              <Text style={styles.bsButtonText}>Report</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      }
+      {
+      	postUserId === currentUserId
+        ? null
+        : <HeaderBottomLine />
 	    }
-      {
-      	postUserId === currentUserId &&
-      	<View style={{ flex: 2 }}>
 
+      {
+      	postUserId === currentUserId 
+        ?
+      	<View>
 		      <TouchableOpacity
 		        onPress={() => {
 
@@ -141,7 +156,14 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
 		        </View>
 		      </TouchableOpacity>
 		    </View>
+        : null
 	    }
+      {
+        postUserId === currentUserId 
+        ?
+        <HeaderBottomLine />
+        : null
+      }
     </View>
   )
 };
@@ -196,9 +218,9 @@ const PostManagerScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
 	bsButtonTouch: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    height: RFValue(60)
   },
   bsButton: {
     flex: 1,

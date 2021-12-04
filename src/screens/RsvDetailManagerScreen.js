@@ -13,7 +13,6 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import BottomSheet from 'reanimated-bottom-sheet';
 
 // Components
-import MainTemplate from '../components/MainTemplate';
 import HeaderBottomLine from '../components/HeaderBottomLine';
 import { HeaderForm } from '../components/HeaderForm';
 

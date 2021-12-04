@@ -291,7 +291,7 @@ const UserRsvScreen = ({ route, navigation }) => {
             isMounted && setGetUpcomingRsvsState(false);
           })
           .catch((error) => {
-            console.log("ActivityScreen: getUpcomingRsvs: ", error);
+            console.log("getUpcomingRsvs: ", error);
           });
         }
 
@@ -496,7 +496,7 @@ const UserRsvScreen = ({ route, navigation }) => {
               headerTitle={"Reservations"}
               maxHeaderHeight={RFValue(190)}
               minHeaderHeight={RFValue(50)}
-              maxHeaderTitleSize={RFValue(50)}
+              maxHeaderTitleSize={RFValue(45)}
               minHeaderTitleSize={RFValue(17)}
               backgroundColor={color.white2}
             />

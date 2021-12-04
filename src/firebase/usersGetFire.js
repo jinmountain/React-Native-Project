@@ -93,7 +93,6 @@ const getUserInfoFire = (uid) => {
         res(userData);
       } else {
         res(false);
-        console.log(uid, "is not an existing user")
       }
     })
     .catch((error) => {

@@ -33,7 +33,7 @@ const DefaultUserPhoto = ({customSizeBorder, customSizeUserIcon, customColor}) =
 
 const styles = StyleSheet.create({ 
 	defaultPhotoContainer: {
-		borderWidth: 2,
+		borderWidth: RFValue(1),
 		borderRadius: RFValue(100),
 		justifyContent: 'center',
 		alignItems: 'center',

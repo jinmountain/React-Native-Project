@@ -49,6 +49,7 @@ import { Context as PostContext } from '../../context/PostContext';
 import busTechPostFire from '../../firebase/busTechPostFire';
 import busTechGetFire from '../../firebase/busTechGetFire';
 import contentGetFire from '../../firebase/contentGetFire';
+import usersGetFire from '../../firebase/usersGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -57,6 +58,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Color
 import color from '../../color';
+
+// expo icons
+import expoIcons from '../../expoIcons';
 
 // Hooks
 import { kOrNo } from '../../hooks/kOrNo';
@@ -72,12 +76,17 @@ const UserAccountScreen = ({ route, navigation }) => {
   const orientation = useOrientation();
 
   useEffect(() => {
-  	setThreePostsRowImageWH(Dimensions.get("window").width/3-2);
-  	setWindowWidth(Dimensions.get("window").width);
-  	setWindowHeight(Dimensions.get("window").height);
+  	let isMounted = true;
+  	isMounted && setThreePostsRowImageWH(Dimensions.get("window").width/3-2);
+  	isMounted && setWindowWidth(Dimensions.get("window").width);
+  	isMounted && setWindowHeight(Dimensions.get("window").height);
+
+  	return () => {
+  		isMounted = false;
+  	}
   }, [orientation]);
 
-	const { targetUser } = route.params;
+	const { accountUserId } = route.params;
 	const [ refreshing, setRefreshing ] = React.useState(false);
 	const [ screenReady, setScreenReady ] = useState(false);
 	//
@@ -87,6 +96,8 @@ const UserAccountScreen = ({ route, navigation }) => {
 	const [ tbaStatus, setTbaStatus ] = useState(false);
 
 	const { state: { user }, accountRefresh, signout } = useContext(AuthContext);
+
+	const [ accountUserData, setAccountUserData ] = useState(null);
 
 	const [ userAccountPosts, setUserAccountPosts ] = useState([]);
 	const [ userAccountPostLast, setUserAccountPostLast ] = useState(null);
@@ -101,36 +112,75 @@ const UserAccountScreen = ({ route, navigation }) => {
 	useEffect(() => {
 		let mounted = true;
 		const getScreenReady = new Promise ((res, rej) => {
-			if(targetUser && userAccountPostFetchSwitch && !userAccountPostState && mounted) {
-				mounted && setUserAccountPostState(true);
-				const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, targetUser, user.id);
-				getUserPosts
-				.then((posts) => {
-					mounted && setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
-					if (posts.lastPost !== undefined && mounted) {
-						mounted && setUserAccountPostLast(posts.lastPost);
-					} else {
-						mounted && setUserAccountPostFetchSwtich(false);
+			const getAccountUserData = usersGetFire.getUserInfoFire(accountUserId);
+			getAccountUserData
+			.then((userData) => {
+				if (userData) {
+					let accountUserData = {
+						id: userData.id,
+						username:userData.username,
+						name:userData.name,
+						photoURL:userData.photoURL,
+						postCount:userData.postCount,
+						type: userData.type,
+						sign:userData.sign,
+						website:userData.website,
 					};
-					mounted && setUserAccountPostState(false);
-				})
-			}
+					if (userData.type === "business") {
+						accountUserData = { ...accountUserData, ...{
+							locationType:userData.locationType,
+							formatted_address:userData.formatted_address,
+							googlemapsUrl:userData.googlemapsUrl,
+							techs:userData.techs,
+							displayPostCount:userData.displayPostCount,
+							countRating:userData.countRating,
+							businessRegisterdAt:userData.businessRegisteredAt
+						}}
+					};
+					mounted && setAccountUserData(accountUserData);
 
-			if (targetUser && targetUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
-				mounted && setUserAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, targetUser, user.id);
-				getDisplayPosts
-				.then((posts) => {
-					mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
-					if (posts.lastPost !== undefined) {
-						mounted && setUserAccountDisplayPostLast(posts.lastPost);
-					} else {
-						mounted && setUserAccountDisplayPostFetchSwtich(false);
-					};
-					mounted && setUserAccountDisplayPostState(false);
-				})
-			}
-			res(true);
+					// get account user's posts
+					if(userAccountPostFetchSwitch && !userAccountPostState && mounted) {
+						mounted && setUserAccountPostState(true);
+						const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, accountUserId, user.id);
+						getUserPosts
+						.then((posts) => {
+							mounted && setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
+							if (posts.lastPost !== undefined && mounted) {
+								mounted && setUserAccountPostLast(posts.lastPost);
+							} else {
+								mounted && setUserAccountPostFetchSwtich(false);
+							};
+							mounted && setUserAccountPostState(false);
+						})
+						.catch((error) => {
+							rej(error);
+						});
+					}
+					// get account user's display posts
+					if (userData.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
+						mounted && setUserAccountDisplayPostState(true);
+						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, accountUserId, user.id);
+						getDisplayPosts
+						.then((posts) => {
+							mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+							if (posts.lastPost !== undefined) {
+								mounted && setUserAccountDisplayPostLast(posts.lastPost);
+							} else {
+								mounted && setUserAccountDisplayPostFetchSwtich(false);
+							};
+							mounted && setUserAccountDisplayPostState(false);
+						})
+						.catch((error) => {
+							rej(error);
+						});
+					}
+					res(true);
+				}
+			})
+			.catch((error) => {
+				rej(error);
+			});
 		});
 
 		getScreenReady
@@ -144,6 +194,8 @@ const UserAccountScreen = ({ route, navigation }) => {
 		return () => {
 			mounted = false;
 
+			setAccountUserData(null);
+
 			setUserAccountPosts([]);
 			setUserAccountPostLast(null);
 			setUserAccountPostFetchSwtich(true);
@@ -154,7 +206,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 			setUserAccountDisplayPostFetchSwtich(true);
 			setUserAccountDisplayPostState(false);
 		}
-	}, [targetUser]);
+	}, [accountUserId]);
 
 	const appendAccountPosts = useCallback((fetchedPosts) => {
       setUserAccountPosts([ ...userAccountPosts, ...fetchedPosts ]);
@@ -168,6 +220,8 @@ const UserAccountScreen = ({ route, navigation }) => {
     accountRefresh();
 
     const clearState = new Promise((res, rej) => {
+    	setAccountUserData(null);
+
     	setUserAccountPosts([]);
 			setUserAccountPostLast(null);
 			setUserAccountPostFetchSwtich(true);
@@ -183,35 +237,73 @@ const UserAccountScreen = ({ route, navigation }) => {
 
     clearState
     .then(() => {
-    	if(targetUser && userAccountPostFetchSwitch && !userAccountPostState && mounted) {
-				mounted && setUserAccountPostState(true);
-				const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, targetUser, user.id);
-				getUserPosts
-				.then((posts) => {
-					mounted && setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
-					if (posts.lastPost !== undefined && mounted) {
-						mounted && setUserAccountPostLast(posts.lastPost);
-					} else {
-						mounted && setUserAccountPostFetchSwtich(false);
+    	const getAccountUserData = usersGetFire.getUserInfoFire(accountUserId);
+			getAccountUserData
+			.then((userData) => {
+				if (userData) {
+					let accountUserData = {
+						username:userData.username,
+						name:userData.name,
+						photoURL:userData.photoURL,
+						postCount:userData.postCount,
+						type: userData.type,
+						sign:userData.sign,
+						website:userData.website,
 					};
-					mounted && setUserAccountPostState(false);
-				})
-			}
+					if (userData.type === "business") {
+						accountUserData = { ...accountUserData, ...{
+							locationType:userData.locationType,
+							formatted_address:userData.formatted_address,
+							googlemapsUrl:userData.googlemapsUrl,
+							techs:userData.techs,
+							displayPostCount:userData.displayPostCount,
+							countRating:userData.countRating,
+							businessRegisterdAt:userData.businessRegisteredAt
+						}};
+					};
+					mounted && setAccountUserData(accountUserData);
 
-			if (targetUser && targetUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
-				mounted && setUserAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, targetUser, user.id);
-				getDisplayPosts
-				.then((posts) => {
-					mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
-					if (posts.lastPost !== undefined) {
-						mounted && setUserAccountDisplayPostLast(posts.lastPost);
-					} else {
-						mounted && setUserAccountDisplayPostFetchSwtich(false);
-					};
-					mounted && setUserAccountDisplayPostState(false);
-				})
-			}
+					// get account user's posts
+					if(userAccountPostFetchSwitch && !userAccountPostState && mounted) {
+						mounted && setUserAccountPostState(true);
+						const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, accountUserId, user.id);
+						getUserPosts
+						.then((posts) => {
+							mounted && setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
+							if (posts.lastPost !== undefined && mounted) {
+								mounted && setUserAccountPostLast(posts.lastPost);
+							} else {
+								mounted && setUserAccountPostFetchSwtich(false);
+							};
+							mounted && setUserAccountPostState(false);
+						})
+						.catch((error) => {
+
+						});
+					}
+					// get account user's display posts
+					if (userData.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
+						mounted && setUserAccountDisplayPostState(true);
+						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, accountUserId, user.id);
+						getDisplayPosts
+						.then((posts) => {
+							mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+							if (posts.lastPost !== undefined) {
+								mounted && setUserAccountDisplayPostLast(posts.lastPost);
+							} else {
+								mounted && setUserAccountDisplayPostFetchSwtich(false);
+							};
+							mounted && setUserAccountDisplayPostState(false);
+						})
+						.catch((error) => {
+
+						});
+					}
+				}
+			})
+			.catch((error) => {
+				// handle error
+			});
     });
 
     wait(2000).then(() => setRefreshing(false));
@@ -231,23 +323,23 @@ const UserAccountScreen = ({ route, navigation }) => {
 			<UserAccountHeaderForm
 				addPaddingTop={true}
 			  leftButtonTitle={null}
-      	leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.black1} />}
+      	leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
 			  leftButtonPress={() => { navigation.goBack() }}
-				username={targetUser.username}
+				username={accountUserData.username}
 				title={null}
 				firstIcon={
 					<Feather name="send" size={RFValue(27)} color={color.black1} />
 				}
 				secondIcon={
-					targetUser.type === 'business'
+					accountUserData.type === 'business'
 					? <Feather name="shopping-bag" size={RFValue(27)} color={color.black1} />
 					: null
 				}
 				firstOnPress={() => {
-					navigation.navigate('Chat', { theOtherUser: targetUser });
+					navigation.navigate('Chat', { theOtherUser: accountUserData });
 				}}
 				secondOnPress={
-					targetUser.type === 'business'
+					accountUserData.type === 'business'
 					? null
 					: null
 				}
@@ -268,7 +360,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 			      	userAccountPostFetchSwitch
 			      ) {
 			      	setUserAccountPostState(true);
-			      	const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, targetUser, user.id);
+			      	const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, accountUserId, user.id);
 			      	getUserPosts
 			      	.then((posts) => {
 			      		setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
@@ -287,21 +379,21 @@ const UserAccountScreen = ({ route, navigation }) => {
 			    style={styles.userPostsContainer}
 				>
 					<ProfileCardUpper 
-						photoURL={targetUser.photoURL}
-						postCount={targetUser.postCount}
+						photoURL={accountUserData.photoURL}
+						postCount={accountUserData.postCount}
 					/>
 					<ProfileCardBottom
-						locationType={targetUser.type === 'business' ? targetUser.locationType : null}
-						address={targetUser.type === 'business' ?  targetUser.formatted_address : null}
-						googleMapUrl={targetUser.type === 'business' ?  targetUser.googlemapsUrl : null}
-						sign={targetUser.sign}
-						websiteAddress={targetUser.website}
+						locationType={accountUserData.type === 'business' ? accountUserData.locationType : null}
+						address={accountUserData.type === 'business' ?  accountUserData.formatted_address : null}
+						googleMapUrl={accountUserData.type === 'business' ?  accountUserData.googlemapsUrl : null}
+						sign={accountUserData.sign}
+						websiteAddress={accountUserData.website}
 					/>
 
 					{/*account communication tools*/}
 					<View style={styles.accountManagerContainer}>
 						{ // when target user is a business
-							targetUser.type === 'business'
+							accountUserData.type === 'business'
 							?
 							<View style={styles.managerButtonContainer}>
 								<TouchableOpacity onPress={() => {
@@ -309,7 +401,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 									{	
 										screen: 'BusinessSchedule',
 										params: {
-              				businessUser: targetUser
+              				businessUser: accountUserData
               			},
               		});
 								}}>
@@ -330,8 +422,8 @@ const UserAccountScreen = ({ route, navigation }) => {
 						}
 						{ // when user is a technician, target user is a business which user isn't part of 
 							user.type === 'technician' &&
-							targetUser.techs.includes(user.id) === false &&
-							targetUser.type === 'business' && 
+							accountUserData.techs.includes(user.id) === false &&
+							accountUserData.type === 'business' && 
 							sentTechApp === false
 							?
 							<View style={styles.managerButtonContainer}>
@@ -341,7 +433,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 									}}
 								>
 									<ButtonA 
-										text={`Join ${targetUser.username}`}
+										text={`Join ${accountUserData.username}`}
 										customStyles={{
 											fontSize: RFValue(15), 
 											color: color.black1,
@@ -351,8 +443,8 @@ const UserAccountScreen = ({ route, navigation }) => {
 							</View>
 							:
 							user.type === 'technician' && 
-							targetUser.techs.includes(user.id) === false &&
-							targetUser.type === 'business' && 
+							accountUserData.techs.includes(user.id) === false &&
+							accountUserData.type === 'business' && 
 							sentTechApp === true
 							?
 							<View style={styles.managerButtonContainer}>
@@ -372,8 +464,8 @@ const UserAccountScreen = ({ route, navigation }) => {
 
 						{	// when user is a technician, target user is a business which use is part of
 							user.type === 'technician' &&
-							targetUser.techs.includes(user.id) &&
-							targetUser.type === 'business' &&
+							accountUserData.techs.includes(user.id) &&
+							accountUserData.type === 'business' &&
 							sentTechLeave === false 
 							?
 							<View style={styles.managerButtonContainer}>
@@ -383,7 +475,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 									}}
 								>
 									<ButtonA 
-										text={`Request Leave to ${targetUser.username}`}
+										text={`Request Leave to ${accountUserData.username}`}
 										customStyles={{
 											fontSize: RFValue(15), 
 											color: color.black1,
@@ -395,22 +487,26 @@ const UserAccountScreen = ({ route, navigation }) => {
 						}
 					</View>
 					{ 
-						targetUser.type === 'business'
+						accountUserData.type === 'business'
 						?
-						<View>
-							<HeaderBottomLine />
-							<View style={styles.userPostsLabelContainer}>
-								<Text style={styles.userPostsLabelText}>
-									<Feather name="menu" size={RFValue(23)} color={color.black1} />
-								</Text>
-							</View>
-							<HeaderBottomLine />
+						<View style={styles.userPostsLabelContainer}>
+							<Text style={styles.userPostsLabelText}>
+								<Feather name="menu" size={RFValue(23)} color={color.black1} />
+							</Text>
+							<TouchableOpacity 
+								style={styles.showTwoColumnButtonContainer}
+								onPress={() => {
+									console.log("two");
+								}}
+							>
+								{expoIcons.featherColumns(RFValue(23), color.black1)}
+							</TouchableOpacity>
 						</View>
 						:
 						null
 					}
 					{ 
-						targetUser.type === 'business' && userAccountDisplayPosts.length > 0
+						accountUserData.type === 'business' && userAccountDisplayPosts.length > 0
 						?
 						<View style={styles.displayPostsContainer}>
 							<FlatList
@@ -449,7 +545,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 		                  		params: {
 		                  			postSource: 'userAccountDisplay',
 		                  			cardIndex: index,
-		                  			targetUser: targetUser,
+		                  			accountUserId: accountUserId,
 		                  			posts: userAccountDisplayPosts,
         										postState: userAccountDisplayPostState,
 														postFetchSwitch: userAccountDisplayPostFetchSwitch,
@@ -491,17 +587,15 @@ const UserAccountScreen = ({ route, navigation }) => {
 						</View>
 						: null
 					}
-					<HeaderBottomLine />
 					<View style={styles.userPostsLabelContainer}>
 						<Text style={styles.userPostsLabelText}>
 							<AntDesign name="picture" size={RFValue(23)} color={color.black1} />
 						</Text>
 					</View>
-					<HeaderBottomLine />
 					<ThreePostsRow
 						navigate={navigation.navigate}
 						screen={"userAccount"}
-						targetUser={targetUser}
+						accountUserId={accountUserId}
 						posts={userAccountPosts} 
 						postState={userAccountPostState}
 						postFetchSwitch={userAccountPostFetchSwitch}
@@ -529,12 +623,12 @@ const UserAccountScreen = ({ route, navigation }) => {
 		    && 
 		    <TwoButtonAlert 
 		      title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
-		      message={`Do you want to send an application to ${targetUser.username} to join as a technician?`}
+		      message={`Do you want to send an application to ${accountUserData.username} to join as a technician?`}
 		      buttonOneText={"Yes"}
 		      buttonTwoText={"No"}
 		      buttonOneAction={() => {
 		      	if (tbaStatus === "leave") {
-		      		const sendLeaveRequest = busTechPostFire.sentTechLeave(targetUser.id, user.id);
+		      		const sendLeaveRequest = busTechPostFire.sentTechLeave(accountUserId, user.id);
 							sendLeaveRequest
 							.then((response) => {
 								if (response === false) {
@@ -550,7 +644,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 		      	}
 		      	
 		      	if (tbaStatus === "apply") {
-		      		const sendRequest = busTechPostFire.sendTechApp(targetUser.id, user.id);
+		      		const sendRequest = busTechPostFire.sendTechApp(accountUserId, user.id);
 							sendRequest
 							.then((response) => {
 								if (response === true) {
@@ -608,9 +702,15 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		backgroundColor: '#fff',
     padding: RFValue(10),
+    height: RFValue(57)
 	},
 	userPostsLabelText: {
 		fontSize: RFValue(15),
+	},
+	showTwoColumnButtonContainer: {
+		position: 'absolute',
+		alignSelf: 'flex-end',
+		paddingRight: RFValue(10)
 	},
 
 	displayPostsContainer: {

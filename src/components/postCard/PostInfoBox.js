@@ -11,6 +11,7 @@ import LikeCommentButtonLine from './LikeCommentButtonLine';
 import TagLine from '../TagLine';
 import PostCaptionMoreLess from './PostCaptionMoreLess';
 import PostLikeCommentTimeInfo from './PostLikeCommentTimeInfo';
+import PostCardCommentLine from "./PostCardCommentLine";
 
 // color
 import color from '../../color';
@@ -22,41 +23,50 @@ const PostInfoBox = ({
 
   caption,
   defaultCaptionNumLines,
-  rootScreen,
   navigateToPostDetail,
 
   youLike, 
   postTimestamp,
 
   likeCount,
+  commentCount,
   postId,
-  uid,
+  postUserId,
 
   height,
+
+  currentUserPhotoURL,
+  currentUserId
 }) => {
   return (
     <View style={
-      height
-      ?
-      {...styles.InfoBoxContainer, ...{ height: height }}
-      : styles.InfoBoxContainer
+      // height
+      // ?
+      // {...styles.infoBoxContainer, ...{ height: height }}
+      // : styles.infoBoxContainer
+      styles.infoBoxContainer
     }>
-      <View style={styles.infoBoxHead}>
+      <View style={styles.infoBoxTop}>
         <LikeCommentButtonLine
           countRating={countRating}
-          youLike={youLike}
           postId={postId}
-          uid={uid}
+          postUserId={postUserId}
           tags={tags}
           likeCount={likeCount}
+          commentCount={commentCount}
+          currentUserId={currentUserId}
         />
       </View>
       <View style={styles.infoBoxBody}>
         <PostCaptionMoreLess
           caption={caption}
           defaultCaptionNumLines={defaultCaptionNumLines}
-          rootScreen={rootScreen}
-          navigateToPostDetail={navigateToPostDetail}
+          postId={postId}
+        />
+        <PostCardCommentLine
+          postId={postId}
+          currentUserPhotoURL={currentUserPhotoURL}
+          commentCount={commentCount}
         />
       </View>
       <View style={styles.infoBoxBottom}>
@@ -70,19 +80,19 @@ const PostInfoBox = ({
 };
 
 const styles = StyleSheet.create({
-  InfoBoxContainer: {
+  infoBoxContainer: {
     paddingHorizontal: RFValue(13),
     paddingVertical: RFValue(5),
     backgroundColor: color.white2
   },
-  infoBoxHead: {
-    flex: 1
+  infoBoxTop: {
+    // flex: 2
   },
   infoBoxBody: {
-    flex: 1,
+    borderWidth: 1,
   },
   infoBoxBottom: {
-    flex: 1, 
+    // flex: 1, 
     justifyContent: 'flex-end', 
   },
 });

@@ -5,51 +5,6 @@ const db = Firebase.firestore();
 const chatsRef = db.collection('chats');
 const usersRef = db.collection('users');
 
-const giveDateToCompare = (timestamp) => {
-	var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-	var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-	var getNewTimeDate = new Date(timestamp);
-  var newTimeYear = getNewTimeDate.getFullYear();
-  var newTimeMonthIndex = getNewTimeDate.getMonth();
-  var newTimeMonth = months[getNewTimeDate.getMonth()];
-  var newTimeDate = getNewTimeDate.getDate();
-  var newTimeDayIndex = getNewTimeDate.getDay();
-  var newTimeDay = days[getNewTimeDate.getDay()];
-
-  return { 
-		year: newTimeYear,
-		monthIndex: newTimeMonthIndex,
-		month: newTimeMonth,
-		date: newTimeDate,
-		dayIndex: newTimeDayIndex,
-		day: newTimeDay,
-		timestamp: timestamp
-	};
-}
-
-const timeCompare = (newTime, previousTimeDate) => {
-	const newTimeDate = giveDateToCompare(newTime);
-	if (previousTimeDate.year > newTimeDate.year) {
-		return previousTimeDate
-	} 
-	else if (
-		previousTimeDate.year === newTimeDate.year 
-		&& previousTimeDate.monthIndex > newTimeDate.monthIndex
-	) {
-  	return previousTimeDate
-  } 
-  else if (
-		previousTimeDate.year === newTimeDate.year 
-		&& previousTimeDate.monthIndex === newTimeDate.monthIndex 
-		&& previousTimeDate.date > newTimeDate.date
-	) {
-		return previousTimeDate
-	} else {
-		return false;
-	}
-};
-
 const getChat = (theOtherUserId, currentUserId) => {
 	return new Promise ((res, rej) => {
 		let firstUserId;
@@ -91,8 +46,6 @@ const getMessages = (
 	setMessageLast,
 	setMessageFetchSwitch,
 	messageLast,
-	dateToCompare,
-	addDateToCompare,
 	chatDeletedAt
 ) => {
 	return new Promise ((res, rej) => {
@@ -145,10 +98,6 @@ const getMessages = (
 			}
 
 			// map is faster than forEach
-			let localDateToCompare = dateToCompare;
-			// store current date of each doc
-			let currentDate;
-
 			const messagesFirestore = querySnapshot.docs.map((doc) => {
 				const docId = doc.id;
 	    	const docData = doc.data();
@@ -183,35 +132,6 @@ const getMessages = (
 	    		newMessage = { ...newMessage, ...{video: docData.video}}
 	    	}
 
-	    	// current doc's createdAt
-	    	currentDate = docData.createdAt;
-	    	
-	    	// if localDateToCompare is null because dateToCompare input was null
-	    	// assign localDateToCompare with currentDate, which is docData's createdAt
-	    	if (localDateToCompare === null) {
-	    		localDateToCompare = giveDateToCompare(currentDate);
-	    	}
-	    	
-	    	// compare the docData's createdAt with localDateToCompare
-	    	const timeCompareResult = timeCompare(docData.createdAt, localDateToCompare);
-	    	// timeCompareResult return two different results, a json or false
-	    	// return a json if it founds the new doc's createdAt is past of localDateToCompare
-
-	    	// when timeCompareResult is a json, add the json to newMessage as dateSign
-	    	// if timeCompareResult was not false add currentDate which is the earlier date to localDateToCompare
-	    	if (timeCompareResult)
-	    	{
-	    		// add date sign to newMessage
-	    		console.log("timeCompareResult: ", timeCompareResult);
-	    		newMessage = { ...newMessage, ...{ dateSign: timeCompareResult }};
-
-	    		// after add the date
-	    		// assign the new date to the current date that is earlier so can keep comparing
-	    		localDateToCompare = giveDateToCompare(currentDate);
-	    	}
-	    	// store the last doc's date in case of fetching more previous messages
-	    	addDateToCompare(giveDateToCompare(currentDate));
-
 	    	return newMessage;
 			});
 			appendMessages(messagesFirestore);
@@ -233,7 +153,7 @@ const getMessagesRealtime = (
 	.doc(chatId)
 	.collection('messages')
 	.where('createdAt', ">=", now)
-	.orderBy('createdAt', 'desc')
+	.orderBy('createdAt', "desc")
 	.onSnapshot((querySnapshot) => {
 		const messagesFirestore = querySnapshot
     .docChanges()

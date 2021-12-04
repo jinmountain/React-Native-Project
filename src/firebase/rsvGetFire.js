@@ -31,9 +31,11 @@ const getUpcomingRsvsOfCus = (userId, currentTimestamp, lastRsv) => {
 		getReservations
 		.get()
 		.then((querySnapshot) => {
-			let docIndex = 0;
 			const docLength = querySnapshot.docs.length;
 			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			let fetchSwitch = false;
+			fetchSwitch = docLength < 7 ? false : true;
+			let docIndex = 0;
 
 			if (docLength > 0) {
 				console.log("found upcoming reservations");
@@ -82,7 +84,7 @@ const getUpcomingRsvsOfCus = (userId, currentTimestamp, lastRsv) => {
 					docIndex += 1;
 					if (docIndex === docLength) {
 						console.log("getUpcomingRsvs: fetchSwitch: ", fetchSwitch);
-						res({ rsvs: reservations, lastRsv: lastVisible, fetchSwitch: true });
+						res({ rsvs: reservations, lastRsv: lastVisible, fetchSwitch: fetchSwitch });
 					}
 				});
 			} else {

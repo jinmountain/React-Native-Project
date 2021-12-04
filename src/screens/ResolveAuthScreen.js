@@ -26,6 +26,9 @@ const ResolveAuthScreen = () => {
 					<MaterialCommunityIcons name="alpha-i-box" size={RFValue(27)} color={color.black1} />
 					<MaterialCommunityIcons name="alpha-l-box-outline" size={RFValue(27)} color={color.black1} />
 				</Text>
+				<Text>
+					There are over 40,000 species of snails all over the world
+				</Text>
 			</View>
 		</SafeAreaView>
 	);

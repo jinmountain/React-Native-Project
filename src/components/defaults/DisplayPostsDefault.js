@@ -12,6 +12,9 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 // Color
 import color from '../../color';
 
+// expo icons
+import expoIcons from '../../expoIcons';
+
 // Designs
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,10 +26,10 @@ const DisplayPostsDefault = () => {
 		<View style={styles.displayPostsContainer}>
 			<View style={styles.displayPostsDefaultContainer}>
 			  <View style={styles.cloudContainer}>
-			  	<MaterialCommunityIcons name="mirror" size={RFValue(33)} color={color.black1} />
+			  	{expoIcons.snailShell(RFValue(33), color.red2)}
 			  </View>
 			  <View style={styles.cloudContainer}>
-			  	<MaterialCommunityIcons name="mirror" size={RFValue(33)} color={color.black1} />
+			  	{expoIcons.snailShell(RFValue(33), color.red2)}
 			  </View>
 			</View>
 		</View>

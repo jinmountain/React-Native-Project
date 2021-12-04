@@ -132,7 +132,15 @@ const fontAwesomeCalendarPlusO = (size, color) => {
 
 const snailShell = (size, color) => {
 	return <Ionicons name="md-at-circle-outline" size={size} color={color} />
-}
+};
+
+const featherColumns = (size, color) => {
+	return <Feather name="columns" size={size} color={color} />
+};
+
+const chevronBack = (size, color) => {
+	return <Ionicons name="chevron-back" size={size} color={color} />
+};
 
 export default { 
 	dollarSign, 
@@ -165,5 +173,7 @@ export default {
 	matClockTimeEightOutline,
 	fontAwesomeCalendarO,
 	fontAwesomeCalendarPlusO,
-	snailShell
+	snailShell,
+	featherColumns,
+	chevronBack
 };

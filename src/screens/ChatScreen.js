@@ -86,7 +86,6 @@ const ChatScreen = ({ route, navigation }) => {
 	const [ chatExist, setChatExist ] = useState(false);
 	// const [ chat, setChat ] = useState(null);
 
-	const [ sendButtonColor, setSendButtonColor ] = useState(getRandomColor());
 	// text input
 	const [ message, setMessage ] = useState('');
 
@@ -118,11 +117,11 @@ const ChatScreen = ({ route, navigation }) => {
 
 			// Messaging
 			messages,
-			dateToCompare,
 		}, 
 		addChat,
 		openChat, 
 		clearChat,
+		addFileChat,
 		cancelFileChat, 
 		// changeProgress, 
 		clearFilesChat,
@@ -134,9 +133,6 @@ const ChatScreen = ({ route, navigation }) => {
 		appendMessages,
 		appendEarlierMessages,
 		clearMessages,
-		addDateToCompare,
-		clearDateToCompare,
-
 	} = useContext(SocialContext);
 
 	const { 
@@ -182,12 +178,10 @@ const ChatScreen = ({ route, navigation }) => {
 		    		theOtherUser.id, 
 		    		theOtherUser.name, 
 		    		theOtherUser.photoURL, 
-		    		appendEarlierMessages,
+		    		appendMessages,
 		    		setMessageLast,
 						setMessageFetchSwitch,
 						messageLast,
-						dateToCompare,
-						addDateToCompare,
 						chatDeletedAt
 		    	);
 		    	if (messageFetchSwitch && messageFetchState === false) {
@@ -220,7 +214,7 @@ const ChatScreen = ({ route, navigation }) => {
 		    	// get theOtherUser's display posts if theOtherUser is business
 		    	if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
 						isMounted && setUserAccountDisplayPostState(true);
-						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, theOtherUser, user.id);
+						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, theOtherUser.id, user.id);
 						getDisplayPosts
 						.then((posts) => {
 							isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
@@ -251,7 +245,6 @@ const ChatScreen = ({ route, navigation }) => {
     	setMessageLast(null);
     	setMessageFetchSwitch(true);
     	setMessageFetchState(false);
-    	clearDateToCompare();
     	clearFilesChat();
     	clearChosenDisplayPostUrls();
     	clearChat();
@@ -261,6 +254,10 @@ const ChatScreen = ({ route, navigation }) => {
 			setUserAccountDisplayPostFetchSwtich(true);
 			setUserAccountDisplayPostState(false);
 			clearChatScreenDisplayPostLast();
+
+			//
+			setTryGetChat(false);
+			setChatExist(false);
     }
 	}, [theOtherUser]);
 
@@ -355,7 +352,7 @@ const ChatScreen = ({ route, navigation }) => {
 		return (
 			<KeyboardAvoidingView 
 				style={{ flex: 1 }} 
-				// behavior={Platform.OS == "ios" ? "padding" : "height"}
+				behavior={Platform.OS == "ios" ? "padding" : "height"}
 			>
 				<UserAccountHeaderForm
 					addPaddingTop={true}
@@ -365,7 +362,7 @@ const ChatScreen = ({ route, navigation }) => {
 					userActiveState={
 						chatDoc && chatDoc.theOtherUserActive
 						?
-						<Entypo name="dot-single" size={RFValue(27)} color={sendButtonColor} />
+						<Entypo name="dot-single" size={RFValue(27)} color={color.blue1} />
 						:
 						<Entypo name="dot-single" size={RFValue(27)} color={color.grey4} />
 					}
@@ -373,7 +370,7 @@ const ChatScreen = ({ route, navigation }) => {
 					title={null}
 					firstIcon={
 						theOtherUser.type === 'business'
-						? <Feather name="menu" size={RFValue(23)} color={displayPostsShown ? color.blue1 : color.black1} />
+						? <Feather name="menu" size={RFValue(23)} color={displayPostsShown ? color.red2 : color.black1} />
 						: null
 					}
 					secondIcon={
@@ -391,18 +388,18 @@ const ChatScreen = ({ route, navigation }) => {
 					}
 				/>
 				{
-					// progress bar
-					progress &&
-					<View style={{ width: '100%', minHeight: '1%' }}>
+					progress
+					?
+					<View style={{ width: '100%', minHeight: RFValue(5) }}>
 						<View style={{ 
-							width: `${progress}%`, 
-							minHeight: '1%', 
-							backgroundColor: sendButtonColor,
+							width: `${progress/2 + 50}%`, 
+							height: RFValue(5),
+							backgroundColor: color.red2,
 							borderTopRightRadius: RFValue(3),
-							borderBottomLeftRadius: RFValue(3)
-						}}>
-						</View>
+							borderBottomRightRadius: RFValue(3)
+						}}/>
 					</View>
+					: null
 				}
 				{
 					// Message Fetch State
@@ -411,7 +408,7 @@ const ChatScreen = ({ route, navigation }) => {
 					?
 					<View style={styles.loadingSpinnerContainer}>
 						<SpinnerFromActivityIndicator
-							customColor={sendButtonColor}
+							customColor={color.red2}
 						/>
 					</View>
 					:
@@ -487,7 +484,7 @@ const ChatScreen = ({ route, navigation }) => {
 			                	
 				                </View>
 				                <View style={styles.chosenCheck}>
-				                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
+				                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
 				                </View>
 				              </View>
 				              : null
@@ -500,7 +497,7 @@ const ChatScreen = ({ route, navigation }) => {
 							userAccountDisplayPostState
 							?
 							<View style={styles.displayPostLoadingContainer}>
-								<DisplayPostLoading customColor={sendButtonColor}/>
+								<DisplayPostLoading customColor={color.red2}/>
 							</View>
 							: 
 							null
@@ -515,10 +512,7 @@ const ChatScreen = ({ route, navigation }) => {
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<View style={styles.innerContainer}>
 						<ChatBox
-							sendButtonColor={sendButtonColor}
-							pickImage={() => {
-								pickImage('chat');
-							}}
+							pickImage={pickImage}
 							onPressShort={(item) => {
 		    				item.image
 		    				?
@@ -543,7 +537,6 @@ const ChatScreen = ({ route, navigation }) => {
 							showExtendedActions={showExtendedActions}
 							setShowExtendedActions={setShowExtendedActions}
 							isKeyboardVisible={isKeyboardVisible}
-							files={files}
 							messages={ messages }
 							userId={ user.id }
 							theOtherUserPhotoURL={ theOtherUser.photoURL }
@@ -557,7 +550,7 @@ const ChatScreen = ({ route, navigation }) => {
 										openChat
 										.then((chat) => {
 											addChat(chat, true);
-											chatPostFire.sendMessageFire(
+											const sendMessage = chatPostFire.sendMessageFire(
 								 				chat.id,
 								 				chat.data.firstUserId,
 								 				chat.data.secondUserId,
@@ -569,16 +562,22 @@ const ChatScreen = ({ route, navigation }) => {
 								 				false, // orignally, chatDoc.theOtherUserActive
 								 				setProgress
 								 			);
-								 			clearFilesChat();
-								 			setMessage('');
-								 			clearChosenDisplayPostUrls();
-								 			setDisplayPostsShown(false);
+								 			sendMessage
+								 			.then(() => {
+								 				clearFilesChat();
+									 			setMessage('');
+									 			clearChosenDisplayPostUrls();
+									 			setDisplayPostsShown(false);
+								 			})
+								 			.catch((error) => {
+								 				console.log(error);
+								 			});
 										})
 										.catch((error) => {
 											console.log("ChatScreen: chatPostFire: openChat: ", error);
 										});
 									} else {
-										chatPostFire.sendMessageFire(
+										const sendMessage = chatPostFire.sendMessageFire(
 											chat.id,
 											chat.data.firstUserId,
 							 				chat.data.secondUserId,
@@ -590,10 +589,16 @@ const ChatScreen = ({ route, navigation }) => {
 											chatDoc.theOtherUserActive, 
 											setProgress
 										);
-										clearFilesChat();
-										setMessage('');
-										clearChosenDisplayPostUrls();
-										setDisplayPostsShown(false);
+										sendMessage
+										.then(() => {
+											clearFilesChat();
+											setMessage("");
+											clearChosenDisplayPostUrls();
+											setDisplayPostsShown(false);
+										})
+										.catch((error) => {
+											console.log(error);
+										});
 									}
 								} else {
 									console.log("send button pushed");
@@ -603,8 +608,9 @@ const ChatScreen = ({ route, navigation }) => {
 								if (chat) {
 						    	if (messageFetchSwitch && messageFetchState === false) {
 						    		setMessageFetchState(true);
+						    		// don't need chatDeletedAt here
 						    		const getMessages = chatGetFire.getMessages(
-							    		chatFound.id, 
+							    		chat.id, 
 							    		theOtherUser.id, 
 							    		theOtherUser.name, 
 							    		theOtherUser.photoURL, 
@@ -612,8 +618,6 @@ const ChatScreen = ({ route, navigation }) => {
 							    		setMessageLast,
 											setMessageFetchSwitch,
 											messageLast,
-											dateToCompare,
-											addDateToCompare,
 							    	);
 						    		getMessages
 							    	.then(() => {
@@ -629,6 +633,7 @@ const ChatScreen = ({ route, navigation }) => {
 									}
 					    	}
 							}}
+							addFileChat={addFileChat}
 						/>
 						{
 							files.length > 0
@@ -658,10 +663,19 @@ const ChatScreen = ({ route, navigation }) => {
 						      }}
 						    />
 						    { 
-						    	files.length <= 4 && 
+						    	files.length <= 5 && 
 						      <TouchableHighlight 
 						        style={styles.pickImageButton} 
-						        onPress={() => {pickImage('chat');}}
+						        onPress={() => {
+						        	const getFile = pickImage();
+											getFile
+			                .then((file) => {
+			                  addFileChat(file.id, file.type, file.uri);
+			                })
+			                .catch((error) => {
+			                  console.log(error);
+			                });
+						       	}}
 						        underlayColor={color.grey1}
 						      >
 						        <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
@@ -676,8 +690,9 @@ const ChatScreen = ({ route, navigation }) => {
 		)
 	} else {
 		return (
-			<MainTemplate>
+			<View style={styles.chatContainer}>
 				<UserAccountHeaderForm
+					addPaddingTop={true}
 					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					username={theOtherUser.username}
@@ -700,7 +715,7 @@ const ChatScreen = ({ route, navigation }) => {
 					}
 				/>
         <ChatScreenDefault/>
-      </MainTemplate>
+      </View>
 		)
 	}
 }

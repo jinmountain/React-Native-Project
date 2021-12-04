@@ -25,7 +25,7 @@ import color from '../color';
 const ThreePostsRow = ({ 
   navigate, 
   screen,
-  targetUser, 
+  accountUserId, 
   posts, 
   postState,
   postFetchSwitch,
@@ -75,7 +75,7 @@ const ThreePostsRow = ({
                 params: { 
                   postSource: screen,
                   cardIndex: index,
-                  targetUser: targetUser,
+                  accountUserId: accountUserId,
                   posts: posts,
                   postState: postState,
                   postFetchSwitch: postFetchSwitch,
@@ -123,6 +123,7 @@ const ThreePostsRow = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: color.white2,
     flexDirection: 'row',
     flexWrap: 'wrap',
   },

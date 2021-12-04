@@ -1,7 +1,3 @@
-// developer's note
-// - collect data of how far a user goes down on the scroll view to know usually where a user stops
-// - if a user goes farther than one's average then collect the posts' tags as one's interests
-
 import React, { useContext, useState, useEffect } from 'react';
 import { 
   View,
@@ -25,7 +21,7 @@ import contentGetFire from '../firebase/contentGetFire';
 
 // Components
 import { HeaderForm } from '../components/HeaderForm';
-import PostCard from '../components/postCard/PostCard';
+import PostCardsVerticalSwipe from '../components/postCard/PostCardsVerticalSwipe';
 import MainTemplate from '../components/MainTemplate';
 // Loading
 import GetPostLoading from '../components/GetPostLoading';
@@ -34,6 +30,9 @@ import PostEndSign from '../components/PostEndSign';
 
 // Color
 import color from '../color';
+
+// expo icons
+import expoIcons from '../expoIcons';
 
 const screenSelector = (
   screen,
@@ -69,51 +68,56 @@ const PostsSwipeScreen = ({ route, navigation }) => {
   const { 
     cardIndex, 
     postSource, 
-    targetUser, 
+
     posts, 
     postState, 
     postFetchSwitch, 
     postLast,
-    businessUserSearch
+
+    accountUserId, // need for swipe screen get posts of an account user
+    businessUserId, // need for swipe screen get posts of a business
   } = route.params;
 
   const [ swipeCardIndex, setSwipeCardIndex ] = useState(0);
   const [ swipePostSource, setSwipePostSource ] = useState('default');
-  const [ swipeTargetUser, setSwipeTargetUser ] = useState(null);
 
   const [ swipePosts, setSwipePosts ] = useState([]);
   const [ swipePostLast, setSwipePostLast ] = useState(null);
   const [ swipePostFetchSwitch, setSwipePostFetchSwtich ] = useState(true);
   const [ swipePostState, setSwipePostState ] = useState(false);
 
-  const [ swipeBusinessUserSearch, setSwipeBusinessUserSearch ] = useState(null);
+  const [ swipeScreenAccountUserId, setSwipeScreenAccountUserId ] = useState(null);
+  const [ swipeScreenBusinessUserId, setSwipeScreenBusinessUserId ] = useState(null);
 
-  console.log("PostsSwipe: postSource: ", postSource, "| index: ", cardIndex, "| posts: ", posts.length);
+  //console.log("PostsSwipe: postSource: ", postSource, "| index: ", cardIndex, "| posts: ", posts.length);
 
   useEffect(() => {
     let mounted = true
     mounted && setSwipeCardIndex(cardIndex);
     mounted && setSwipePostSource(postSource);
-    mounted && setSwipeTargetUser(targetUser);
+
     mounted && setSwipePosts(posts);
     mounted && setSwipePostLast(postLast);
     mounted && setSwipePostFetchSwtich(postFetchSwitch);
     mounted && setSwipePostState(postState);
-    mounted && setSwipeBusinessUserSearch(businessUserSearch);
 
-    console.log(targetUser);
+    mounted && setSwipeScreenAccountUserId(accountUserId);
+    mounted && setSwipeScreenBusinessUserId(businessUserId);
+
     return () => {
       mounted = false;
       setSwipeCardIndex(0);
       setSwipePostSource('default');
-      setSwipeTargetUser(null);
 
       setSwipePosts([]);
       setSwipePostLast(null);
       setSwipePostFetchSwtich(true);
       setSwipePostState(false);
+
+      setSwipeScreenAccountUserId(accountUserId);
+      setSwipeScreenBusinessUserId(businessUserId);
     }
-  }, [cardIndex, postSource, targetUser, posts, postState, postFetchSwitch, postLast, businessUserSearch ])
+  }, [cardIndex, postSource, accountUserId, posts, postState, postFetchSwitch, postLast, businessUserId ])
 
   const { 
     state: {
@@ -125,7 +129,7 @@ const PostsSwipeScreen = ({ route, navigation }) => {
     <View style={styles.mainContainer}>
       <HeaderForm 
         leftButtonTitle={null}
-        leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.black1} />}
+        leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
         headerTitle={null} 
         rightButtonTitle={null} 
         leftButtonPress={() => {
@@ -136,8 +140,8 @@ const PostsSwipeScreen = ({ route, navigation }) => {
         }}
         addPaddingTop={true}
       />
-      <View style={{height: "100%", paddingBottom: RFValue(37)}}>
-        <PostCard
+      <View style={{flex: 1}}>
+        <PostCardsVerticalSwipe
           postSource={postSource}
           cardIndex={cardIndex}
 
@@ -172,13 +176,14 @@ const PostsSwipeScreen = ({ route, navigation }) => {
           setSwipePostFetchSwtich={setSwipePostFetchSwtich}
           setSwipePostState={setSwipePostState}
 
-          currentUser={user}
+          currentUser={{ id: user.id, photoURL: user.photoURL }}
           // search screen
-          businessUser={swipeBusinessUserSearch}
+          businessUserId={swipeScreenBusinessUserId}
           // need for UserAccountScreen
-          targetUser={swipeTargetUser}
+          accountUserId={swipeScreenAccountUserId}
         />
       </View>
+      {swipePostState && <GetPostLoading />}
     </View>
   )
 };

@@ -1,33 +1,71 @@
-import React from 'react';
-import { StyleSheet, View, Text} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Animated} from 'react-native';
+import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
-const PhotosPageIndicator = ({ currentIndex, imageLength }) => {
+// Color
+import color from '../../color';
+
+// hooks
+import { wait } from '../../hooks/wait';
+
+const indicatorHeight = RFValue(25);
+
+const PhotosPageIndicator = ({ currentIndex, imageLength, marginTop }) => {
+
   return (
-    <View style={styles.imagePageIndicatorContainer}>
-      <Text
-        style={styles.imagePageIndicatorText}
-      >
-        {currentIndex + 1} / {imageLength}
-      </Text>
+    <View style={
+      marginTop
+      ?
+      // 
+      [ styles.imagePageIndicatorContainer, { marginTop: marginTop - indicatorHeight - RFValue(10) }]
+      : styles.imagePageIndicatorContainer
+    }>
+      <View style={styles.paddingRight}>
+        <View style={styles.pageBackground}/>
+        <View style={styles.pageContainer}>
+          <Text
+            style={styles.pageText}
+          >
+            {currentIndex + 1} / {imageLength}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({ 
   imagePageIndicatorContainer: {
-    elevation: 6,
+    elevation: 1,
     position: 'absolute',
-    width: 50,
-    backgroundColor: "#5A646A",
-    opacity: 0.68,
+    width: RFValue(50),
+    height: indicatorHeight,
+    borderRadius: RFValue(15),
     alignSelf: 'center',
-    borderRadius: 10,
+  },
+  pageContainer: {
+    width: RFValue(50),
+    height: RFValue(25),
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 13,
   },
-  imagePageIndicatorText: {
+  pageText: {
     color: "white",
+    fontSize: RFValue(15),
+    fontWeight: 'bold',
+  },
+  pageBackground: {
+    position: 'absolute',
+    width: RFValue(50),
+    height: RFValue(25),
+    borderRadius: RFValue(15),
+    backgroundColor: color.grey8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.75,
+  },
+  paddingRight: {
+    paddingRight: RFValue(15),
   },
 });
 

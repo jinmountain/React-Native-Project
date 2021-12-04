@@ -236,7 +236,7 @@ const ChatListScreen = ({ navigation }) => {
 				:
 				<UserAccountHeaderForm
 					addPaddingTop={true}
-					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					username={user.username}
 					firstIcon={

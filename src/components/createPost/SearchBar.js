@@ -43,7 +43,7 @@ const SearchBar = ({
           : {width: '94%'}
         ]}
         placeholder="Search a shop"
-        placeholderTextColor="#aaaaaa"
+        placeholderTextColor={color.grey2}
         onChangeText={(text) => setSearchUserUsername(text.trim())}
         value={searchUserUsername}
         maxLength={30}

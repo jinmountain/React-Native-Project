@@ -52,14 +52,14 @@ export default () => {
 			
 			try {
 				if(!result.cancelled) {
-					console.log(result);
-					console.log('file uri: ', result.uri);
+					//console.log(result);
+					//console.log('file uri: ', result.uri);
 					let lastIndexOfDash = result.uri.lastIndexOf('/');
 					let lastIndexOfDot = result.uri.lastIndexOf(".") - lastIndexOfDash;
 					// id is the combi of the file name and the current time
 					let id = result.uri.substr(lastIndexOfDash+1, lastIndexOfDot-1).concat('_' + Date.now());
-					console.log('file id: ', id);
-					console.log('file type: ', result.type);
+					//console.log('file id: ', id);
+					//console.log('file type: ', result.type);
 					if (result.type === 'video' && result.duration < 5000) {
 						res({id: id, type: result.type, uri: result.uri});
 						// if (screen === 'profile') {

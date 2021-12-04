@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -13,16 +13,23 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
+// components
+import DefaultUserPhoto from '../defaults/DefaultUserPhoto';
+
 // Designs
 import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
+
+// Firebase
+import usersGetFire from '../../firebase/usersGetFire';
 
 // Hooks
 import { navigate } from '../../navigationRef';
 import convertEtcToHourMin from '../../hooks/convertEtcToHourMin';
 
 const { width, height } = Dimensions.get("window");
-const cardHeight = height * 0.77;
+// const CARD_HEIGHT = height * 0.77;
+const USER_INFO_BOX_HEIGHT = RFValue(55);
 
 // color
 import color from '../../color';
@@ -30,13 +37,28 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const PostUserInfoContainer = ({ postSource, postUser, postId, postData, currentUserId }) => {
-  // postSource 
-  // 'hot'
-  // 'account'
-  // 'accountDisplay'
-  // 'businessUser'
-  // 'businessTagged'
+const PostUserInfoContainer = ({ postId, postData, currentUserId }) => {
+  const [ postUser, setPostUser ] = useState(null);
+
+  useEffect(() => {
+    let isMounted = false;
+    const getUserInfo = usersGetFire.getUserInfoFire(postData.uid);
+    getUserInfo
+    .then((user) => {
+      const postUserData = {
+        id: user.id,
+        photoURL: user.photoURL,
+        type: user.type,
+        username: user.username,
+        name: user.name
+      };
+      setPostUser(postUserData);
+    })
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const navigation = useNavigation();
   return (
@@ -44,55 +66,67 @@ const PostUserInfoContainer = ({ postSource, postUser, postId, postData, current
       <ScrollView 
         horizontal={true}
         fadingEdgeLength={RFValue(100)}
+        showsHorizontalScrollIndicator={false}
       >
         <TouchableOpacity 
           style={styles.infoContainer}
           onPress={() => {
-            postSource === 'hot' || 
-            postSource === 'businessUser' || 
-            postSource === 'businessTagged' || 
-            postSource === 'userAccount' || 
-            postSource === 'userAccountDisplay'
+            postData.uid === currentUserId
             ?
+            navigation.navigate('Account')
+            :
             navigation.navigate('UserAccountStack', {
               screen: 'UserAccount',
               params: {
-                targetUser: postUser
+                accountUserId: postUser.id
               }
             })
-            : postSource === 'account' || postSource === 'accountDisplay'
-            ?
-            navigation.navigate('Account')
-            : null
           }}
         >
           <View style={styles.userPhotoContainer}>
             { 
-              postUser.photoURL
+              postUser && postUser.photoURL
               ?
               <Image 
                 style={styles.userPhoto} 
                 source={{ uri: postUser.photoURL }} 
               />
-              : <Feather name="user" size={RFValue(24)} color="black" />
+              : 
+              <DefaultUserPhoto 
+                customSizeBorder={RFValue(38)}
+                customSizeUserIcon={RFValue(26)}
+              />
             }
           </View>
           <View style={styles.textInfoContainer}>
             {
-              postUser.username
+              postUser && postUser.name
+              ?
+              <Text
+                numberOfLines={1}
+                style={styles.nameText}
+              >{postUser.name}</Text>
+              :
+              <Text
+                numberOfLines={1}
+                style={[ styles.nameText, {fontStyle: 'italic', color: color.grey3} ]}
+              >Name</Text>
+            }
+            {
+              postUser && postUser.username
               ?
               <Text 
                 numberOfLines={1}
                 style={styles.usernameText}
               >
-                {postUser.username}
+                @{postUser.username}
               </Text>
               :
               <Text 
                 numberOfLines={1}
-                style={{ ...styles.usernameText, ...{fontStyle: 'italic', color: color.grey3} }}
+                style={[ styles.usernameText, {fontStyle: 'italic', color: color.grey3} ]}
               >
-                None
+                @Username
               </Text>
             }
           </View>
@@ -137,11 +171,12 @@ const PostUserInfoContainer = ({ postSource, postUser, postId, postData, current
       <View style={styles.postManagerButtonContainer}>
         <TouchableHighlight
           onPress={() => 
+            postUser &&
             navigation.navigate("PostManager", { 
               postId: postId, 
               postData: postData,
               postUserId: postUser.id,
-              currentUserId: currentUserId
+              currentUserId: currentUserId,
             })
           }
           underlayColor={color.grey4}
@@ -160,9 +195,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: width,
     paddingVertical: 3,
-    justifyContent: 'center',
-    height: cardHeight * 0.1,
+    height: USER_INFO_BOX_HEIGHT,
     flexDirection: 'row',
+    justifyContent: 'flex-end'
   },
   infoContainer: {
     flexDirection: 'row',
@@ -172,9 +207,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: RFValue(7),
   },
   userPhotoContainer: {
-    alignSelf: 'flex-start',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1,
+    height: "100%",
   },
   userPhoto: {
     width: RFValue(38),
@@ -183,18 +217,21 @@ const styles = StyleSheet.create({
   },
   textInfoContainer: {
     justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: RFValue(7),
+    borderWidth: 1
   },
-  usernameText: {
+  nameText: {
+    color: color.black1,
     fontSize: RFValue(16),
   },
+  usernameText: {
+    color: color.black1,
+    fontSize: RFValue(15),
+  },
   postManagerButtonContainer: {
-    // position: 'absolute',
-    alignSelf: 'flex-end',
+    position: "absolute",
+    alignSelf: 'center',
     // paddingRight: RFValue(3),
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   pmButton: {
     width: RFValue(50),

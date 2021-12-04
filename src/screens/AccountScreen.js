@@ -53,6 +53,9 @@ import { EvilIcons } from '@expo/vector-icons';
 // Color
 import color from '../color';
 
+// expo icons
+import expoIcons from '../expoIcons';
+
 // Hooks
 import { kOrNo } from '../hooks/kOrNo';
 import { wait } from '../hooks/wait';
@@ -94,7 +97,7 @@ const AccountScreen = ({ navigation }) => {
 		const getScreenReady = new Promise ((res, rej) => {
 			if(accountPostFetchSwitch && !accountPostState && mounted) {
 				mounted && setAccountPostState(true);
-				const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user, user.id);
+				const getUserPosts = contentGetFire.getUserPostsFire(null, user.id, user.id);
 				getUserPosts
 				.then((posts) => {
 					mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
@@ -109,7 +112,7 @@ const AccountScreen = ({ navigation }) => {
 
 			if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
 				mounted && setAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user, user.id);
+				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, user.id, user.id);
 				getDisplayPosts
 				.then((posts) => {
 					mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
@@ -170,7 +173,7 @@ const AccountScreen = ({ navigation }) => {
     .then(() => {
     	if(accountPostFetchSwitch && !accountPostState && mounted) {
 				mounted && setAccountPostState(true);
-				const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user, user.id);
+				const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user.id, user.id);
 				getUserPosts
 				.then((posts) => {
 					mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
@@ -185,7 +188,7 @@ const AccountScreen = ({ navigation }) => {
 
 			if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
 				mounted && setAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user, user.id);
+				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id, user.id);
 				getDisplayPosts
 				.then((posts) => {
 					mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
@@ -304,14 +307,18 @@ const AccountScreen = ({ navigation }) => {
 					{ 
 						user.type === 'business'
 						?
-						<View>
-							<HeaderBottomLine />
-							<View style={styles.userPostsLabelContainer}>
-								<Text style={styles.userPostsLabelText}>
-									<Feather name="menu" size={RFValue(23)} color={color.black1} />
-								</Text>
-							</View>
-							<HeaderBottomLine />
+						<View style={styles.userPostsLabelContainer}>
+							<Text style={styles.userPostsLabelText}>
+								<Feather name="menu" size={RFValue(23)} color={color.black1} />
+							</Text>
+							<TouchableOpacity 
+								style={styles.showTwoColumnButtonContainer}
+								onPress={() => {
+									console.log("two");
+								}}
+							>
+								{expoIcons.featherColumns(RFValue(23), color.black1)}
+							</TouchableOpacity>
 						</View>
 						:
 						null
@@ -407,13 +414,11 @@ const AccountScreen = ({ navigation }) => {
 						? <DisplayPostsDefault />
 						: null
 					}
-					<HeaderBottomLine />
 					<View style={styles.userPostsLabelContainer}>
 						<Text style={styles.userPostsLabelText}>
 							<AntDesign name="picture" size={RFValue(23)} color={color.black1} />
 						</Text>
 					</View>
-					<HeaderBottomLine />
 					<ThreePostsRow
 						navigate={navigation.navigate}
 						screen={"account"}
@@ -477,9 +482,15 @@ const styles = StyleSheet.create({
 		shadowColor: '#ccc',
 		backgroundColor: '#fff',
     padding: RFValue(10),
+    height: RFValue(57),
 	},
 	userPostsLabelText: {
 		fontSize: RFValue(15),
+	},
+	showTwoColumnButtonContainer: {
+		position: 'absolute',
+		alignSelf: 'flex-end',
+		paddingRight: RFValue(10)
 	},
 
 	displayPostsContainer: {

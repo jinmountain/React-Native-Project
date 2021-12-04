@@ -33,6 +33,7 @@
     "react-native-crypto-js": "^1.0.0",
     "react-native-gesture-handler": "~1.10.2",
     "react-native-google-places-autocomplete": "^2.4.1",
+    "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-keyboard-aware-scroll-view": "^0.9.4",
     "react-native-maps": "0.28.0",
     "react-native-pager-view": "5.0.12",

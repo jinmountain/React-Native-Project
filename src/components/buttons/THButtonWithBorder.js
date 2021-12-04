@@ -51,7 +51,6 @@ const styles = StyleSheet.create({
     borderWidth: RFValue(1),
     borderColor: color.grey1,
     paddingHorizontal: RFValue(13),
-    paddingVertical: RFValue(9),
     marginHorizontal: RFValue(3),
   },
   button: {
