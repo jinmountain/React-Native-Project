@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import color from '../../color';
 
 // Hooks
-import { kOrNo } from '../../hooks/kOrNo';
+import count from '../../hooks/count';
 import { useOrientation } from '../../hooks/useOrientation';
 
 // Components

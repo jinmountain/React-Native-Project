@@ -57,7 +57,7 @@ import color from '../color';
 import expoIcons from '../expoIcons';
 
 // Hooks
-import { kOrNo } from '../hooks/kOrNo';
+import count from '../hooks/count';
 import { wait } from '../hooks/wait';
 import { isCloseToBottom } from '../hooks/isCloseToBottom';
 import { useOrientation } from '../hooks/useOrientation';
@@ -100,7 +100,7 @@ const AccountScreen = ({ navigation }) => {
 				const getUserPosts = contentGetFire.getUserPostsFire(null, user.id, user.id);
 				getUserPosts
 				.then((posts) => {
-					mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
+					mounted && setAccountPosts(posts.fetchedPosts);
 					if (posts.lastPost !== undefined && mounted) {
 						mounted && setAccountPostLast(posts.lastPost);
 					} else {
@@ -115,7 +115,7 @@ const AccountScreen = ({ navigation }) => {
 				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, user.id, user.id);
 				getDisplayPosts
 				.then((posts) => {
-					mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
+					mounted && setAccountDisplayPosts(posts.fetchedPosts);
 					if (posts.lastPost !== undefined) {
 						mounted && setAccountDisplayPostLast(posts.lastPost);
 					} else {
@@ -246,7 +246,7 @@ const AccountScreen = ({ navigation }) => {
 	        	let mounted = true;
 			      if (isCloseToBottom(nativeEvent) && accountPostFetchSwitch && !accountPostState && mounted) {
 			      	mounted && setAccountPostState(true);
-							const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user, user.id);
+							const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user.id, user.id);
 							getUserPosts
 							.then((posts) => {
 								mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
@@ -334,7 +334,7 @@ const AccountScreen = ({ navigation }) => {
 									let mounted = true;
 									if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
 										mounted && setAccountDisplayPostState(true);
-										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user, user.id);
+										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id, user.id);
 										getDisplayPosts
 										.then((posts) => {
 											mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
@@ -386,9 +386,9 @@ const AccountScreen = ({ navigation }) => {
 			                />
 			                <DisplayPostInfo
 			                	containerWidth={windowWidth/2}
-			                	taggedCount={kOrNo(item.data.taggedCount)}
+			                	taggedCount={count.kOrNo(item.data.taggedCount)}
 			                	title={item.data.title}
-			                	likeCount={kOrNo(item.data.likeCount)}
+			                	likeCount={count.kOrNo(item.data.likeCount)}
 			                	price={item.data.price}
 			                	etc={item.data.etc}
 			                />

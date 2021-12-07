@@ -63,7 +63,7 @@ import color from '../../color';
 import expoIcons from '../../expoIcons';
 
 // Hooks
-import { kOrNo } from '../../hooks/kOrNo';
+import count from '../../hooks/count';
 import { wait } from '../../hooks/wait';
 import { isCloseToBottom } from '../../hooks/isCloseToBottom';
 import { useOrientation } from '../../hooks/useOrientation';
@@ -145,7 +145,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 						const getUserPosts = contentGetFire.getUserPostsFire(userAccountPostLast, accountUserId, user.id);
 						getUserPosts
 						.then((posts) => {
-							mounted && setUserAccountPosts([ ...userAccountPosts, ...posts.fetchedPosts ]);
+							mounted && setUserAccountPosts(posts.fetchedPosts);
 							if (posts.lastPost !== undefined && mounted) {
 								mounted && setUserAccountPostLast(posts.lastPost);
 							} else {
@@ -163,7 +163,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, accountUserId, user.id);
 						getDisplayPosts
 						.then((posts) => {
-							mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+							mounted && setUserAccountDisplayPosts(posts.fetchedPosts);
 							if (posts.lastPost !== undefined) {
 								mounted && setUserAccountDisplayPostLast(posts.lastPost);
 							} else {
@@ -560,9 +560,9 @@ const UserAccountScreen = ({ route, navigation }) => {
 			                	imageWidth={windowWidth/2}
 			                />
 			                <DisplayPostInfo
-			                	taggedCount={kOrNo(item.data.taggedCount)}
+			                	taggedCount={count.kOrNo(item.data.taggedCount)}
 			                	title={item.data.title}
-			                	likeCount={kOrNo(item.data.like)}
+			                	likeCount={count.kOrNo(item.data.like)}
 			                	etc={item.data.etc}
 			                	price={item.data.price}
 			                	containerWidth={windowWidth/2}

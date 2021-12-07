@@ -13,14 +13,14 @@ const getUserPostsFire = (lastPost, accountUserId, currentUserId) => {
 	return new Promise ((res, rej) => {
 		let postRef;
 		if (lastPost) {
-			postsRef
+			postRef = postsRef
 			.where("uid", "==", accountUserId)
 			.where("display", "==", false)
 			.orderBy("createdAt", "desc")
 			.startAfter(lastPost)
 			console.log("Start from the last post.");
 		} else {
-			postsRef
+			postRef = postsRef
 			.where("uid", "==", accountUserId)
 			.where("display", "==", false)
 			.orderBy("createdAt", "desc")
@@ -68,14 +68,14 @@ const getBusinessDisplayPostsFire = (lastPost, businessUserId, currentUserId) =>
 	return new Promise ((res, rej) => {
 		let postRef;
 		if (lastPost) {
-			postsRef
+			postRef = postsRef
 			.where("uid", "==", businessUserId)
 			.where("display", "==", true)
 			.orderBy("createdAt", "desc")
 			.startAfter(lastPost)
 			console.log("getBusinessDisplayPostsFire: found startAfter");
 		} else {
-			postsRef
+			postRef = postsRef
 			.where("uid", "==", businessUserId)
 			.where("display", "==", true)
 			.orderBy("createdAt", "desc")
@@ -124,13 +124,13 @@ const getTaggedPostsFire = (lastPost, businessUserId, userId) => {
 	return new Promise (async (res, rej) => {
 		let postRef;
 		if (lastPost) {
-			postsRef
+			postRef = postsRef
 			.where("tid", "==", businessUserId)
 			.orderBy("createdAt", "desc")
 			.startAfter(lastPost)
 			console.log("Start from the last post.");
 		} else {
-			postsRef
+			postRef = postsRef
 			.where("tid", "==", businessUserId)
 			.orderBy("createdAt", "desc")
 		};
@@ -175,12 +175,12 @@ const getHotPostsFire = (lastPost, userId) => {
 	return new Promise ((res, rej) => {
 		let postRef;
 		if (lastPost) {
-			postsRef
+			postRef = postsRef
 			.orderBy("heat", "desc")
 			.startAfter(lastPost)
 			console.log("Start from the last post.");
 		} else {
-			postsRef
+			postRef = postsRef
 			.orderBy("heat", "desc")
 		};
 		postRef
@@ -200,7 +200,7 @@ const getHotPostsFire = (lastPost, userId) => {
 	      		id: docId, 
 	      		data: docData, 
 	      	};
-
+	      	
 					hotPosts.push(post);
 
 					docIndex += 1;

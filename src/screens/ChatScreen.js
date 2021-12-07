@@ -54,7 +54,7 @@ import { Ionicons } from '@expo/vector-icons';
 // Hooks
 import useImage from '../hooks/useImage';
 // import useGetMessagesRealtime from '../hooks/useGetMessagesRealtime';
-import { kOrNo } from '../hooks/kOrNo';
+import count from '../hooks/count';
 import { useIsFocused } from '@react-navigation/native';
 
 // Color
@@ -463,9 +463,9 @@ const ChatScreen = ({ route, navigation }) => {
 		                	imageWidth={windowWidth/2}
 		                />
 		                <DisplayPostInfo
-		                	taggedCount={kOrNo(item.data.taggedCount)}
+		                	taggedCount={count.kOrNo(item.data.taggedCount)}
 		                	title={item.data.title}
-		                	likeCount={kOrNo(item.data.like)}
+		                	likeCount={count.kOrNo(item.data.like)}
 		                	etc={item.data.etc}
 		                	price={item.data.price}
 		                	containerWidth={windowWidth/2}

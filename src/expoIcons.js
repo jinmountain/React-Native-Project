@@ -142,6 +142,15 @@ const chevronBack = (size, color) => {
 	return <Ionicons name="chevron-back" size={size} color={color} />
 };
 
+const matMessageTextOutline = (size, color) => {
+	return <MaterialCommunityIcons name="message-text-outline" size={size} color={color} />
+};
+
+const ioniconsSend = (size, color) => {
+	return <Ionicons name="send" size={size} color={color} />
+};
+
+
 export default { 
 	dollarSign, 
 	entypoDot, 
@@ -175,5 +184,7 @@ export default {
 	fontAwesomeCalendarPlusO,
 	snailShell,
 	featherColumns,
-	chevronBack
+	chevronBack,
+	matMessageTextOutline,
+	ioniconsSend
 };

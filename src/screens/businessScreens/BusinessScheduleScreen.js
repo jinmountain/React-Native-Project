@@ -26,7 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
-import { kOrNo } from '../../hooks/kOrNo';
+import count from '../../hooks/count';
 import getRandomColor from '../../hooks/getRandomColor';
 import useConvertTime from '../../hooks/useConvertTime';
 import { getCalendarDates } from '../../hooks/getCalendarDates';
@@ -728,9 +728,9 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                	imageWidth={windowWidth/2}
 			                />
 			                <DisplayPostInfo
-			                	taggedCount={kOrNo(item.data.taggedCount)}
+			                	taggedCount={count.kOrNo(item.data.taggedCount)}
 			                	title={item.data.title}
-			                	likeCount={kOrNo(item.data.like)}
+			                	likeCount={count.kOrNo(item.data.like)}
 			                	etc={item.data.etc}
 			                	price={item.data.price}
 			                	containerWidth={windowWidth/2}

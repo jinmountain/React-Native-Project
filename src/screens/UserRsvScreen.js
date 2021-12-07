@@ -278,7 +278,7 @@ const UserRsvScreen = ({ route, navigation }) => {
           getUpcomingRsvs
           .then((result) => {
             isMounted && setUpcomingRsvs(result.rsvs);
-            if (result.lastRsv !== undefined) {
+            if (result.lastRsv) {
               isMounted && addUpcomingRsvLast(result.lastRsv);
             } else {
               isMounted && setUpcomingRsvsFetchSwitch(false);

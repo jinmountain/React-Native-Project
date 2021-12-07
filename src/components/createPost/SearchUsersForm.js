@@ -33,7 +33,7 @@ import DisplayPostLoading from '../../components/displayPost/DisplayPostLoading'
 // Hooks
 import businessGetFire from '../../firebase/businessGetFire';
 // import { navigate } from '../../navigationRef';
-import { kOrNo } from '../../hooks/kOrNo';
+import count from '../../hooks/count';
 
 // firebase
 import contentGetFire from '../../firebase/contentGetFire';
@@ -278,9 +278,9 @@ const SearchUsersForm = ({
                         />
                         <DisplayPostInfo
                           containerWidth={windowWidth/2}
-                          taggedCount={kOrNo(item.data.taggedCount)}
+                          taggedCount={count.kOrNo(item.data.taggedCount)}
                           title={item.data.title}
-                          likeCount={kOrNo(item.data.likeCount)}
+                          likeCount={count.kOrNo(item.data.likeCount)}
                           price={item.data.price}
                           etc={item.data.etc}
                         />

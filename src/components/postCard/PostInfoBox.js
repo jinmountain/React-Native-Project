@@ -9,7 +9,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 // Components
 import LikeCommentButtonLine from './LikeCommentButtonLine';
 import TagLine from '../TagLine';
-import PostCaptionMoreLess from './PostCaptionMoreLess';
+import ExpandableText from '../ExpandableText';
 import PostLikeCommentTimeInfo from './PostLikeCommentTimeInfo';
 import PostCardCommentLine from "./PostCardCommentLine";
 
@@ -58,10 +58,9 @@ const PostInfoBox = ({
         />
       </View>
       <View style={styles.infoBoxBody}>
-        <PostCaptionMoreLess
+        <ExpandableText
           caption={caption}
           defaultCaptionNumLines={defaultCaptionNumLines}
-          postId={postId}
         />
         <PostCardCommentLine
           postId={postId}
@@ -89,7 +88,7 @@ const styles = StyleSheet.create({
     // flex: 2
   },
   infoBoxBody: {
-    borderWidth: 1,
+
   },
   infoBoxBottom: {
     // flex: 1, 

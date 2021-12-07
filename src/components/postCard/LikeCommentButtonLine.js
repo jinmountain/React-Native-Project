@@ -15,10 +15,10 @@ import { AntDesign } from '@expo/vector-icons';
 
 // Hooks
 import { timeDifference } from '../../hooks/timeDifference';
-import { kOrNo } from '../../hooks/kOrNo';
+import count from '../../hooks/count';
 
 // firebase
-import likeFire from '../../firebase/like/likeFire.js'
+import likePostFire from '../../firebase/like/likePostFire.js'
 import likeGetFire from '../../firebase/like/likeGetFire.js'
 
 // Color
@@ -38,16 +38,16 @@ const PostLikeCommentTimeInfo = ({
   currentUserId
 }) => {
   const [ likeCountState, setLikeCountState ] = useState(likeCount);
-  const [ liked, setLiked ] = useState(false);
+  const [ like, setLike ] = useState(false);
   const [ likeButtonReady, setLikeButtonReady ] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     const checkLike = likeGetFire.checkLikeFire(postId, currentUserId);
     checkLike
-    .then((like) => {
+    .then((result) => {
       isMounted && setLikeButtonReady(true);
-      isMounted && setLiked(like);
+      isMounted && setLike(result);
     })
     .catch((error) => {
 
@@ -55,7 +55,7 @@ const PostLikeCommentTimeInfo = ({
 
     return () => {
       isMounted = false;
-      setLiked(false);
+      setLike(false);
       setLikeButtonReady(false);
     }
   }, []);
@@ -65,26 +65,26 @@ const PostLikeCommentTimeInfo = ({
       style={styles.likeCommentButtonContainer}
     >
       { 
-        likeButtonReady && liked
+        likeButtonReady && like
         ? 
         <TouchableOpacity
           style={styles.buttonContainer}
           onPress={() => {
-            setLiked(false); 
-            likeFire.undoLikePostFire(postId, uid);
+            setLike(false); 
+            likePostFire.undoLikePostFire(postId, uid);
             setLikeCountState(likeCountState - 1);
           }}
         >
           <AntDesign name="heart" size={styles.buttonSize} color="red" />
           <Text style={styles.buttonText}>{likeCountState}</Text>
         </TouchableOpacity>
-        : likeButtonReady && !liked
+        : likeButtonReady && !like
         ?
         <TouchableOpacity
           style={styles.buttonContainer}
           onPress={() => {
-            setLiked(true);
-            likeFire.likePostFire(postId, uid);
+            setLike(true);
+            likePostFire.likePostFire(postId, uid);
             setLikeCountState(likeCountState + 1);
           }}
         >
@@ -105,7 +105,7 @@ const PostLikeCommentTimeInfo = ({
           style={styles.buttonContainer}
         >
           <AntDesign name="staro" size={styles.buttonSize} color={color.black1} />
-          <Text style={styles.buttonText}>{kOrNo(countRating)}</Text>
+          <Text style={styles.buttonText}>{count.kOrNo(countRating)}</Text>
         </TouchableOpacity>
         :
         null

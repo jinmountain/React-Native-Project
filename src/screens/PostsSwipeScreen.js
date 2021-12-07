@@ -97,7 +97,7 @@ const PostsSwipeScreen = ({ route, navigation }) => {
     mounted && setSwipePostSource(postSource);
 
     mounted && setSwipePosts(posts);
-    mounted && setSwipePostLast(postLast);
+    // mounted && setSwipePostLast(postLast);
     mounted && setSwipePostFetchSwtich(postFetchSwitch);
     mounted && setSwipePostState(postState);
 

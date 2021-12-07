@@ -42,7 +42,7 @@ import DisplayPostEndSign from '../components/DisplayPostEndSign';
 import color from '../color';
 
 // Hooks
-import { kOrNo } from '../hooks/kOrNo';
+import count from '../hooks/count';
 import { wait } from '../hooks/wait';
 import { isCloseToBottom } from '../hooks/isCloseToBottom';
 
@@ -182,8 +182,8 @@ const MapSearchPostsScreen = ({ route, navigation }) => {
 	                	imageWidth={windowWidth/2}
 	                />
 	                <DisplayPostInfo
-	                	taggedCount={kOrNo(item.data.taggedCount)}
-	                	likeCount={kOrNo(item.data.like)}
+	                	taggedCount={count.kOrNo(item.data.taggedCount)}
+	                	likeCount={count.kOrNo(item.data.like)}
 	                	etc={item.data.etc}
 	                	price={item.data.price}
 	                	containerWidth={windowWidth/2}

@@ -11,33 +11,11 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Hooks
 import { timeDifference } from '../../hooks/timeDifference';
-import { kOrNo } from '../../hooks/kOrNo';
-
-const likeOrLikes = (likeCount) => {
-  if (likeCount === 1) {
-    return "like"
-  }
-  else if (likeCount > 1) {
-    return "likes"
-  }
-  else {
-    return "like"
-  }
-};
+import count from '../../hooks/count';
 
 const PostLikeCommentTimeInfo = ({likeCount, commentCount, postTimestamp}) => {
   return (
     <View style={styles.additionalTextContainer}>
-      {/*<View style={styles.likeCommentContainer}>
-        <View style={styles.likesContainer}>
-          <Text style={styles.likesText}>
-            {kOrNo(likeCount)} {likeOrLikes(likeCount)}
-          </Text>
-        </View>
-        <View style={styles.commentsContainer}>
-          <Text style={styles.commentsText}>0 comment</Text>
-        </View>
-      </View>*/}
       <View style={styles.timeContainer}>
         <Text style={styles.timeText}>
           {timeDifference(Date.now(), postTimestamp)}

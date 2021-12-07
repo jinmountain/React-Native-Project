@@ -70,7 +70,6 @@ const PostDetailScreen = ({ route, navigation }) => {
 
 	useEffect(() => {
 		let isMounted = true
-
 		const getScreenReady = new Promise ((res, rej) => {
 			// post data
 			const getPostData = contentGetFire.getPostFire(postId);
@@ -87,25 +86,31 @@ const PostDetailScreen = ({ route, navigation }) => {
 						if (isMounted) {
 							setDisplayPostTechs(techs);
 							setDisplayPostTechsState(false);
-							setScreenReady(true);
 						};
+						res(true);
 					})
 					.catch((error) => {
 						console.log(error);
 						if (isMounted) {
 							setDisplayPostTechsState(false);
-							setScreenReady(true);
-						}
+						};
+						res(true);
 					})
 				} else {
-					if (isMounted) {
-						setScreenReady(true);
-					}
+					res(true);
 				}
 			})
 			.catch((error) => {
-				// handle error
+				rej(error);
 			});
+		});
+
+		getScreenReady
+		.then(() => {
+			setScreenReady(true);
+		})
+		.catch((error) => {
+			// handle error
 		});
 
 		return () => {
@@ -132,7 +137,7 @@ const PostDetailScreen = ({ route, navigation }) => {
         }}
       />
 			{ 
-				false
+				screenReady
 				?
 				<ScrollView style={styles.scrollView}>
 					<PostUserInfoContainer

@@ -40,7 +40,7 @@ import color from '../../color';
 import expoIcons from '../../expoIcons';
 
 // Hooks
-import { kOrNo } from '../../hooks/kOrNo';
+import count from '../../hooks/count';
 import { wait } from '../../hooks/wait';
 import { isCloseToBottom } from '../../hooks/isCloseToBottom';
 import { useIsFocused } from '@react-navigation/native';

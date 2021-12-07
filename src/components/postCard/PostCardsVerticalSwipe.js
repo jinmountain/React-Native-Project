@@ -12,6 +12,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Hooks
 import { useOrientation } from '../../hooks/useOrientation';
+import { useIsFocused } from '@react-navigation/native';
 
 // Contexts
 
@@ -44,6 +45,7 @@ const PostCardsVerticalSwipe = ({
 	accountUserId,
 	businessUserId
 }) => {
+	const isFocused = useIsFocused();
 	const _cardListView = useRef(null);
 
   // useEffect(() => {
@@ -130,7 +132,7 @@ const PostCardsVerticalSwipe = ({
 					});
 				}
 			}}
-			onEndReachedThreshold={0.01}
+			onEndReachedThreshold={0.1}
 			contentInset={{
         top: 0,
         left: 0,
@@ -148,7 +150,6 @@ const PostCardsVerticalSwipe = ({
 	    // snapToInterval={cardHeight + CARD_MARGIN}
 	    decelerationRate={"fast"}
 	    snapToAlignment="center"
-	    style={styles.scrollView}
 	    data={swipePosts.slice(cardIndex)}
 	    keyExtractor={(post, index) => index.toString()}
 	    // getItemLayout = {(data, index) => (

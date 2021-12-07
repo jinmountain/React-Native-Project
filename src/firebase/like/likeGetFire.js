@@ -7,7 +7,7 @@ const usersRef = db.collection("users");
 
 const checkLikeFire = (postId, uid) => {
 	return new Promise ((res, rej) => {
-    const likesRef = usersRef.doc(uid).collection("likes").doc(postId);
+    const likesRef = postsRef.doc(postId).collection("whoLike").doc(uid);
     likesRef
     .get()
     .then((doc) => {
@@ -23,4 +23,23 @@ const checkLikeFire = (postId, uid) => {
 	});
 };
 
-export default { checkLikeFire }; 
+const checkCommentLikeFire = (postId, commentId, uid) => {
+  return new Promise ((res, rej) => {
+    const likesRef = postsRef.doc(postId).collection("comments").doc(commentId).collection("whoLike").doc(uid);
+    likesRef
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        res(true);
+      } else {
+        res(false);
+      }
+    })
+    .catch((error) => {
+      rej(false);
+    });
+  });
+};
+
+
+export default { checkLikeFire, checkCommentLikeFire }; 

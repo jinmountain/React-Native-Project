@@ -6,6 +6,7 @@ import PostsSwipeScreen from '../screens/PostsSwipeScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
 import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
+import CommentScreen from '../screens/CommentScreen';
 
 // Stacks
 // import UserAccountStack from './UserAccountStack';
@@ -59,6 +60,17 @@ const PostsSwipeStack = () => {
         component={PostDetailScreen} 
         options={{ 
           headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="Comment" 
+        component={CommentScreen} 
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
         }}
       />
       <Stack.Screen 

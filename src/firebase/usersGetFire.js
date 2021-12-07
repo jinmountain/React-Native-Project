@@ -267,6 +267,37 @@ const getTheOtherUserChatStatusRealtime = (theOtherUserId) => {
   });
 
   return () => unsubscribe();
+};
+
+const getUserPhotoURLFire = (userId) => {
+  return new Promise ((res, rej) => {
+    usersRef
+    .doc(userId)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        const userData = doc.data();
+        if (userData.photoURL) {
+          res(userData.photoURL);
+        } else {
+          res(null);
+        };
+      } else {
+        res(null);
+      };
+    })
+    .catch((error) => {
+      rej(error);
+    })
+  });
 }
 
-export default { getSearchUsersFire, getBusinessUsersNearFire, getUserInfoFire, getUserNotificationsRealtime, getUserDataRealtime };
+
+export default { 
+  getSearchUsersFire, 
+  getBusinessUsersNearFire, 
+  getUserInfoFire, 
+  getUserNotificationsRealtime, 
+  getUserDataRealtime,
+  getUserPhotoURLFire
+};

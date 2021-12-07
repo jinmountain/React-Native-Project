@@ -76,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
 			const getHotPosts = contentGetFire.getHotPostsFire(null, user.id);
 			getHotPosts
 			.then((posts) => {
-				isMounted && setHotPosts([ ...hotPosts, ...posts.fetchedPosts ]);
+				isMounted && setHotPosts(posts.fetchedPosts);
 				if (posts.lastPost !== undefined) {
 					isMounted && setHotPostLast(posts.lastPost);
 				} else {

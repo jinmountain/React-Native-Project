@@ -10,7 +10,7 @@ const HeaderBottomLine = ({customStyles}) => {
     backgroundColor: color.black1,
     maxHeight: 1,
     minHeight: 1,
-    opacity: 0.3,
+    opacity: 0.15,
     width: '100%',
   }
 	return <View style={[defaultStyles, customStyles]}></View>
