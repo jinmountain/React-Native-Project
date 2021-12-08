@@ -6,7 +6,9 @@ import PostsSwipeScreen from '../screens/PostsSwipeScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
 import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
-import CommentScreen from '../screens/CommentScreen';
+import CommentScreen from '../screens/comment/CommentScreen';
+import CommentManagerScreen from '../screens/comment/CommentManagerScreen';
+import CommentEditScreen from '../screens/comment/CommentEditScreen';
 
 // Stacks
 // import UserAccountStack from './UserAccountStack';
@@ -66,6 +68,28 @@ const PostsSwipeStack = () => {
         name="Comment" 
         component={CommentScreen} 
         options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="CommentManager" 
+        component={CommentManagerScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="CommentEdit" 
+        component={CommentEditScreen} 
+        options={{
           cardStyle: {
             backgroundColor: 'transparent',
           },

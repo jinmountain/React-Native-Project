@@ -54,6 +54,9 @@ const PostUserInfoContainer = ({ postId, postData, currentUserId }) => {
       };
       setPostUser(postUserData);
     })
+    .catch((error) => {
+      // handle error;
+    });
     
     return () => {
       isMounted = false;

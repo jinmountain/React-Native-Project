@@ -36,7 +36,6 @@ const HeaderForm = (
     leftButtonTitle, 
     leftButtonIcon,
     headerTitle,
-    headerIcon,
     rightButtonTitle,
     rightButtonIcon,
     leftButtonPress,

@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
-// Hooks
-
 // Contexts
 
 // Components
@@ -23,6 +21,7 @@ import HeaderBottomLine from '../HeaderBottomLine';
 // Hooks
 import { wait } from '../../hooks/wait';
 import { useNavigation } from '@react-navigation/native';
+import { timeDifference } from '../../hooks/timeDifference';
 
 // firebase
 import usersGetFire from '../../firebase/usersGetFire';
@@ -46,23 +45,26 @@ const CommentBar = ({
 }) => {
 	const navigation = useNavigation();
 
-  const [ commentUserPhotoURL, setCommentUserPhotoURL ] = useState(null);
+  const [ commentUser, setCommentUser ] = useState(null);
   const [ like, setLike ] = useState(false);
   const [ likeButtonReady, setLikeButtonReady ] = useState(false);
 
-
   useEffect(() => {
     let isMounted = true;
-    console.log(commentData.uid);
     if (commentData && commentData.uid) {
-      const getUserPhotoURL = usersGetFire.getUserPhotoURLFire(commentData.uid);
-      getUserPhotoURL
-      .then((userPhotoURL) => {
-        console.log(userPhotoURL);
-        isMounted && setCommentUserPhotoURL(userPhotoURL);
+      const getUserInfo = usersGetFire.getUserInfoFire(commentData.uid);
+      getUserInfo
+      .then((user) => {
+        const commentUserData = {
+          id: user.id,
+          photoURL: user.photoURL,
+          type: user.type,
+          username: user.username,
+        };
+        setCommentUser(commentUserData);
       })
       .catch((error) => {
-        // handle error
+        // handle error;
       });
     }
 
@@ -78,7 +80,7 @@ const CommentBar = ({
 
     return () => {
       isMounted = false;
-      setCommentUserPhotoURL(null);
+      setCommentUser(null);
       setLike(false);
       setLikeButtonReady(false);
     }
@@ -91,11 +93,11 @@ const CommentBar = ({
       >
         <View style={styles.userPhotoContainer}>
           { 
-            commentUserPhotoURL
+            commentUser && commentUser.photoURL
             ?
             <Image 
               style={styles.userPhoto} 
-              source={{ uri: commentUserPhotoURL }} 
+              source={{ uri: commentUser.photoURL }} 
             />
             :
             <DefaultUserPhoto 
@@ -105,6 +107,13 @@ const CommentBar = ({
           }
         </View>
         <View style={styles.commentContainer}>
+          <View style={styles.commentBarHeader}>
+            { 
+              commentUser && commentUser.username
+              ? <Text style={styles.headerText}>{commentUser.username} {expoIcons.entypoDot(RFValue(15), color.grey1)} {timeDifference(Date.now(), commentData.createdAt)}</Text>
+              : null
+            }
+          </View>
           <ExpandableText 
             caption={commentData.comment}
             defaultCaptionNumLines={5}
@@ -163,6 +172,22 @@ const CommentBar = ({
                 <Text>Reply</Text>
               </View>
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => {
+                navigation.navigate("CommentManager", {
+                  postId: postId,
+                  commentId: commentId,
+                  commentData: commentData,
+                  commentUser: commentUser,
+                  currentUserId: currentUserId
+                });
+              }}
+            >
+              <View style={styles.actionIconContainer}>
+                <Text>{expoIcons.featherMoreVertical(RFValue(15), color.grey2)}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -173,7 +198,6 @@ const CommentBar = ({
 
 const styles = StyleSheet.create({
 	commentBar: {
-		flex: 1,
     flexDirection: 'row',
     backgroundColor: color.white2,
     paddingVertical: RFValue(3)
@@ -185,6 +209,15 @@ const styles = StyleSheet.create({
     paddingRight: RFValue(7)
   },
 
+  commentBarHeader: {
+    paddingVertical: RFValue(5),
+    justifyContent: 'center'
+  },
+  headerText: {
+    color: color.grey3,
+    fontSize: RFValue(15)
+  },
+
   actionIconContainer: {
     justifyContent: 'center',
     width: RFValue(70),
@@ -192,8 +225,10 @@ const styles = StyleSheet.create({
   },
 
   commentActionBar: {
+    paddingVertical: RFValue(5),
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   userPhotoContainer: {

@@ -11,7 +11,6 @@ import {
   FlatList,
   TextInput,
   Image,
-  Keyboard
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -19,29 +18,30 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import BottomSheet from 'reanimated-bottom-sheet';
 
 // Components
-import MainTemplate from '../components/MainTemplate';
-import HeaderBottomLine from '../components/HeaderBottomLine';
-import { HeaderForm } from '../components/HeaderForm';
-import DefaultUserPhoto from '../components/defaults/DefaultUserPhoto';
-import CommentBar from '../components/comment/CommentBar';
-import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
+import MainTemplate from '../../components/MainTemplate';
+import HeaderBottomLine from '../../components/HeaderBottomLine';
+import { HeaderForm } from '../../components/HeaderForm';
+import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
+import CommentBar from '../../components/comment/CommentBar';
+import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 
 // firebase
-import commentGetFire from '../firebase/commentGetFire';
-import commentPostFire from '../firebase/commentPostFire';
+import commentGetFire from '../../firebase/commentGetFire';
+import commentPostFire from '../../firebase/commentPostFire';
 // Design
 
 // contexts
-import { Context as AuthContext } from '../context/AuthContext';
+import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
-import count from '../hooks/count';
+import count from '../../hooks/count';
+import useIsKeyboardVisible from '../../hooks/useIsKeyboardVisible';
 
 // color
-import color from '../color';
+import color from '../../color';
 
 // icon
-import expoIcons from '../expoIcons';
+import expoIcons from '../../expoIcons';
 
 const RenderContent = ({ 
   navigation, 
@@ -53,7 +53,6 @@ const RenderContent = ({
   currentUserPhotoURL,
   newComment, 
   setNewComment,
-  commentCount,
   isKeyboardVisible,
   postCommentState,
   setPostCommentState
@@ -64,11 +63,11 @@ const RenderContent = ({
       behavior={Platform.OS == "ios" ? "padding" : "height"}
     >
       <HeaderForm
-        leftButtonTitle={
-          commentCount
-          ? `${commentCount} ${count.commentOrComments(commentCount)}`
-          : null
-        }
+        // leftButtonTitle={
+        //   commentCount
+        //   ? `${commentCount} ${count.commentOrComments(commentCount)}`
+        //   : null
+        // }
         leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
         leftButtonPress={() => {
           navigation.goBack();
@@ -205,35 +204,15 @@ const CommentScreen = ({ navigation, route }) => {
   const [ commentFetchSwitch, setCommentFetchSwitch ] = useState(true);
   const [ commentFetchState, setCommentFetchState ] = useState(false);
 
-  const [ isKeyboardVisible, setIsKeyboardVisible ] = useState(false);
+  const [ isKeyboardVisible ] = useIsKeyboardVisible();
 
-  const { postId, commentCount } = route.params;
+  const { postId } = route.params;
 
   const { 
     state: {
       user
     }
   } = useContext(AuthContext);
-
-  // listen keyboard open close
-  useEffect(() => {
-    Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
-    Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
-
-    // cleanup function
-    return () => {
-      Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
-      Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
-    };
-  }, []);
-
-  const _keyboardDidShow = () => {
-    setIsKeyboardVisible(true);
-  };
-
-  const _keyboardDidHide = () => {
-    setIsKeyboardVisible(false);
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -300,7 +279,6 @@ const CommentScreen = ({ navigation, route }) => {
                 currentUserPhotoURL={user.photoURL}
                 newComment={newComment}
                 setNewComment={setNewComment}
-                commentCount={commentCount}
                 isKeyboardVisible={isKeyboardVisible}
                 postCommentState={postCommentState}
                 setPostCommentState={setPostCommentState}

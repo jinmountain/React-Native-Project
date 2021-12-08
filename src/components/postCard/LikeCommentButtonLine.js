@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { useNavigation } from '@react-navigation/native';
 
 // Designs
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -28,18 +29,20 @@ import color from '../../color';
 import THButtonWOBorder from '../buttons/THButtonWOBorder';
 import TagLine from '../TagLine';
 
-const PostLikeCommentTimeInfo = ({ 
+const LikeCommentButtonLine = ({ 
   countRating, 
   postId, 
   uid, 
   tags, 
   likeCount,
-  comment_count,
+  commentCount,
   currentUserId
 }) => {
   const [ likeCountState, setLikeCountState ] = useState(likeCount);
   const [ like, setLike ] = useState(false);
   const [ likeButtonReady, setLikeButtonReady ] = useState(false);
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     let isMounted = true;
@@ -95,6 +98,12 @@ const PostLikeCommentTimeInfo = ({
       }
       <TouchableOpacity
         style={styles.buttonContainer}
+        onPress={() => {
+          navigation.navigate('Comment', {
+            postId: postId,
+            commentCount: commentCount
+          });
+        }}
       >
         <AntDesign name="message1" size={styles.buttonSize} color="black" />
       </TouchableOpacity>
@@ -138,4 +147,4 @@ const styles = StyleSheet.create({
   buttonSize: RFValue(27),
 });
 
-export default PostLikeCommentTimeInfo;
+export default LikeCommentButtonLine;
