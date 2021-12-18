@@ -162,10 +162,10 @@ const convertEtcToHourMin = (etc) => {
 		if (min == 0) {
 			return hourString + ' hour'
 		} else {
-			return hourString + ' hour ' + minString + ' min'
+			return hourString + ' hour ' + minString + ' minutes'
 		}
 	} else {
-		return String(etcNumber) + ' min'
+		return String(etcNumber) + ' minutes'
 	}
 };
 
@@ -230,7 +230,7 @@ const convertToMonthly = (timestamp) => {
 	var dayIndex = getTime.getDay();
 	var day = days[getTime.getDay()];
 
-	return month + ", " + abbreviatedYear
+	return month + ", " + year
 };
 
 const getMonthMovesBtwDateNowAndThis = (dateNow, ThisDate) => {

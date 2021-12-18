@@ -6,9 +6,14 @@ import PostsSwipeScreen from '../screens/PostsSwipeScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
 import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
+
 import CommentScreen from '../screens/comment/CommentScreen';
 import CommentManagerScreen from '../screens/comment/CommentManagerScreen';
 import CommentEditScreen from '../screens/comment/CommentEditScreen';
+
+import ReplyScreen from '../screens/reply/ReplyScreen';
+import ReplyManagerScreen from '../screens/reply/ReplyManagerScreen';
+import ReplyEditScreen from '../screens/reply/ReplyEditScreen';
 
 // Stacks
 // import UserAccountStack from './UserAccountStack';
@@ -21,24 +26,7 @@ const PostsSwipeStack = () => {
       screenOptions={{ 
         headerShown: false,
         animationEnabled: false,
-        // cardStyle: { backgroundColor: 'transparent' },
-        // cardStyleInterpolator: ({ current: { progress } }) => ({
-        //   // screen
-        //   cardStyle: {
-        //     opacity: progress.interpolate({
-        //       inputRange: [0, 0.5, 0.9, 1],
-        //       outputRange: [0, 0.25, 0.7, 1],
-        //     }),
-        //   },
-        //   // screen background
-        //   overlayStyle: {
-        //     opacity: progress.interpolate({
-        //       inputRange: [0, 1],
-        //       outputRange: [0, 0.5],
-        //       extrapolate: 'clamp',
-        //     }),
-        //   },
-        // }),
+        presentation: 'transparentModal'
       }}
     >
       <Stack.Screen 
@@ -56,12 +44,24 @@ const PostsSwipeStack = () => {
           accountUserId: null,
           businessUserId: null,
         }}
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
       />
       <Stack.Screen 
         name="PostDetail" 
         component={PostDetailScreen} 
         options={{ 
           headerShown: false,
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
         }}
       />
       <Stack.Screen 
@@ -90,6 +90,39 @@ const PostsSwipeStack = () => {
         name="CommentEdit" 
         component={CommentEditScreen} 
         options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="Reply" 
+        component={ReplyScreen} 
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="ReplyManager" 
+        component={ReplyManagerScreen} 
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="ReplyEdit" 
+        component={ReplyEditScreen} 
+        options={{ 
           cardStyle: {
             backgroundColor: 'transparent',
           },

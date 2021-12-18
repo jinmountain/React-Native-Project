@@ -19,7 +19,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { useNavigation } from '@react-navigation/native';
 
 // firebase
-import commentGetFire from '../../firebase/commentGetFire';
+import commentGetFire from '../../firebase/comment/commentGetFire';
 import usersGetFire from '../../firebase/usersGetFire';
 
 // components
@@ -113,9 +113,12 @@ const PostCardCommentLine = ({ postId, currentUserPhotoURL, commentCount }) => {
                 </Text>
               </View>
             </View>
-            <View style={styles.viewCommentsContainer}>
-              <Text style={styles.viewCommentsText}>View {commentCount} {count.commentOrComments(commentCount)}</Text>
-            </View>
+            {
+              commentCount &&
+              <View style={styles.viewCommentsContainer}>
+                <Text style={styles.viewCommentsText}>View {commentCount} {count.commentOrComments(commentCount)}</Text>
+              </View>
+            }
           </View>
         </TouchableWithoutFeedback>
         : 

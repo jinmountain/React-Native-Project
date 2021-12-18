@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { 
   View,
   StyleSheet,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -27,12 +28,15 @@ import MainTemplate from '../components/MainTemplate';
 import GetPostLoading from '../components/GetPostLoading';
 // End Sign
 import PostEndSign from '../components/PostEndSign';
+import PanX from '../components/PanX';
 
 // Color
 import color from '../color';
 
 // expo icons
 import expoIcons from '../expoIcons';
+
+// const { width, height } = Dimensions.get("window");
 
 const screenSelector = (
   screen,
@@ -86,7 +90,9 @@ const PostsSwipeScreen = ({ route, navigation }) => {
   const [ swipePostFetchSwitch, setSwipePostFetchSwtich ] = useState(true);
   const [ swipePostState, setSwipePostState ] = useState(false);
 
+  // for user account screen
   const [ swipeScreenAccountUserId, setSwipeScreenAccountUserId ] = useState(null);
+  // for business search screen
   const [ swipeScreenBusinessUserId, setSwipeScreenBusinessUserId ] = useState(null);
 
   //console.log("PostsSwipe: postSource: ", postSource, "| index: ", cardIndex, "| posts: ", posts.length);
@@ -126,65 +132,70 @@ const PostsSwipeScreen = ({ route, navigation }) => {
   } = useContext(AuthContext);
 
   return (
-    <View style={styles.mainContainer}>
-      <HeaderForm 
-        leftButtonTitle={null}
-        leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
-        headerTitle={null} 
-        rightButtonTitle={null} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          null
-        }}
-        addPaddingTop={true}
-      />
-      <View style={{flex: 1}}>
-        <PostCardsVerticalSwipe
-          postSource={postSource}
-          cardIndex={cardIndex}
+    <PanX 
+      panXAction={() => navigation.goBack()}
+      content={
+        <View style={styles.mainContainer}>
+          <HeaderForm 
+            leftButtonTitle={null}
+            leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
+            headerTitle={null} 
+            rightButtonTitle={null} 
+            leftButtonPress={() => {
+              navigation.goBack();
+            }}
+            rightButtonPress={() => {
+              null
+            }}
+            addPaddingTop={true}
+          />
+          <View style={{flex: 1}}>
+            <PostCardsVerticalSwipe
+              postSource={postSource}
+              cardIndex={cardIndex}
 
-          getPosts={
-            screenSelector(
-              postSource, 
-              [], 
-              // hot posts
-              contentGetFire.getHotPostsFire,
-              // account posts
-              contentGetFire.getUserPostsFire,
-              // account display posts 
-              contentGetFire.getBusinessDisplayPostsFire,
-              // business user posts (ex. search screen)
-              contentGetFire.getBusinessDisplayPostsFire,
-              // business tagged posts (ex. serach screen reviews)
-              contentGetFire.getTaggedPostsFire,
-              // getUserAccountPosts,
-              contentGetFire.getUserPostsFire,
-              // user account display post
-              contentGetFire.getBusinessDisplayPostsFire
-            )
-          }
+              getPosts={
+                screenSelector(
+                  postSource, 
+                  [], 
+                  // hot posts
+                  contentGetFire.getHotPostsFire,
+                  // account posts
+                  contentGetFire.getUserPostsFire,
+                  // account display posts 
+                  contentGetFire.getBusinessDisplayPostsFire,
+                  // business user posts (ex. search screen)
+                  contentGetFire.getBusinessDisplayPostsFire,
+                  // business tagged posts (ex. serach screen reviews)
+                  contentGetFire.getTaggedPostsFire,
+                  // getUserAccountPosts,
+                  contentGetFire.getUserPostsFire,
+                  // user account display post
+                  contentGetFire.getBusinessDisplayPostsFire
+                )
+              }
 
-          swipePosts={swipePosts}
-          swipePostFetchSwitch={swipePostFetchSwitch}
-          swipePostLast={swipePostLast}
-          swipePostState={swipePostState}
+              swipePosts={swipePosts}
+              swipePostFetchSwitch={swipePostFetchSwitch}
+              swipePostLast={swipePostLast}
+              swipePostState={swipePostState}
 
-          setSwipePosts={setSwipePosts}
-          setSwipePostLast={setSwipePostLast}
-          setSwipePostFetchSwtich={setSwipePostFetchSwtich}
-          setSwipePostState={setSwipePostState}
+              setSwipePosts={setSwipePosts}
+              setSwipePostLast={setSwipePostLast}
+              setSwipePostFetchSwtich={setSwipePostFetchSwtich}
+              setSwipePostState={setSwipePostState}
 
-          currentUser={{ id: user.id, photoURL: user.photoURL }}
-          // search screen
-          businessUserId={swipeScreenBusinessUserId}
-          // need for UserAccountScreen
-          accountUserId={swipeScreenAccountUserId}
-        />
-      </View>
-      {swipePostState && <GetPostLoading />}
-    </View>
+              currentUser={{ id: user.id, photoURL: user.photoURL }}
+              // search screen
+              businessUserId={swipeScreenBusinessUserId}
+              // need for UserAccountScreen
+              accountUserId={swipeScreenAccountUserId}
+            />
+          </View>
+          {swipePostState && <GetPostLoading />}
+        </View>
+      }
+    />
   )
 };
 

@@ -34,17 +34,9 @@ const { width, height } = Dimensions.get("window");
 
 const DeletionConfirmationScreen = ({ route, navigation }) => {
 	const { 
-		requestType,
-
-		postId, 
-		postData,
-
-		rsvId,
-    busId,
-    busLocationType,
-    busLocality,
-    cusId,
-    postServiceType,
+		headerText,
+		messageText,
+		requestAction,
 	} = route.params;
 	const { current } = useCardAnimation();
 
@@ -76,117 +68,98 @@ const DeletionConfirmationScreen = ({ route, navigation }) => {
 			>
 				<View style={styles.headerContainer}>
 					{
-						requestType === 'post'
+						headerText
 						?
 						<Text style={styles.headerText}>
-							Delete Post?
-						</Text>
-						:
-						requestType === 'rsv'
-						?
-						<Text style={styles.headerText}>
-							Cancel Reservation?
+							{headerText}
 						</Text>
 						:
 						<Text style={styles.headerText}>
-							Unrecognized Request Type
+							404
 						</Text>
 					}
 				</View>
 				<View style={styles.messageContainer}>
 					{
-						requestType === 'post' || requestType === 'rsv'
+						messageText
 						?
 						<Text style={styles.messageText}>
 							This can’t be undone and it will be removed from your account and Wonder search results.
 						</Text>
 						:
 						<Text style={styles.messageText}>
-							request type is not matched.
+							Sometimes, things don't go as planned
 						</Text>
 					}
 				</View>
 				<HeaderBottomLine />
 				<View style={styles.buttonContainer}>
 					<TouchableHighlight 
-						style={[ styles.button, { backgroundColor: color.red1 } ]}
-						onPress={() => {
-							if (requestType === 'post') {
-								const deletePost = contentDeleteFire.deletePostFire(postId, postData);
-								deletePost
-								.then(() => {
-									navigation.goBack();
-								})
-								.catch((error) => {
-									console.log("error occured: deletePost: ", error);
-								})
-							}
-							else if (requestType === 'rsv') {
-								const cancelRsv = rsvPostFire.cancelRsv(
-									rsvId,
-									busId,
-									busLocationType,
-									busLocality,
-									cusId,
-									postServiceType,
-								);
-								cancelRsv
-								.then((result) => {
-									if (result === true) {
-										console.log("deleted the rsv");
-										navigation.navigate('UserRsv', {
-											screenRefresh: true,
-											showAlertBoxRequest: true,
-											showAlertBoxRequestText: "Your Reservation is Cancelled"
-										});
-									} 
-									if (result === "rsvNotFound") {
-										console.log("cannot delete. the rsv is not found");
-										navigation.navigate('UserRsv', {
-											screenRefresh: true,
-											showAlertBoxRequest: true,
-											showAlertBoxRequestText: "Reservation Not Found."
-										});
-									}
-								})
-								.catch((error) => {
-									console.log("error occured: cancelRsv: ", error);
-									navigation.navigate('UserRsv', {
-										screenRefresh: true,
-										showAlertBoxRequest: true,
-										showAlertBoxRequestText: "Something went wrong. Try Again Later."
-									});
-								})
-							}
-							
-						}}
+						style={[ styles.button, { borderColor: color.grey4, borderWidth: RFValue(1) }]}
+						// onPress={() => {
+							// if (requestType === 'post') {
+							// 	const deletePost = contentDeleteFire.deletePostFire(postId, postData);
+							// 	deletePost
+							// 	.then(() => {
+							// 		navigation.goBack();
+							// 	})
+							// 	.catch((error) => {
+							// 		console.log("error occured: deletePost: ", error);
+							// 	})
+							// }
+							// else if (requestType === 'rsv') {
+							// 	const cancelRsv = rsvPostFire.cancelRsv(
+							// 		rsvId,
+							// 		busId,
+							// 		busLocationType,
+							// 		busLocality,
+							// 		cusId,
+							// 		postServiceType,
+							// 	);
+							// 	cancelRsv
+							// 	.then((result) => {
+							// 		if (result === true) {
+							// 			console.log("deleted the rsv");
+							// 			navigation.navigate('UserRsv', {
+							// 				screenRefresh: true,
+							// 				showAlertBoxRequest: true,
+							// 				showAlertBoxRequestText: "Your Reservation is Cancelled"
+							// 			});
+							// 		} 
+							// 		if (result === "rsvNotFound") {
+							// 			console.log("cannot delete. the rsv is not found");
+							// 			navigation.navigate('UserRsv', {
+							// 				screenRefresh: true,
+							// 				showAlertBoxRequest: true,
+							// 				showAlertBoxRequestText: "Reservation Not Found."
+							// 			});
+							// 		}
+							// 	})
+							// 	.catch((error) => {
+							// 		console.log("error occured: cancelRsv: ", error);
+							// 		navigation.navigate('UserRsv', {
+							// 			screenRefresh: true,
+							// 			showAlertBoxRequest: true,
+							// 			showAlertBoxRequestText: "Something went wrong. Try Again Later."
+							// 		});
+							// 	})
+							// }
+						// }}
 						underlayColor={color.grey4}
 					>
-						{	
-							requestType === 'post' || requestType === 'rsv'
-							?
-							<Text style={[ styles.deleteText, { color: color.white1 }]}>Delete</Text>
-							:
-							<Text style={[ styles.deleteText, { color: color.white1 }]}>...</Text>
-						}
+						<Text style={styles.deleteText}>Delete</Text>
 					</TouchableHighlight>
 				</View>
 				<HeaderBottomLine />
 				<View style={styles.buttonContainer}>
 					<TouchableHighlight 
-						style={[ styles.button, {borderColor: color.grey4, borderWidth: RFValue(1)}]}
+						style={[ styles.button, { backgroundColor: color.red1 }]}
 						onPress={() => {
 							navigation.goBack();
 						}}
 						underlayColor={color.grey4}
 					>
-						{
-							requestType === 'post' || requestType === 'rsv'
-							?
-							<Text style={styles.dontDeleteText}>No</Text>
-							:
-							<Text style={styles.dontDeleteText}>...</Text>
-						}
+						<Text style={[ styles.dontDeleteText, { color: color.white1 }]}>No</Text>
 					</TouchableHighlight>
 				</View>
 			</Animated.View>
@@ -228,7 +201,7 @@ const styles = StyleSheet.create({
 		paddingVertical: RFValue(10),
 	},
 	deleteText: {
-		color: color.blue1,
+		color: color.black1,
 		fontSize: RFValue(20),
 		fontWeight: 'bold',
 	},

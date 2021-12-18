@@ -1,5 +1,4 @@
-import Firebase from '../firebase/config'
-import { navigate } from '../navigationRef';
+import Firebase from '../../firebase/config'
 
 const usersRef = Firebase.firestore().collection("users");
 const postsRef = Firebase.firestore().collection("posts");

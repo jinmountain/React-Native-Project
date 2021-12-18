@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, { useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   StyleSheet, 
   Button, 
@@ -11,9 +11,12 @@ import {
   TouchableHighlight,
   Alert
 } from 'react-native';
+
+// npms
 import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 
 // Components
 import CancelButton from '../components/CancelButton';
@@ -32,6 +35,7 @@ import TwoButtonAlert from '../components/TwoButtonAlert';
 import MainTemplate from '../components/MainTemplate';
 import DisplayPostInfoInputForm from '../components/createPost/DisplayPostInfoInputForm';
 import HeaderBottomLine from '../components/HeaderBottomLine';
+import Picker from '../components/Picker';
 
 // Contexts
 import { Context as LocationContext } from '../context/LocationContext';
@@ -50,13 +54,124 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
 
 // Firebase
-import businessGetFire from '../firebase/businessGetFire';
 import usersGetFire from '../firebase/usersGetFire';
 import contentPostFire from '../firebase/contentPostFire';
 import authFire from '../firebase/authFire';
 
 // Color
 import color from '../color';
+
+// business' services
+const services = [
+  {
+    label: "Nail",
+    value: "nail"
+  },
+  {
+    label: "Hair",
+    value: "hair",
+  },
+  {
+    label: "Eyelash",
+    value: "eyelash",
+  }
+];
+
+// display posts' etc
+const times = [
+  {
+    label: "10 minutes",
+    value: 10
+  },
+  {
+    label: "15 minutes",
+    value: 15
+  },
+  {
+    label: "20 minutes",
+    value: 20
+  },
+  {
+    label: "25 minutes",
+    value: 25
+  },
+  {
+    label: "30 minutes",
+    value: 30
+  },
+  {
+    label: "35 minutes",
+    value: 35
+  },
+  {
+    label: "40 minutes",
+    value: 40
+  },
+  {
+    label: "45 minutes",
+    value: 45
+  },
+  {
+    label: "50 minutes",
+    value: 50
+  },
+  {
+    label: "55 minutes",
+    value: 55
+  },
+  {
+    label: "1 hour",
+    value: 60
+  },
+  {
+    label: "1 hour 5 minutes",
+    value: 65
+  },
+  {
+    label: "1 hour 10 minutes",
+    value: 70
+  },
+  {
+    label: "1 hour 15 minutes",
+    value: 75
+  },
+  {
+    label: "1 hour 20 minutes",
+    value: 80
+  },
+  {
+    label: "1 hour 25 minutes",
+    value: 85
+  },
+  {
+    label: "1 hour 30 minutes",
+    value: 90
+  },
+  {
+    label: "1 hour 35 minutes",
+    value: 95
+  },
+  {
+    label: "1 hour 40 minutes",
+    value: 100
+  },
+  {
+    label: "1 hour 45 minutes",
+    value: 105
+  },
+  {
+    label: "1 hour 50 minutes",
+    value: 110
+  },
+  {
+    label: "1 hour 55 minutes",
+    value: 115
+  },
+  {
+    label: "2 hours",
+    value: 120
+  },
+];
 
 const AddPost = (  
   files, 
@@ -180,6 +295,21 @@ const ContentCreateScreen = ({ route, navigation }) => {
   
   const [ alertBoxStatus, setAlertBoxStatus ] = useState(false);
   const [ alertBoxText, setAlertBoxText ] = useState(null);
+  // Bottom Sheet  and Picker
+  const [ isModalVisible, setIsModalVisible ] = useState(false);
+  const [ pickerType, setPickerType ] = useState(null);
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => 
+    // [height-RFValue(95)-width-RFValue(55), height-RFValue(95)-RFValue(55)],
+    ['50%'],
+    []
+  );
+  const handleSheetChanges = useCallback((index) => {
+    if (index === -1) {
+      setIsModalVisible(false);
+    } 
+    // console.log('handleSheetChanges', index);
+  }, []);
 
   // TBA => TwoButtonAlert
   const [ tbaStatus, setTbaStatus ] = useState(false);
@@ -193,6 +323,14 @@ const ContentCreateScreen = ({ route, navigation }) => {
   const [ postETC, setPostETC ] = useState(null);
   // Technicians for the nail design of this post
   const [ selectedTechs, setSelectedTechs ] = useState([]);
+  const resetDisplayPostInfo = () => {
+    setPostService(null);
+    setPostTitle(null);
+    setPostPrice(null);
+    setPostETC(null);
+    setSelectedTechs([]);
+    setIsModalVisible(false);
+  }
   const [ chosenTech, setChosenTech ] = useState(null);
   const [ rating, setRating ] = useState(null);
   const [ chosenUser, setChosenUser ] = useState(null);
@@ -209,13 +347,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
   const changeProgress = useCallback((progress) => {
       setProgress(progress);
   },[]);
-  const [ techFetchLast, setTechFetchLast ] = useState(null);
-  const [ techFetchState, setTechFetchState ] = useState(false);
-  const [ techFetchSwitch, setTechFetchSwitch ] = useState(true);
-  const [ currentTechs, setCurrentTechs ] = useState([]);
-  const appendTechs = useCallback((techs) => {
-      setCurrentTechs([ ...currentTechs, ...techs ]);
-  }, []);
+
   // display post techs states
   const [ displayPostTechs, setDisplayPostTechs ] = useState([]);
   const [ displayPostTechsState, setDisplayPostTechsState ] = useState(false);
@@ -230,10 +362,9 @@ const ContentCreateScreen = ({ route, navigation }) => {
     setAlertBoxStatus(false);
     setAlertBoxText(null);
     setTbaStatus(false);
-    setPostService(null);
-    setPostTitle(null);
-    setPostETC(null);
-    setSelectedTechs([]);
+
+    resetDisplayPostInfo();
+
     setChosenTech(null);
     setRating(null);
     setChosenUser(null);
@@ -246,10 +377,6 @@ const ContentCreateScreen = ({ route, navigation }) => {
     setDisplay(false);
     setProgress(null);
     setPostState(false);
-    setTechFetchLast(null);
-    setTechFetchState(false);
-    setTechFetchSwitch(true);
-    setCurrentTechs([]);
 
     setDisplayPostTechs([]);
     setDisplayPostTechsState(false);
@@ -264,9 +391,6 @@ const ContentCreateScreen = ({ route, navigation }) => {
   } = useContext(AuthContext);
 
   useEffect(() => {
-    // if (files.length === 0) {
-    //   pickImage('nav');
-    // }
     return () => {
       Reset();
     }
@@ -310,34 +434,6 @@ const ContentCreateScreen = ({ route, navigation }) => {
     }
   }, [postPrice]);
   // get the list of techs when display is true
-  
-  // get current techs
-  useEffect(() => {
-    if (display) {
-      // get current technicians
-    if (techFetchSwitch && !techFetchState) {
-      setTechFetchState(true);
-        const getTechnicians = businessGetFire.getTechnicians(
-          user.id, 
-          setTechFetchLast,
-          setTechFetchSwitch,
-          techFetchLast,
-        );
-        getTechnicians
-        .then((techs) => {
-          appendTechs(techs);
-          setTechFetchState(false);
-        });
-      } else {
-        console.log(
-          "techFetchSwitch: "
-          + techFetchSwitch
-          + "techFetchState: "
-          + techFetchState
-        );
-      }
-    }
-  }, [display]);
 
   return (
     <View style={styles.screenContainer}>
@@ -401,7 +497,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
           }
         }}
         addPaddingTop={true}
-        paddingTopCustomStyle={{backgroundColor: color.red2}}
+        // paddingTopCustomStyle={{backgroundColor: color.red2}}
       />
       { usersFound
         ? 
@@ -453,7 +549,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
             <View style={styles.optionContainer}>
               {
                 postTitle && postPrice && postETC && selectedTechs.length > 0
-                ? <AntDesign name="checkcircleo" size={RFValue(19)} color={color.red2} />
+                ? <AntDesign name="checkcircleo" size={RFValue(19)} color={color.blue1} />
                 : <AntDesign name="checkcircleo" size={RFValue(19)} color={color.black1} />
               }
               <Text style={styles.optionText}>
@@ -465,17 +561,18 @@ const ContentCreateScreen = ({ route, navigation }) => {
                 }}
                 text={"Yes"}
                 value={display === true}
-                valueEffect={{ borderWidth: RFValue(2), borderColor: color.red2 }}
-                valueEffectText={{ color: color.red2 }}
+                valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
+                valueEffectText={{ color: color.blue1 }}
               />
               <THButtonWithBorder
                 onPress={() => {
                   setDisplay(false);
+                  resetDisplayPostInfo();
                 }}
                 text={"No"}
                 value={display === false}
-                valueEffect={{ borderWidth: RFValue(2), borderColor: color.red2 }}
-                valueEffectText={{ color: color.red2 }}
+                valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
+                valueEffectText={{ color: color.blue1 }}
               />
             </View>
             :
@@ -483,21 +580,23 @@ const ContentCreateScreen = ({ route, navigation }) => {
           }
           {
             display &&
-            <DisplayPostInfoInputForm 
+            <DisplayPostInfoInputForm
+              currentUserId={user.id}
               postPrice={postPrice}
               setPostPrice={setPostPrice}
               postETC={postETC}
               setPostETC={setPostETC}
-              currentTechs={currentTechs}
               selectedTechs={selectedTechs}
               setSelectedTechs={setSelectedTechs}
               postTitle={postTitle}
               setPostTitle={setPostTitle}
               postService={postService}
               setPostService={setPostService}
+              setIsModalVisible={setIsModalVisible}
+              setPickerType={setPickerType}
             />
           }
-          <InputFormBottomLine customStyles={{backgroundColor: color.red2, marginBottom: RFValue(15),}}/>
+          <InputFormBottomLine customStyles={{backgroundColor: color.black1, marginBottom: RFValue(15),}}/>
           
           {/*content upload box*/}
           <View style={styles.pickImageContainer}>
@@ -559,7 +658,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
               <Text style={{fontSize: 15,}}>The limit is {files.length} of pictures or videos.</Text>
             </View>
           }
-          <InputFormBottomLine customStyles={{marginTop: RFValue(15), backgroundColor: color.red2}}/>
+          <InputFormBottomLine customStyles={{marginTop: RFValue(15), backgroundColor: color.black1}}/>
           <View style={styles.tagCaptionInputContainer}>
             <TagInputForm 
               tags={tags}
@@ -608,7 +707,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
               }}
             >
               <View style={styles.button}>
-                <Text style={styles.buttonText}>POST</Text>
+                <Text style={styles.buttonText}>Send</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -650,6 +749,49 @@ const ContentCreateScreen = ({ route, navigation }) => {
           }}
           buttonTwoAction={() => { setTbaStatus(false)}}
         />
+      }
+      {
+        isModalVisible &&
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          enablePanDownToClose={true}
+          handleComponent={() => {
+            return (
+              <View 
+                style={styles.bottomSheetHeaderContainer}
+              > 
+                <View style={styles.sliderIndicatorContainer}>
+                  <View style={styles.sliderIndicator}/>
+                </View>
+              </View>
+            )
+          }}
+        >
+          {
+            pickerType === 'time'
+            ?
+            <Picker 
+              content={times}
+              setValue={setPostETC}
+              setIsModalVisible={setIsModalVisible}
+              defaultLabel={"Choose Estimated Time to Complete"}
+              defaultValue={null}
+            />
+            : pickerType === 'service'
+            ?
+            <Picker 
+              content={services}
+              setValue={setPostService}
+              setIsModalVisible={setIsModalVisible}
+              defaultLabel={"Choose Service Type"}
+              defaultValue={null}
+            />
+            : null
+          }
+        </BottomSheet>
       }
     </View>
   );
@@ -716,8 +858,8 @@ const styles = StyleSheet.create({
     marginBottom: RFValue(7),
   },
   button: {
-    borderColor: color.grey1,
-    borderWidth: 0.5,
+    borderColor: color.black1,
+    borderWidth: 1,
     borderRadius: 5,
     backgroundColor: '#fff',
     width: RFValue(250),
@@ -755,6 +897,30 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: RFValue(17),
     paddingHorizontal: RFValue(5),
+  },
+
+  bottomSheetHeaderContainer: {
+    paddingLeft: RFValue(15),
+    height: RFValue(55),
+    width: "100%", 
+    justifyContent: 'center',
+    borderTopLeftRadius: 9,
+    borderTopRightRadius: 9
+  },
+  bottomSheetHeaderTitleText: {
+    fontSize: RFValue(19),
+    color: color.black1,
+    fontWeight: 'bold'
+  },
+  sliderIndicatorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  sliderIndicator: {
+    width: 35,
+    height: 7,
+    backgroundColor: color.black1,
+    borderRadius: 100
   },
 });
 

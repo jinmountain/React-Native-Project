@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
 	Text, 
 	View, 
@@ -25,18 +25,187 @@ const windowHeight = Dimensions.get("window").height;
 
 const dateBoxWidth = windowWidth/7;
 
-const MonthCalendar = ({ 
+const DateBox = ({
+	box,
+	index,
+	dateNow,
 	chosenDate,
+	setChosenDate, 
+	setShowCalendar, 
+	setDateMoveFromToday, 
+	setCalendarMove,
+	canSelectPast,
+	todayDateInMs
+}) => {
+	console.log(box);
+	return (
+		<View 
+			key={index} 
+			style={
+				box.past && !box.today
+				?	[styles.dateBox, { opacity: 0.3 }]
+				: box.time.timestamp === chosenDate
+				? [ styles.dateBox, { borderWidth: 1, borderColor: color.red2, borderRadius: RFValue(7) }]
+				: !box.thisMonth
+				? [styles.dateBox, { backgroundColor: color.grey1 }]
+				: box.today && !box.past
+				? [styles.dateBox, { backgroundColor: color.blue1, borderRadius: RFValue(7) }]
+				: box.today && box.past
+				? [styles.dateBox, { backgroundColor: color.blue1, opacity: 0.3, borderRadius: RFValue(7) }]
+				: styles.dateBox
+			}
+		>
+			{
+				canSelectPast && box.past
+				?
+				<TouchableOpacity
+					onPress={() => {
+						setShowCalendar && setShowCalendar(false);
+						if (setDateMoveFromToday) {
+							const dateMove = (todayDateInMs - box.time.timestamp) / (- 24 * 60 * 60 * 1000);
+							setDateMoveFromToday(dateMove);
+						} 
+						setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, box.time.timestamp));
+					}}
+				>
+					<View style={styles.dateBoxTextContainer}>
+						<Text 
+							style={
+								box.time.timestamp === chosenDate
+								? [styles.dateBoxText, { color: color.red2 }]
+								: box.today
+								?
+								[styles.dateBoxText, { color: color.white2 }]
+								:
+								styles.dateBoxText
+							}
+						>
+							{box.time.date}
+						</Text>
+						{
+							box.time.timestamp === todayDateInMs
+							? <Text style={styles.todayText}>Today</Text>
+							: null
+						}
+					</View>
+				</TouchableOpacity>
+				: !canSelectPast && box.past
+				?
+				<View>
+					<View style={styles.dateBoxTextContainer}>
+						<Text 
+							style={
+								box.time.timestamp === chosenDate
+								? 
+								[styles.dateBoxText, { color: color.red2 }]
+								:
+								box.today
+								?
+								[styles.dateBoxText, { color: color.white2 }]
+								:
+								styles.dateBoxText
+							}
+						>
+							{box.time.date}
+						</Text>
+						{
+							box.time.timestamp === todayDateInMs
+							? <Text style={styles.todayText}>Today</Text>
+							: null
+						}
+					</View>
+				</View>
+				:
+				<TouchableOpacity
+					onPress={() => {
+						const dateMove = (todayDateInMs - box.time.timestamp) / (- 24 * 60 * 60 * 1000);
+						if (chosenDate === box.time.timestamp) {
+							setChosenDate(null);
+						} else {
+							setChosenDate(box.time.timestamp);
+						}
+						setShowCalendar && setShowCalendar(false);
+						if (setDateMoveFromToday) {
+							const dateMove = (todayDateInMs - box.time.timestamp) / (- 24 * 60 * 60 * 1000);
+							setDateMoveFromToday(dateMove);
+						} 
+						setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, box.time.timestamp));
+					}}
+				>
+					<View style={styles.dateBoxTextContainer}>
+						<Text 
+							style={
+								box.time.timestamp === chosenDate
+								? [styles.dateBoxText, { color: color.red2 }]
+								: box.today
+								?
+								[styles.dateBoxText, { color: color.white2 }]
+								:
+								styles.dateBoxText
+							}
+						>
+							{box.time.date}
+						</Text>
+						{
+							box.time.timestamp === todayDateInMs
+							? <Text style={styles.todayText}>Today</Text>
+							: null
+						}
+					</View>
+				</TouchableOpacity>
+			}
+		</View>
+
+	)
+}
+
+const DateRow = ({
+	key,
+	datesOnRow,
+	dateNow,
+	chosenDate,
+	setChosenDate, 
+	setShowCalendar, 
+	setDateMoveFromToday, 
+	setCalendarMove,
+	canSelectPast,
+	todayDateInMs
+}) => {
+	return (
+		<View style={styles.dateBoxContainer} key={key}>
+			{
+				datesOnRow.map((box, index) => (
+					<DateBox 
+						box={box}
+						index={index}
+						dateNow={dateNow}
+						chosenDate={chosenDate}
+						setChosenDate={setChosenDate}
+						setShowCalendar={setShowCalendar}
+						setDateMoveFromToday={setDateMoveFromToday}
+						setCalendarMove={setCalendarMove}
+						canSelectPast={canSelectPast}
+						todayDateInMs={todayDateInMs}
+					/>
+				))
+			}
+		</View>
+	)
+};
+
+const MonthCalendar = ({ 
 	dateNow, 
-	datesOnCalendar, 
+	datesOnCalendar,
+	chosenDate,
 	setChosenDate, 
 	setShowCalendar, 
 	setDateMoveFromToday, 
 	setCalendarMove,
 	canSelectPast
 }) => {
+	const [ todayDateInMs, setTodayDateInMs ] = useState(useConvertTime.convertToDateInMs(dateNow));
 	return (
-		<View >
+		<View>
 			<View style={styles.weekContainer}>
 				<View style={styles.dayContainer}>
 					<Text style={styles.dayText}>Sun</Text>
@@ -73,112 +242,22 @@ const MonthCalendar = ({
 				</View>
 			</View>
 			<HeaderBottomLine />
-			<View style={styles.dateBoxContainer}>
+			<View>
 				{
-					datesOnCalendar.map((item, index) => 
+					datesOnCalendar.map((row, index) => 
 			  	(
-			  		<View 
-			  			key={index} 
-			  			style={
-			  				item.past && !item.today
-			  				?	[styles.dateBox, { opacity: 0.3 }]
-			  				: item.time.timestamp === chosenDate
-			  				? [ styles.dateBox, { borderWidth: 1, borderColor: color.red2, borderRadius: RFValue(7) }]
-			  				: !item.thisMonth
-			  				? [styles.dateBox, { backgroundColor: color.grey1 }]
-			  				: item.today && !item.past
-			  				? [styles.dateBox, { backgroundColor: color.blue1, borderRadius: RFValue(7) }]
-			  				: item.today && item.past
-			  				? [styles.dateBox, { backgroundColor: color.blue1, opacity: 0.3, borderRadius: RFValue(7) }]
-			  				: styles.dateBox
-			  			}
-			  		>
-			  			{
-			  				canSelectPast && item.past
-			  				?
-			  				<TouchableOpacity
-									onPress={() => {
-										const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
-										setShowCalendar && setShowCalendar(false);
-										if (setDateMoveFromToday) {
-											const dateMove = (dateNowInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
-											console.log("dateNowInMs: ", dateNowInMs, "dateMove: ", dateMove);
-											setDateMoveFromToday(dateMove);
-										} 
-										setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
-									}}
-								>
-			  					<View style={styles.dateBoxTextContainer}>
-										<Text 
-											style={
-												item.time.timestamp === chosenDate
-												? [styles.dateBoxText, { color: color.red2 }]
-												: item.today
-												?
-												[styles.dateBoxText, { color: color.white2 }]
-												:
-												styles.dateBoxText
-											}
-										>
-											{item.time.date}
-										</Text>
-									</View>
-			  				</TouchableOpacity>
-			  				: !canSelectPast && item.past
-			  				?
-			  				<View>
-			  					<View style={styles.dateBoxTextContainer}>
-										<Text 
-											style={
-												item.today
-												?
-												[styles.dateBoxText, { color: color.white2 }]
-												:
-												styles.dateBoxText
-											}
-										>
-											{item.time.date}
-										</Text>
-									</View>
-			  				</View>
-			  				:
-			  				<TouchableOpacity
-									onPress={() => {
-										const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
-										const dateMove = (dateNowInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
-										console.log("dateNowInMs: ", dateNowInMs, "dateMove: ", dateMove);
-										if (chosenDate === item.time.timestamp) {
-											setChosenDate(null);
-										} else {
-											setChosenDate(item.time.timestamp);
-										}
-										setShowCalendar && setShowCalendar(false);
-										if (setDateMoveFromToday) {
-											const dateMove = (dateNowInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
-											console.log("dateNowInMs: ", dateNowInMs, "dateMove: ", dateMove);
-											setDateMoveFromToday(dateMove);
-										} 
-										setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
-									}}
-								>
-									<View style={styles.dateBoxTextContainer}>
-										<Text 
-											style={
-												item.time.timestamp === chosenDate
-												? [styles.dateBoxText, { color: color.red2 }]
-												: item.today
-												?
-												[styles.dateBoxText, { color: color.white2 }]
-												:
-												styles.dateBoxText
-											}
-										>
-											{item.time.date}
-										</Text>
-									</View>
-								</TouchableOpacity>
-			  			}
-						</View>
+			  		<DateRow
+							key={index}
+							datesOnRow={row}
+							dateNow={dateNow}
+							chosenDate={chosenDate}
+							setChosenDate={setChosenDate}
+							setShowCalendar={setShowCalendar}
+							setDateMoveFromToday={setDateMoveFromToday}
+							setCalendarMove={setCalendarMove}
+							canSelectPast={canSelectPast}
+							todayDateInMs={todayDateInMs}
+						/>
 			  	))
 				}
 			</View>
@@ -188,10 +267,10 @@ const MonthCalendar = ({
 
 const styles = StyleSheet.create({
 	dateBoxContainer: {
-		flexWrap: 'wrap',
 		flexDirection: 'row',
 	},
 	dateBox: {
+		backgroundColor: color.white2,
 		minWidth: dateBoxWidth,
 		maxWidth: dateBoxWidth,
 		paddingVertical: RFValue(7),
@@ -230,7 +309,12 @@ const styles = StyleSheet.create({
 		maxWidth: 1, 
 		backgroundColor: color.black1, 
 		alignSelf: 'center' 
-	}
+	},
+
+	todayText: {
+		color: color.black1,
+		fontSize: RFValue(9)
+	},
 
 });
 

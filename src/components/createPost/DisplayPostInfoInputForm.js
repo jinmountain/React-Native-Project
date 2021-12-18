@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FlatList,
   Image,
@@ -10,12 +10,10 @@ import {
   TouchableHighlight,
   Dimensions,
   TouchableOpacity,
-  Picker,
 } from "react-native";
 // TouchableOpacity from rngh works on both ios and android
 // import { TouchableOpacity } from 'react-native-gesture-handler';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
-import { Video, AVPlaybackStatus } from 'expo-av';
 
 // Components
 import DefaultUserPhoto from '../defaults/DefaultUserPhoto';
@@ -28,6 +26,10 @@ import { AntDesign } from '@expo/vector-icons';
 import useConvertTime from '../../hooks/useConvertTime';
 import { capitalizeFirstLetter } from '../../hooks/capitalizeFirstLetter';
 
+// Firebase
+import usersGetFire from '../../firebase/usersGetFire';
+import businessGetFire from '../../firebase/businessGetFire';
+
 // Color
 import color from '../../color';
 
@@ -38,106 +40,105 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 const techBoxWidth = windowWidth/3;
 
-const VerticalScrollModal = ({ children }) => {
+const TechBox = ({
+  techId,
+}) => {
+  const [ techData, setTechData ] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const getUserInfo = usersGetFire.getUserInfoFire(techId);
+    getUserInfo
+    .then((result) => {
+      isMounted && setTechData(result);
+    })
+    .catch((error) => {
+
+    });
+
+    return () => {
+      isMounted = false;
+    }
+  }, []);
+
   return (
-    <View style={{ height: '100%', width: '100%' }}>
-      <ScrollView>
-        {children}
-      </ScrollView>
+    techData &&
+    <View style={styles.techInnerContainer}>
+      { 
+        techData.photoURL
+        ?
+        <Image style={styles.techImage} source={{ uri: techData.photoURL }}/>
+        : 
+        <DefaultUserPhoto 
+          customSizeBorder={RFValue(57)}
+          cutomSizeUserIcon={RFValue(37)}
+        />
+      }
+      <View style={styles.techInfoContainer}>
+        <Text style={styles.techUsernameText}>
+          {techData.username}
+        </Text>
+      </View>
     </View>
   )
 };
 
-const VerticalScrollModalButton = ({ label, value, onPress, setModalVisible, showBackButton }) => {
-  return (
-    <TouchableHighlight
-      style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
-      onPress={() => {
-        onPress(value);
-        setModalVisible(false);
-      }}
-      underlayColor={color.grey4}
-    >
-      <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%", flexDirection: 'row'}}>
-        {
-          showBackButton &&
-          <View style={styles.modalCloseContainer}>
-            {expoIcons.chevronBack(RFValue(27), color.black1)}
-          </View>
-        }
-        <View>
-          <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
-        </View>
-      </View>
-    </TouchableHighlight>
-  )
-};
-
-const ChooseServiceModal = ({ setValue, setModalVisible }) => {
-  return (
-    <VerticalScrollModal>
-      <VerticalScrollModalButton label="Choose Service Type" value={null} onPress={setValue} setModalVisible={setModalVisible} showBackButton={true}/>
-      <VerticalScrollModalButton label="Nail" value="nail" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="Hair" value="hair" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="Eyelash" value="eyelash" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="Facial" value="facial" onPress={setValue} setModalVisible={setModalVisible} />
-    </VerticalScrollModal>
-  )
-}
-
-const ChooseTimeModal = ({setValue, setModalVisible}) => {
-  return (
-    <VerticalScrollModal>
-      <VerticalScrollModalButton label="Choose Time" value={null} onPress={setValue} setModalVisible={setModalVisible} showBackButton={true}/>
-      <VerticalScrollModalButton label="10 mins" value="10" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="15 mins" value="15" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="20 mins" value="20" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="25 mins" value="25" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="30 mins" value="30" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="35 mins" value="35" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="45 mins" value="45" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="50 mins" value="50" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="55 mins" value="55" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="60 mins" value="60" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 5 mins" value="65" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 10 mins" value="70" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 15 mins" value="75" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 20 mins" value="80" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 25 mins" value="85" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 30 mins" value="90" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 35 mins" value="95" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 40 mins" value="100" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 45 mins" value="105" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 50 mins" value="110" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="1 hour 55 mins" value="115" onPress={setValue} setModalVisible={setModalVisible} />
-      <VerticalScrollModalButton label="2 hours" value="120" onPress={setValue} setModalVisible={setModalVisible} />
-    </VerticalScrollModal>
-  )
-};
-
 const DisplayPostInfoInputForm = ({ 
+  currentUserId,
   postPrice,
   setPostPrice,
   postETC,
   setPostETC,
-  currentTechs,
   selectedTechs,
   setSelectedTechs,
   postTitle,
   setPostTitle,
   postService,
   setPostService,
+  setIsModalVisible,
+  setPickerType
 }) => {
+  const [ techFetchLast, setTechFetchLast ] = useState(null);
+  const [ techFetchState, setTechFetchState ] = useState(false);
+  const [ techFetchSwitch, setTechFetchSwitch ] = useState(true);
+  const [ currentTechs, setCurrentTechs ] = useState([]);
+
+  // get current techs
+  useEffect(() => {
+    let isMounted = true;
+    // get current technicians
+    if (techFetchSwitch && !techFetchState) {
+      setTechFetchState(true);
+      const getTechnicians = businessGetFire.getTechnicians(
+        currentUserId, 
+        techFetchLast,
+      );
+      getTechnicians
+      .then((result) => {
+        setCurrentTechs(result.techs);
+        isMounted && setTechFetchLast(result.lastTech);
+        if (!result.lastTech) {
+          isMounted && setTechFetchSwitch(false);
+        }
+        isMounted && setTechFetchState(false);
+      })
+    } else {
+      console.log(
+        "techFetchSwitch: "
+        + techFetchSwitch
+        + "techFetchState: "
+        + techFetchState
+      );
+    }
+
+    return () => {
+      isMounted = false;
+    }
+  }, []);
+
   const [ clickedAll, setClickedAll ] = useState(false);
-  const [ modalVisible,setModalVisible ] = useState(false);
   return (
-    modalVisible === 'time'
-    ?
-    <ChooseTimeModal setValue={setPostETC} setModalVisible={setModalVisible} />
-    : modalVisible === 'service'
-    ?
-    <ChooseServiceModal setValue={setPostService} setModalVisible={setModalVisible} />
-    :
     <View style={styles.infoInputFormContainer}>
       <InputFormBottomLine />
       <View style={styles.inputFormContainer}>
@@ -155,7 +156,8 @@ const DisplayPostInfoInputForm = ({
         }
         <TouchableOpacity
           onPress={() => {
-            setModalVisible('service');
+            setPickerType("service");
+            setIsModalVisible(true);
             setPostETC(null);
           }}
         >
@@ -239,7 +241,8 @@ const DisplayPostInfoInputForm = ({
         }
         <TouchableOpacity
           onPress={() => {
-            setModalVisible('time');
+            setPickerType("time");
+            setIsModalVisible(true);
             setPostETC(null);
           }}
         >
@@ -261,7 +264,7 @@ const DisplayPostInfoInputForm = ({
       <InputFormBottomLine />
       <View style={styles.pickTechLabelContainer}>
         <Text style={styles.pickTechLabelText}>
-          Pick the best technicians for the display post
+          Pick technicians for this display post
         </Text>
       </View>
 
@@ -273,36 +276,38 @@ const DisplayPostInfoInputForm = ({
           { 
             clickedAll
             ?
-            <TouchableOpacity 
+            <TouchableHighlight 
               onPress={() => {
                 setSelectedTechs([]);
                 setClickedAll(!clickedAll);
               }}
               style={styles.pickAllTechs}
+              underlayColor={color.grey4}
             >
               <View>
-                <AntDesign name="check" size={RFValue(27)} color={color.red2} />
+                <AntDesign name="check" size={RFValue(27)} color={color.black1} />
               </View>
-            </TouchableOpacity>
+            </TouchableHighlight>
             :
-            <TouchableOpacity 
+            <TouchableHighlight 
               onPress={() => {
                 let i;
                 let currentTechsId = [];
                 for (i = 0; i < currentTechs.length; i++) {
-                  currentTechsId.push(currentTechs[i].techData.id);
+                  currentTechsId.push(currentTechs[i].techBusData.techId);
                 }
                 setSelectedTechs(currentTechsId);
                 setClickedAll(!clickedAll);
               }}
               style={styles.pickAllTechs}
+              underlayColor={color.grey4}
             >
               <View>
-                <Text>
+                <Text style={styles.pickAllText}>
                   ALL
                 </Text>
               </View>
-            </TouchableOpacity>
+            </TouchableHighlight>
           }
           
           <FlatList
@@ -314,48 +319,38 @@ const DisplayPostInfoInputForm = ({
               return (
                 <TouchableOpacity 
                   onPress={() => {
-                    console.log(item.techData.id);
-                    if (selectedTechs.includes(item.techData.id)) {
+                    console.log(item.techBusData.techId);
+                    if (selectedTechs.includes(item.techBusData.techId)) {
                       setSelectedTechs([
-                        ...selectedTechs.filter((techId) => techId !== item.techData.id)
+                        ...selectedTechs.filter((techId) => techId !== item.techBusData.techId)
                       ])
                     } else {
-                      setSelectedTechs([...selectedTechs, item.techData.id]);
+                      setSelectedTechs([...selectedTechs, item.techBusData.techId]);
                     }
                   }}
                   style={styles.techContainer}
                 >
-                  <View style={styles.techInnerContainer}>
-                    { 
-                      item.techData.photoURL
-                      ?
-                      <Image style={styles.techImage} source={{ uri: item.techData.photoURL }}/>
-                      : 
-                      <DefaultUserPhoto 
-                        customSizeBorder={RFValue(57)}
-                        cutomSizeUserIcon={RFValue(37)}
-                      />
-                    }
-                    <View style={styles.techInfoContainer}>
-                      <Text style={styles.techUsernameText}>
-                        {item.techData.username}
-                      </Text>
-                    </View>
+                  <TechBox 
+                    techId={item.techBusData.techId}
+                  />
+                  <View>
+                    <Text stlye={styles.techInfoText}>
+                      {expoIcons.antdesignStaro(RFValue(13), color.yellow2)} {item.techBusData.countRating ? (Math.round(item.techBusData.totalRating/item.techBusData.countRating * 10) / 10) : "-"}
+                    </Text>
                   </View>
                   { 
-                    selectedTechs.includes(item.techData.id)
+                    selectedTechs.includes(item.techBusData.techId)
                     ?
                     <View style={styles.chosenStatus}>
                       <View style={styles.chosenShadow}>
                       
                       </View>
                       <View style={styles.chosenCheck}>
-                        <AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
+                        <AntDesign name="checkcircle" size={RFValue(23)} color={color.blue1} />
                       </View>
                     </View>
                     : null
                   }
-                  
                 </TouchableOpacity>
               )
             }}
@@ -403,22 +398,33 @@ const styles = StyleSheet.create({
   pickTechLabelContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: RFValue(13),
-    paddingVertical: RFValue(3),
+    paddingVertical: RFValue(7),
+    backgroundColor: color.grey1
   },
   pickTechLabelText: {
-    fontSize: RFValue(13),
+    fontSize: RFValue(15),
+    color: color.black1
   },
   pickTechContainer: {
     height: techBoxWidth,
     flexDirection: 'row',
     width: '100%',
+    paddingVertical: RFValue(5),
   },
   pickAllTechs: {
     width: RFValue(57),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: color.grey1,
+    backgroundColor: color.white2,
+    borderWidth: 1,
+    borderColor: color.black1,
+    borderRadius: 9,
+    marginHorizontal: RFValue(5)
+  },
+  pickAllText: {
+    fontSize: RFValue(15),
+    fontWeight: 'bold',
+    color: color.black1
   },
 
   pickTechContainerOuter: {
@@ -454,6 +460,11 @@ const styles = StyleSheet.create({
   },
   techUsernameText: {
     fontSize: RFValue(15),
+    color: color.black1
+  },
+  techInfoText: {
+    fontSize: RFValue(15),
+    color: color.black1
   },
 
   chosenStatus: {
@@ -514,10 +525,6 @@ const styles = StyleSheet.create({
   },
   timeInputText: {
     fontSize: RFValue(17),
-  },
-
-  modalCloseContainer: {
-
   },
 });
 

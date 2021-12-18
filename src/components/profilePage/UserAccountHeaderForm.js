@@ -17,6 +17,9 @@ import { Ionicons } from '@expo/vector-icons';
 // Color
 import color from '../../color';
 
+// sizes
+import sizes from '../../sizes';
+
 // Hooks
 import count from '../../hooks/count';
 import { useOrientation } from '../../hooks/useOrientation';
@@ -24,6 +27,7 @@ import { useOrientation } from '../../hooks/useOrientation';
 // Components
 import HeaderBottomLine from '../../components/HeaderBottomLine';
 
+const headerBoxHeight = sizes.headerBoxHeight;
 
 const UserAccountHeaderForm = ({ 
   userActiveState,
@@ -56,16 +60,19 @@ const UserAccountHeaderForm = ({
           }
         />
       }
-  		<View style={{ ...styles.accountScreenHeaderContainer, ...{ 
-        height: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), 
-        minHeight: orientation === 'LANDSCAPE' ? RFValue(50) : RFValue(70), } 
-      }}>
+  		<View 
+        // style={{ ...styles.accountScreenHeaderContainer, ...{ 
+        //   height: orientation === 'LANDSCAPE' ? headerBoxHeight : RFValue(70), 
+        //   minHeight: orientation === 'LANDSCAPE' ? headerBoxHeight : RFValue(70), } 
+        // }}
+        style={styles.accountScreenHeaderContainer}
+      >
         <View style={styles.compartmentOuter}>
           <View style={styles.leftCompartmentContainer}>
-            {
-              leftButtonIcon
-              ?
-              <View style={styles.leftButtonContainer}>
+            <View style={styles.leftCompartmentInnerContainer}>
+              {
+                leftButtonIcon
+                ?
                 <TouchableHighlight 
                   style={ 
                     styles.compartmentHighlight 
@@ -81,29 +88,29 @@ const UserAccountHeaderForm = ({
                     {leftButtonIcon}
                   </View>
                 </TouchableHighlight>
-              </View>
-              :
-              <View style={{ width: RFValue(17) }}/>
-            }
-            {
-              leftButtonTitle &&
-              <View style={styles.leftTitleContainer}>
-                <Text style={styles.leftTitleText}>{leftButtonTitle}</Text>
-              </View>
-            }
-            <View style={styles.usernameContainer}>
-              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={styles.compartmentText}>{username}</Text>
-              </View>
-              {
-                userActiveState
-                ?
-                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                  {userActiveState}
-                </View>
                 :
-                null
+                <View style={{ width: RFValue(17) }}/>
               }
+              {
+                leftButtonTitle &&
+                <View style={styles.compartmentTextContainer}>
+                  <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
+                </View>
+              }
+              <View style={styles.usernameContainer}>
+                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={styles.compartmentText}>{username}</Text>
+                </View>
+                {
+                  userActiveState
+                  ?
+                  <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    {userActiveState}
+                  </View>
+                  :
+                  null
+                }
+              </View>
             </View>
           </View>
 
@@ -175,7 +182,7 @@ const styles = StyleSheet.create({
     //     marginTop: '7%',
     //   }
     // })
-    height: RFValue(70),
+    height: headerBoxHeight,
   },
   compartmentOuter: {
     flex: 1, 
@@ -185,13 +192,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignSelf: 'flex-start',
-    flexDirection: 'row',
   },
-  leftButtonContainer: {
-    paddingLeft: RFValue(65),
+  leftCompartmentInnerContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingRight: RFValue(17),
+    flexDirection: 'row',
   },
   leftTitleContainer: {
     justifyContent: 'center',
@@ -210,9 +215,7 @@ const styles = StyleSheet.create({
   },
 
   rightCompartmentContainer: {
-    position: 'absolute',
     alignSelf: 'flex-end',
-    paddingRight: '3%',
   },
   headerTitle: {
     fontSize: RFValue(17),
@@ -231,18 +234,17 @@ const styles = StyleSheet.create({
   },
   headerElement: {
   	marginHorizontal: RFValue(3),
-  	padding: RFValue(3),
+  	padding: RFValue(5),
   	borderRadius: RFValue(100),
   	justifyContent: 'center',
   	alignItems: 'center',
   },
 
   compartmentHighlight: {
-    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    width: RFValue(70),
-    height: RFValue(70),
+    width: headerBoxHeight,
+    height: headerBoxHeight,
     borderRadius: RFValue(100),
   },
   compartment: {

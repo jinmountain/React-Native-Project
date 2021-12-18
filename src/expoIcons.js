@@ -114,6 +114,10 @@ const setting = (size, color) => {
 	return <Feather name="settings" size={size} color={color} />
 };
 
+const antdesignClockCircleO = (size, color) => {
+	return <AntDesign name="clockcircleo" size={size} color={color} />
+};
+
 const clockIcon = (size, color) => {
 	return <MaterialCommunityIcons name="clock-outline" size={size} color={color} />
 };
@@ -150,6 +154,18 @@ const ioniconsSend = (size, color) => {
 	return <Ionicons name="send" size={size} color={color} />
 };
 
+const evilIconsChevronDown = (size, color) => {
+	return <EvilIcons name="chevron-down" size={size} color={color} />
+};
+
+const evilIconsChevronUp = (size, color) => {
+	return <EvilIcons name="chevron-up" size={size} color={color} />
+};
+
+const antdesignStaro = (size, color) => {
+	return <AntDesign name="staro" size={size} color={color} />
+};
+
 
 export default { 
 	dollarSign, 
@@ -178,6 +194,7 @@ export default {
 	featherPlus,
 	phoneIcon,
 	setting,
+	antdesignClockCircleO,
 	clockIcon,
 	matClockTimeEightOutline,
 	fontAwesomeCalendarO,
@@ -186,5 +203,8 @@ export default {
 	featherColumns,
 	chevronBack,
 	matMessageTextOutline,
-	ioniconsSend
+	ioniconsSend,
+	evilIconsChevronDown,
+	evilIconsChevronUp,
+	antdesignStaro
 };

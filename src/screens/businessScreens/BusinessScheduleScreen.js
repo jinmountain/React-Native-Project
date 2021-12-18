@@ -165,6 +165,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 	const { businessUser } = route.params;
 	const [ dateNow, setDateNow ] = useState(Date.now());
+	const [ timezoneOffset, setTimezoneOffset ] = useState(null);
 
 	// business and special hours
 	const [ busBusinessHours, setBusBusinessHours ] = useState(null);
@@ -290,6 +291,14 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		});
   };
 
+  const resetCalendar = () => {
+  	setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
+		setDateMoveFromToday(0);
+		setCalendarDate(useConvertTime.convertToMonthInMs(Date.now() ));
+		setCalendarMove(0);
+		setShowCalendar(false);
+  }
+
 	const onRefresh = useCallback(() => {
   	let mounted = true;
     setRefreshing(true);
@@ -308,10 +317,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			setUserAccountDisplayPostFetchSwtich(true);
 			setUserAccountDisplayPostState(false);
 
-			setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
-			setDateMoveFromToday(0);
-			setCalendarDate(useConvertTime.convertToMonthInMs(Date.now() ));
-			setCalendarMove(0);
+			resetCalendar();
 
 			setPickedDisplayPost(null);
 			setDisplayPostTechs([]);
@@ -332,7 +338,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
     	const getScreenReady = new Promise ((res, rej) => {
 				if (userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
 					mounted && setUserAccountDisplayPostState(true);
-					const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, businessUser, user.id);
+					const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, businessUser.id);
 					getDisplayPosts
 					.then((posts) => {
 						mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
@@ -365,44 +371,24 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	// Contexts
 	const { state: { user } } = useContext(AuthContext);
 
-	useEffect(() => {
-		return () => {
-			setRefreshing(false);
-
-			setUserAccountDisplayPosts([]);
-			setUserAccountDisplayPostLast(null);
-			setUserAccountDisplayPostFetchSwtich(true);
-			setUserAccountDisplayPostState(false);
-
-			setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
-			setDateMoveFromToday(0);
-			setCalendarDate(useConvertTime.convertToMonthInMs(Date.now() ));
-			setCalendarMove(0);
-
-			setPickedDisplayPost(null);
-			setDisplayPostTechs([]);
-			setDisplayPostTechsState(false);
-			setSelectedTech(null);
-
-			setChartGridsState(false);
-			setChartGrids([[]]);
-			setGridExist(false);
-		}
-	}, []);
-
 	const [ datesOnCalendar, setDatesOnCalendar ] = useState([]);
 	const [ showCalendar, setShowCalendar ] = useState(false);
 
-	// Get display posts
+	// Get display posts and current user's timezone offset
 	useEffect(() => {
 		let mounted = true
+
+		const dateNow = new Date();
+		const diff = dateNow.getTimezoneOffset();
+		setTimezoneOffset(diff);
+
 		const getScreenReady = new Promise ((res, rej) => {
 			if (userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
 				mounted && setUserAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, businessUser, user.id);
+				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, businessUser.id);
 				getDisplayPosts
 				.then((posts) => {
-					mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
+					mounted && setUserAccountDisplayPosts(posts.fetchedPosts);
 					if (posts.lastPost !== undefined) {
 						mounted && setUserAccountDisplayPostLast(posts.lastPost);
 					} else {
@@ -424,12 +410,23 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 		return () => {
 			mounted = false;
+			setRefreshing(false);
+
 			setUserAccountDisplayPosts([]);
 			setUserAccountDisplayPostLast(null);
 			setUserAccountDisplayPostFetchSwtich(true);
 			setUserAccountDisplayPostState(false);
 
-			setShowCalendar(false);
+			resetCalendar();
+
+			setPickedDisplayPost(null);
+			setDisplayPostTechs([]);
+			setDisplayPostTechsState(false);
+			setSelectedTech(null);
+
+			setChartGridsState(false);
+			setChartGrids([[]]);
+			setGridExist(false);
 		}
 	}, [businessUser]);
 
@@ -454,7 +451,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
   		const getScheduleBusinessSpecialHours = businessGetFire.getScheduleBusinessSpecialHours(businessUser.id, selectedTech.id, rsvDate); 
     	getScheduleBusinessSpecialHours
     	.then((result) => {
-    		if (user.business_hours && result.techBusinessHours) {
+    		if (businessUser.business_hours && result.techBusinessHours) {
 	    		// at this point we have business and special hours of the businsess and the technician
 	    		// get the business hours of rsvDate for business and technician
 	    		// - the day index of rsvDate
@@ -486,7 +483,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	    			}
 	    		};
 	    		// business hours of rsvDate for business and technician
-	    		const rsvDateBusBusinessHours = getBusinessHoursOnDayIndex(dayIndexOfRsvDate, user.business_hours);
+	    		const rsvDateBusBusinessHours = getBusinessHoursOnDayIndex(dayIndexOfRsvDate, businessUser.business_hours);
 	    		const rsvDateTechBusinessHours = getBusinessHoursOnDayIndex(dayIndexOfRsvDate, result.techBusinessHours);
 	    		const rsvDateBusSpecialHours = result.busSpecialHours;
 	    		const rsvDateTechSpecialHours = result.techSpecialHours;
@@ -593,6 +590,9 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			  	.catch((error) => {
 			  		console.log("BusinessScheduleScreen: getRsvsStartAtOfTech: ", error);
 			  	});
+			  } else {
+			  	mounted && setChartGridsState(false);
+				  mounted && setChartGrids([[]]);
 			  }
     	})
     	.catch((error) => {
@@ -603,10 +603,10 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 	return (
 		<View style={styles.mainContainer}>
-			{ displayPostTechsState || userAccountDisplayPostState || chartGridsState
+			{/*{ displayPostTechsState || userAccountDisplayPostState || chartGridsState
         ? <LoadingAlert />
         : null
-      }
+      }*/}
 			<HeaderForm 
 				paddingTopCustomStyle={{ backgroundColor: color.red2 }}
 				addPaddingTop={true}
@@ -661,7 +661,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									let mounted = true;
 									if (mounted && screenReady && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
 										mounted && setUserAccountDisplayPostState(true);
-										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, businessUser, user.id);
+										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(userAccountDisplayPostLast, businessUser.id);
 										getDisplayPosts
 										.then((posts) => {
 											mounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
@@ -717,7 +717,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                  		stretchLabelWidth(firstLabelWidthAnim);
 			                  		stretchLabelHeight(firstLabelHeightAnim);
 			                  		unfoldLabelBorder(firstLabelBorderRadiusAnim);
-			                  		Vibration.vibrate(vibrationTime);
 													}
 		                  	}
 		                  }}
@@ -825,6 +824,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		                  		pressLabelWidth(secondLabelWidthAnim);
 		                  		pressLabelHeight(secondLabelHeightAnim)
 		                  		foldLabelBorder(secondLabelBorderRadiusAnim);
+		                  		resetCalendar();
 			                  } else {
 			                    setSelectedTech({ 
 			                    	id: item.techData.id, 
@@ -837,7 +837,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		                  		stretchLabelWidth(secondLabelWidthAnim);
 		                  		stretchLabelHeight(secondLabelHeightAnim);
 		                  		unfoldLabelBorder(secondLabelBorderRadiusAnim);
-		                  		Vibration.vibrate(vibrationTime);
 			                  }
 			                }}
 			                style={styles.techContainer}
@@ -1145,9 +1144,10 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 					showCalendar
 					?
 					<MonthCalendar 
+						chosenDate={rsvDate}
 						dateNow={dateNow}
 						datesOnCalendar={datesOnCalendar}
-						setDate={setRsvDate}
+						setChosenDate={setRsvDate}
 						setShowCalendar={setShowCalendar}
 	          setDateMoveFromToday={setDateMoveFromToday}
 	          setCalendarMove={setCalendarMove}
@@ -1225,9 +1225,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 																	foldLabelBorder(firstLabelBorderRadiusAnim),
 																	pressLabelWidth(secondLabelWidthAnim),
 																	pressLabelHeight(secondLabelWidthAnim),
-																	foldLabelBorder(secondLabelBorderRadiusAnim),
-
-																	Vibration.vibrate(vibrationTime)
+																	foldLabelBorder(secondLabelBorderRadiusAnim)
 						    								)
 								      					: console.log("not ready yet")
 								      				}

@@ -72,7 +72,7 @@ const TagInputForm = ({ tags, setTags }) => {
                     >
                       <View style={styles.unitContainer}>
                         <View style={styles.tagsContainer}>
-                          {expoIcons.snailShell(RFValue(15), color.red2)}
+                          {expoIcons.snailShell(RFValue(15), color.black1)}
                           <Text style={styles.tagText}>
                             {item}
                           </Text>
@@ -97,7 +97,7 @@ const TagInputForm = ({ tags, setTags }) => {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      <InputFormBottomLine customStyles={{backgroundColor: color.red2, marginTop: RFValue(3)}} />
+      <InputFormBottomLine customStyles={{backgroundColor: color.black1, marginTop: RFValue(3)}} />
     </View>
   );
 };
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   textInputLabel: {
     fontSize: RFValue(12),
     marginTop: RFValue(10),
-    color: color.red2
+    color: color.black1
   },
   textInputLabelContainer: {
     minHeight: RFValue(25),

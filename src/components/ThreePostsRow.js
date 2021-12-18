@@ -70,9 +70,21 @@ const ThreePostsRow = ({
         >
           <TouchableOpacity
             onPress={() => {
-              navigate('PostsSwipeStack', {
-                screen: 'PostsSwipe',
-                params: { 
+              // navigate('PostsSwipeStack', {
+              //   screen: 'PostsSwipe',
+              //   params: { 
+              //     postSource: screen,
+              //     cardIndex: index,
+              //     accountUserId: accountUserId,
+              //     posts: posts,
+              //     postState: postState,
+              //     postFetchSwitch: postFetchSwitch,
+              //     postLast: postLast,
+              //   }
+              // });
+              navigate(
+                'PostsSwipe',
+                { 
                   postSource: screen,
                   cardIndex: index,
                   accountUserId: accountUserId,
@@ -81,7 +93,7 @@ const ThreePostsRow = ({
                   postFetchSwitch: postFetchSwitch,
                   postLast: postLast,
                 }
-              });
+              );
             }}
           > 
           { 

@@ -24,19 +24,23 @@ const CaptionInputForm = ({caption, changeCaption}) => {
 					: null
 				}
 			</View>
-			<TextInput 
-				style={styles.captionInput}
-				value={caption} 
-				onChangeText={changeCaption} 
-				placeholderTextColor={color.grey1}
-				placeholder="Write about your new post."
-				multiline={true}
-				maxLength={300}
-				autoCapitalize="none"
-      	autoCorrect={false}
-      	underlineColorAndroid="transparent"
-			/>
-			{/*<InputFormBottomLine customStyles={{backgroundColor: color.red2, marginTop: RFValue(3)}}/>*/}
+			<View style={styles.textInputContainer}>
+				<View style={styles.verticalLine}/>
+				<TextInput 
+					style={styles.captionInput}
+					value={caption} 
+					onChangeText={changeCaption} 
+					placeholderTextColor={color.grey1}
+					placeholder="Write about your new post."
+					multiline={true}
+					maxLength={300}
+					autoCapitalize="none"
+	      	autoCorrect={false}
+	      	underlineColorAndroid="transparent"
+				/>
+				<View style={styles.verticalLine}/>
+			</View>
+			{/*<InputFormBottomLine customStyles={{backgroundColor: color.black1, marginTop: RFValue(3)}}/>*/}
 		</View>
 	);
 };
@@ -51,15 +55,21 @@ const styles = StyleSheet.create({
   textInputLabel: {
 	  fontSize: RFValue(12),
 	  marginTop: RFValue(10),
-	  color: color.red2,
+	  color: color.black1,
   },
   captionInput: {
+  	width: '100%',
     fontSize: RFValue(17),
     paddingLeft: RFValue(10),
   	height: RFValue(90),
-  	borderWidth: 1,
   	borderRadius: RFValue(15),
-  	borderColor: color.red2,
+  },
+  textInputContainer: {
+  	flexDirection: 'row'
+  },
+  verticalLine: {
+  	width: 1,
+  	backgroundColor: color.black1,
   },
 });
 

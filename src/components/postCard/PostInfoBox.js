@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   StyleSheet, 
   View, 
+  TouchableWithoutFeedback
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -16,6 +18,9 @@ import PostCardCommentLine from "./PostCardCommentLine";
 // color
 import color from '../../color';
 
+// expo icons
+import expoIcons from '../../expoIcons';
+
 const PostInfoBox = ({
   tags, 
   totalRating, 
@@ -23,7 +28,6 @@ const PostInfoBox = ({
 
   caption,
   defaultCaptionNumLines,
-  navigateToPostDetail,
 
   youLike, 
   postTimestamp,
@@ -33,46 +37,82 @@ const PostInfoBox = ({
   postId,
   postUserId,
 
-  height,
+  POST_INFO_BOX_HEIGHT,
 
   currentUserPhotoURL,
-  currentUserId
+  currentUserId,
+
+  postDetail,
+
+  expandInfoBox,
+  setExpandInfoBox,
+
+  cardIndex,
+  // setShowCommentPostIndex
 }) => {
+  const navigation = useNavigation();
+
   return (
-    <View style={
-      // height
-      // ?
-      // {...styles.infoBoxContainer, ...{ height: height }}
-      // : styles.infoBoxContainer
-      styles.infoBoxContainer
-    }>
-      <View style={styles.infoBoxTop}>
-        <LikeCommentButtonLine
-          countRating={countRating}
-          postId={postId}
-          postUserId={postUserId}
-          tags={tags}
-          likeCount={likeCount}
-          commentCount={commentCount}
-          currentUserId={currentUserId}
-        />
-      </View>
-      <View style={styles.infoBoxBody}>
-        <ExpandableText
-          caption={caption}
-          defaultCaptionNumLines={defaultCaptionNumLines}
-        />
-        <PostCardCommentLine
-          postId={postId}
-          currentUserPhotoURL={currentUserPhotoURL}
-          commentCount={commentCount}
-        />
-      </View>
-      <View style={styles.infoBoxBottom}>
-        <PostLikeCommentTimeInfo 
-          likeCount={likeCount}
-          postTimestamp={postTimestamp}
-        />
+    <View 
+      style={styles.infoBoxContainer}
+    >
+      <View style={styles.infoBoxInner}>
+        <View style={styles.infoBoxTop}>
+          <LikeCommentButtonLine
+            countRating={countRating}
+            postId={postId}
+            postUserId={postUserId}
+            likeCount={likeCount}
+            commentCount={commentCount}
+            currentUserId={currentUserId}
+            moreDetailExists={
+              postDetail 
+              ? false
+              : commentCount > 0 || caption
+              ? true 
+              : false
+            }
+            expandInfoBox={expandInfoBox}
+            setExpandInfoBox={setExpandInfoBox}
+            cardIndex={cardIndex}
+            // setShowCommentPostIndex={setShowCommentPostIndex}
+          />
+          {
+            tags && tags.length > 0
+            ?
+            <TagLine 
+              tags={tags}
+            />
+            : null
+          }
+        </View>
+        {
+          postDetail || expandInfoBox
+          ?
+          <View style={styles.infoBoxBody}>
+            <ExpandableText
+              caption={caption}
+              defaultCaptionNumLines={defaultCaptionNumLines}
+            />
+            <PostCardCommentLine
+              postId={postId}
+              currentUserPhotoURL={currentUserPhotoURL}
+              commentCount={commentCount}
+            />
+          </View>
+          : null
+        }
+        {
+          postDetail || expandInfoBox
+          ?
+          <View style={styles.infoBoxBottom}>
+            <PostLikeCommentTimeInfo 
+              likeCount={likeCount}
+              postTimestamp={postTimestamp}
+            />
+          </View>
+          : null
+        }
       </View>
     </View>
   )
@@ -80,19 +120,22 @@ const PostInfoBox = ({
 
 const styles = StyleSheet.create({
   infoBoxContainer: {
-    paddingHorizontal: RFValue(13),
-    paddingVertical: RFValue(5),
-    backgroundColor: color.white2
+    backgroundColor: color.white2,
+  },
+  infoBoxInner: {
+    justifyContent: 'center',
   },
   infoBoxTop: {
     // flex: 2
   },
   infoBoxBody: {
-
+    paddingHorizontal: RFValue(13),
   },
   infoBoxBottom: {
     // flex: 1, 
-    justifyContent: 'flex-end', 
+    paddingHorizontal: RFValue(13),
+    justifyContent: 'flex-end',
+    paddingVertical: RFValue(5)
   },
 });
 

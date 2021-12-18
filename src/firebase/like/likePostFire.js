@@ -3,7 +3,6 @@
 
 import Firebase from '../../firebase/config'
 import firebase from 'firebase/app';
-// import { navigate } from '../../navigationRef';
 const db = Firebase.firestore();
 const batch = db.batch();
 const postsRef = db.collection("posts");
@@ -80,7 +79,6 @@ const undoLikePostFire = (postId, uid) => {
           postsUserLikesRef.doc(uid).delete();
 
           // adjust the post doc
-
           postsRef
           .doc(postId)
           .set(
@@ -132,7 +130,8 @@ const likeCommentFire = (postId, commentId, currentUserId) => {
           // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
           // make a new doc in linkes
           commentsWhoLikeRef.doc(currentUserId).set({});
-          // Posts Ref
+          
+          // comment ref
           commentRef
           .set(
             { 
@@ -179,7 +178,6 @@ const undoLikeCommentFire = (postId, commentId, currentUserId) => {
           commentsWhoLikeRef.doc(currentUserId).delete();
 
           // adjust the comment doc
-
           commentRef
           .set(
             { 
@@ -204,4 +202,108 @@ const undoLikeCommentFire = (postId, commentId, currentUserId) => {
   });
 };
 
-export default { likePostFire, undoLikePostFire, likeCommentFire, undoLikeCommentFire };
+const likeReplyFire = (postId, commentId, replyId, currentUserId) => {
+  return new Promise ((res, rej) => {
+    const repliesWhoLikeRef = postsRef
+    .doc(postId)
+    .collection("comments")
+    .doc(commentId)
+    .collection("replies")
+    .doc(replyId)
+    .collection("whoLike");
+
+    const likeCountIncrement = firebase.firestore.FieldValue.increment(1);
+
+    const getLike = repliesWhoLikeRef.doc(currentUserId).get();
+    getLike
+    .then((doc) => {
+      if (doc.exists) {
+        // console.log("already liked: ", postId,)
+        res(false);
+      } else {
+        const replyRef = postsRef.doc(postId).collection("comments").doc(commentId).collection("replies").doc(replyId);
+        replyRef
+        .get()
+        .then((reply) => {
+          const replyData = reply.data();
+          // heat is like speed to me 
+          // (60 * 1000) is a minute since the time is in ms
+          // 1000 is a second
+          const timePassedInSec = (Date.now() - replyData.createdAt) / 1000;
+          const newHeat = Number((replyData.count_likes + 1) / timePassedInSec);
+          // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
+          // make a new doc in linkes
+          repliesWhoLikeRef.doc(currentUserId).set({});
+          
+          // reply ref
+          replyRef
+          .set(
+            { 
+              count_likes: likeCountIncrement,
+              heat: newHeat
+            }, 
+            { merge: true }
+          );
+
+          res(true);
+        })
+        .catch((error) =>{
+          rej(error);
+        });
+      }
+    })
+    .catch((error) => {
+      rej(error);
+    });
+  });
+};
+
+const undoLikeReplyFire = (postId, commentId, replyId, currentUserId) => {
+  return new Promise ((res, rej) => {
+    const repliesWhoLikeRef = postsRef.doc(postId).collection("comments").doc(commentId).collection("whoLike");
+    const likeCountDecrement = firebase.firestore.FieldValue.increment(-1);
+    // write delete is cheaper than write wrtie in firestore 
+    const getLike = repliesWhoLikeRef.doc(currentUserId).get();
+    getLike
+    .then((doc) => {
+      if (doc.exists) {
+        const replyRef = postsRef.doc(postId).collection("comments").doc(commentId).collection("replies").doc(replyId);
+        replyRef
+        .get()
+        .then((reply) => {
+          const replyData = reply.data();
+          // heat is like speed to me 
+          // (60 * 1000) is a minute since the time is in ms
+          // 1000 is a second
+          const timePassedInSec = (Date.now() - replyData.createdAt) / 1000;
+          const newHeat = Number((replyData.count_likes - 1) / timePassedInSec);
+          // console.log("likeFire: " + postId + " like - 1 "+  "new heat: ", newHeat);
+          // delete the doc in likes
+          repliesWhoLikeRef.doc(currentUserId).delete();
+
+          // adjust the reply doc
+          replyRef
+          .set(
+            { 
+              count_likes: likeCountDecrement,
+              heat: newHeat
+            }, 
+            { merge: true }
+          );
+
+          res(true);
+        })
+        .catch((error) => {
+          rej(error);
+        });
+      } else {
+        res(false);
+      }
+    })
+    .catch((error) => {
+      rej(error);
+    })
+  });
+};
+
+export default { likePostFire, undoLikePostFire, likeCommentFire, undoLikeCommentFire, likeReplyFire, undoLikeReplyFire };

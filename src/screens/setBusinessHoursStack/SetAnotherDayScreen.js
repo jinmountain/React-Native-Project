@@ -68,6 +68,20 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
     }
   }, []);
 
+  const [ timezone, setTimezone ] = useState(null);
+  const [ timezoneOffset, setTimezoneOffset ] = useState(null);
+
+  useEffect(() => {
+    const date = new Date();
+    const split = date.toString().split(" ");
+    const timezoneFormatted = Intl.DateTimeFormat().resolvedOptions().timeZone + " " + split[split.length - 2] + " " + split[split.length - 1];
+
+    const diff = date.getTimezoneOffset();
+
+    setTimezone(timezoneFormatted);
+    setTimezoneOffset(diff)
+  }, [specialDateStatus]);
+
   return (
     <View style={styles.mainContainer}>
       <HeaderForm 
@@ -84,7 +98,7 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
             if (userType === 'bus') {
               // save on firestore and get doc id
               setShowLoadingAlert(true);
-              const postBusSpecialDate = businessPostFire.postBusSpecialDate(busId, specialDate, specialDateStatus);
+              const postBusSpecialDate = businessPostFire.postBusSpecialDate(busId, timezoneOffset, specialDate, specialDateStatus);
               postBusSpecialDate
               .then((posted) => {
                 setShowLoadingAlert(false);
@@ -104,7 +118,7 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
 
             if (userType === 'tech') {
               setShowLoadingAlert(true);
-              const postTechSpecialDate = businessPostFire.postTechSpecialDate(busId, techId, specialDate, specialDateStatus);
+              const postTechSpecialDate = businessPostFire.postTechSpecialDate(busId, techId, timezoneOffset, specialDate, specialDateStatus);
               postTechSpecialDate
               .then((posted) => {
                 setShowLoadingAlert(false);
@@ -132,36 +146,43 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
           <Text style={styles. labelText}> Select Date and Status</Text>
         </View>
         <HeaderBottomLine />
-        <View style={styles.switchContainer}>
+        <View style={styles.openCloseSettingContainer}>
           <View style={styles.speicalDateContainer}>
             <Text style={styles.specialDateText}>
               { specialDate
                 ?
                 `Date: ${useConvertTime.getDayMonthDateYear(specialDate)}`
                 : 
-                "Date: Choose a date using the calendar below"
+                "Date: (choose a date using the calendar below)"
               }
             </Text>
           </View>
-          <View style={styles.onOffStatusConatiner}>
-            { specialDateStatus === false
-              ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
-              : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
-            }
+          <View style={styles.switchContainer}>
+            <Switch
+              trackColor={{ false: color.grey8, true: color.red2 }}
+              thumbColor={specialDateStatus ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={setSpecialDateStatus}
+              value={specialDateStatus}
+            />
+            <View style={styles.onOffStatusConatiner}>
+              { specialDateStatus === false
+                ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
+                : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
+              }
+            </View>
           </View>
-          <Switch
-            trackColor={{ false: color.grey8, true: color.red2 }}
-            thumbColor={specialDateStatus ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={setSpecialDateStatus}
-            value={specialDateStatus}
-          />
         </View>
         <HeaderBottomLine />
-        <View style={styles.labelContainer}>
-          <Text style={styles. labelText}>Calendar</Text>
+        <View style={styles.timezoneSetting}>
+          <Text style={styles.timezoneLabelText}>Timezone:</Text>
+          <ScrollView 
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          > 
+            <Text style={styles.timezoneText}>{timezone} {timezoneOffset}</Text> 
+          </ScrollView>
         </View>
-        <HeaderBottomLine />
         <View style={styles.controllerContainer}>
           <View style={styles.topControllerContainer}>
             <View style={styles.topControllerLeftCompartment}>
@@ -194,8 +215,6 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
                   {useConvertTime.convertToMonthly(calendarDate)}
                 </Text>
               </TouchableOpacity>
-              <View style={{ minHeight: 2, maxHeight: 1, backgroundColor: color.black2, width: '77%', marginTop: RFValue(7) }}>
-              </View>
             </View>
             <View style={styles.topControllerRightCompartment}>
               <TouchableOpacity
@@ -242,10 +261,8 @@ const styles = StyleSheet.create({
   // Controller
   controllerContainer: {
     backgroundColor: color.white2,
-    height: RFValue(57)
   },
   topControllerContainer: {
-    flex: 1,
     paddingVertical: RFValue(7),
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -257,12 +274,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topControllerLeftCompartment: {
-    padding: RFValue(15),
+    paddingLeft: RFValue(9),
     justifyContent: 'center',
     alignItems: 'center',
   },
   topControllerRightCompartment: {
-    padding: RFValue(15),
+    paddingRight: RFValue(9),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -270,30 +287,25 @@ const styles = StyleSheet.create({
     fontSize: RFValue(19)
   },
 
-  switchContainer: {
-    justifyContent: 'center',
+  openCloseSettingContainer: {
     alignItems: 'center',
     flexDirection: 'row',
-    paddingHorizontal: RFValue(7),
+    paddingVertical: RFValue(5),
   },
   onOffStatusConatiner: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: RFValue(7),
+    paddingHorizontal: RFValue(3),
   },
   onOffText: {
     fontWeight: 'bold',
-    fontSize: RFValue(15),
+    fontSize: RFValue(13),
   },
 
-  switchContainer: {
-    flexDirection: 'row',
-    paddingVertical: RFValue(10)
-  },
   speicalDateContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingLeft: RFValue(15)
+    paddingLeft: RFValue(9),
   },
   specialDateText: {
     fontSize: RFValue(19)
@@ -308,6 +320,30 @@ const styles = StyleSheet.create({
   labelText: {
     fontSize: RFValue(19),
     fontWeight: 'bold'
+  },
+
+  switchContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: RFValue(3),
+  },
+
+  timezoneSetting: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: RFValue(9),
+    height: RFValue(57)
+  },
+  timezoneLabelText: {
+    fontSize: RFValue(19),
+    fontWeight: 'bold',
+    color: color.black1
+  },
+  timezoneText: {
+    justifyContent: 'center',
+    paddingLeft: RFValue(9),
+    color: color.black1,
+    fontSize: RFValue(13)
   },
 });
 

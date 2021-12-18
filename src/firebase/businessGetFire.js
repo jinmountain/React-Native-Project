@@ -11,86 +11,60 @@ const reservationsRef = db.collection('reservations');
 
 const getTechnicians = (
 	busId, 
-	setTechLast,
-	setTechFetchSwitch,
 	techLast,
 ) => {
 	return new Promise (async (res, rej) => {
-		const technicians = []
-		const limit = 13
-		try {
-			let techniciansRef;
-			if (techLast) {
-				techniciansRef = usersRef
-				.doc(busId)
-				.collection("technicians")
-				.orderBy("createdAt", "desc")
-				.startAfter(techLast)
-				console.log("getTechnicians => startAfter");
-			} else {
-				techniciansRef = usersRef
-				.doc(busId)
-				.collection("technicians")
-				.orderBy("createdAt", "desc")
+		const LIMIT = 13
+
+		let techniciansRef;
+		if (techLast) {
+			techniciansRef = usersRef
+			.doc(busId)
+			.collection("technicians")
+			.orderBy("createdAt", "desc")
+			.startAfter(techLast)
+			console.log("getTechnicians => startAfter");
+		} else {
+			techniciansRef = usersRef
+			.doc(busId)
+			.collection("technicians")
+			.orderBy("createdAt", "desc")
+		};
+
+		techniciansRef
+		.limit(LIMIT)
+		.get()
+		.then(async (querySnapshot) => {
+			let docIndex = 0;
+			const docLength = querySnapshot.docs.length;
+			const lastVisible = querySnapshot.docs[docLength - 1];
+
+			if (docLength > 0) {
+				const getTechs = querySnapshot.docs.map((doc) => {
+					const docId = doc.id;
+		    	const docData = doc.data();
+
+		    	const tech = {
+		    		techBusData: {
+		    			techId: docData.techId,
+		    			countRating: docData.countRating,
+		    			totalRating: docData.totalRating
+		    		}
+		    	}
+
+					return tech;
+				});
+
+				const technicians = await Promise.all(getTechs);
+				res({ techs: technicians, lastTech: lastVisible });
+			} 
+			else {
+				res({ techs: [], lastTech: lastVisible });
 			};
-
-			techniciansRef
-			.limit(limit)
-			.get()
-			.then((querySnapshot) => {
-				let docIndex = 0;
-				const docLength = querySnapshot.docs.length;
-				console.log(docLength);
-				var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-				if (lastVisible !== undefined) {
-					setTechLast(lastVisible);
-				} 
-
-				if (docLength < limit) {
-					setTechFetchSwitch(false);
-					console.log("techFetchSwitch >> off.");
-				}
-
-				if (docLength > 0) {
-					querySnapshot.forEach(async (techDoc) => {
-						const docId = techDoc.id;
-			    	const docData = techDoc.data();
-			    	let theOtherUserRef;
-			    	let notificationCount;
-
-			    	// get theOtherUser data
-			    	const getTechData = await usersRef.doc(docData.techId).get();
-			    	const techData = getTechData.data();
-
-			    	// gather the data to the variable chat
-			    	const tech = {
-			    		techData: {
-			    			id: techData.id,
-			    			username: techData.username,
-			    			photoURL: techData.photoURL,
-			    		},
-			    		techBusData: {
-			    			countRating: docData.countRating,
-			    			totalRating: docData.totalRating
-			    		}
-			    	}
-
-			    	technicians.push(tech);
-			    	docIndex += 1;
-			    	if (docIndex === docLength) {
-			    		res(technicians);
-						}
-					});
-				} 
-				else {
-					res(technicians);
-				};
-			})
-		} 
-		catch {(error) => {
-			res(technicians);
-			console.log("Error occured: firebase: businessGetFire: getTechnicians: ", error);
-		}};
+		})
+		.catch((error) => {
+			rej(error);
+		});
 	});
 }
 
@@ -484,24 +458,22 @@ const getBusUpcomingSpecialHours = (busId, specialHourLast) => {
 
 		getSpecialHours
 		.get()
-		.then((querySnapshot) => {
+		.then(async (querySnapshot) => {
 			let docIndex = 0;
 			const docLength = querySnapshot.docs.length;
 
-			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			var lastVisible = querySnapshot.docs[docLength - 1];
 			
 			if (docLength > 0) {
-				querySnapshot.forEach(async (doc) => {
+				const hoursDocs = querySnapshot.docs.map((doc) => {
 					const docData = doc.data();
-					specialHours.push(docData);
-					docIndex += 1;
-
-					if (docIndex === docLength) {
-						res({ specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true });
-					}
+					return docData
 				});
+
+				const specialHours = await Promise.all(hoursDocs);
+				res({ specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true });
 			} else {
-				res({ specialHours: [], lastSpecialHour: null, fetchSwitch: false });
+				res({ specialHours: [], lastSpecialHour: lastVisible, fetchSwitch: false });
 			}
 		})
 		.catch((error) => {
@@ -538,24 +510,21 @@ const getTechUpcomingSpecialHours = (busId, techId, specialHourLast) => {
 		}
 		getSpecialHours
 		.get()
-		.then((querySnapshot) => {
+		.then(async (querySnapshot) => {
 			let docIndex = 0;
 			const docLength = querySnapshot.docs.length;
-
-			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			var lastVisible = querySnapshot.docs[docLength - 1];
 			
 			if (docLength > 0) {
-				querySnapshot.forEach(async (doc) => {
+				const hoursDocs = querySnapshot.docs.map((doc) => {
 					const docData = doc.data();
-					specialHours.push(docData);
-					docIndex += 1;
-
-					if (docIndex === docLength) {
-						res({ specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true });
-					}
+					return docData;
 				});
+
+				const specialHours = await Promise.all(hoursDocs);
+				res({ specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true });
 			} else {
-				res({ specialHours: [], lastSpecialHour: null, fetchSwitch: false });
+				res({ specialHours: [], lastSpecialHour: lastVisible, fetchSwitch: false });
 			}
 		})
 		.catch((error) => {

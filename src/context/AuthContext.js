@@ -9,8 +9,12 @@ const authReducer = (state, action) => {
 	switch (action.type) {
 		case 'add_error': 
 			return { ...state, errorMessage: action.payload };
+		case 'turn_on_user_realtime_listener':
+			return { ...state, userRealtimeListenerSwitch: true };
+		case 'turn_off_user_realtime_listener':
+			return { ...state, userRealtimeListenerSwitch: false };
 		case 'signin':
-			return { errorMessage: '' };
+			return { ...state, errorMessage: '' };
 		case 'clear_error_message':
 			return { ...state, errorMessage: '' };
 		case 'change_user_login':
@@ -69,7 +73,15 @@ const authReducer = (state, action) => {
 
 const trimmer = (string) => {
 	return string.trim();
-}
+};
+
+const turnOnUserRealtimeListener = dispatch => () => {
+	dispatch({ type: 'turn_on_user_realtime_listener' });
+};
+
+const turnOffUserRealtimeListener = dispatch => () => {
+	dispatch({ type: 'turn_off_user_realtime_listener' });
+};
 
 const localSignin = dispatch => async (navigate, screen) => {
 	return new Promise (async (res, rej) => {
@@ -220,17 +232,32 @@ const passwordReset = dispatch => ({ email }) => {
 
 const signout = dispatch => async () => {
 	return new Promise ((res, rej) => {
+		const turnOffRealtimeListeners = new Promise ((res, rej) => {
+			try {
+				dispatch({ type: 'turn_off_user_realtime_listener' });
+				res();
+			} catch (error) {
+				rej(error);
+			};
+		});
 		const signOut = authFire.signoutFire();
-		signOut
+
+		turnOffRealtimeListeners
 		.then(() => {
-			console.log("signout successful");
-			dispatch({ type: 'clear_current_user_data' });
-			console.log('state change: user >> null user info is removed from auth context');
-			res(true);
+			signOut
+			.then(() => {
+				console.log("signout successful");
+				dispatch({ type: 'clear_current_user_data' });
+				console.log('state change: user >> null user info is removed from auth context');
+				res(true);
+			})
+			.catch((error) => {
+				rej(error);
+			});
 		})
 		.catch((error) => {
 			rej(error);
-		})
+		});
 	})
 };
 
@@ -286,6 +313,8 @@ const tabAccount = dispatch => () => {
 export const { Provider, Context } = createDataContext(
 	authReducer,
 	{
+		turnOnUserRealtimeListener,
+		turnOffUserRealtimeListener,
 		signin, 
 		signout,
 		clearCurrentUser,
@@ -311,6 +340,7 @@ export const { Provider, Context } = createDataContext(
 		tabAccount,
 	},
 	{ 
+		userRealtimeListenerSwitch: false,
 		user: null,
 		userLogin: false,
 		// update profile

@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Dimensions,
   FlatList,
-  Animated,
   Platform,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -25,6 +24,13 @@ import PostEndSign from '../PostEndSign';
 import { wait } from '../../hooks/wait';
 
 const { width, height } = Dimensions.get("window");
+
+// post user info box + image height + like comment button line + tag line
+const CARD_HEIGHT = RFValue(55) + width + RFValue(40) + RFValue(50);
+const CARD_WIDTH = width;
+const CARD_MARGIN = height * 0.03;
+const POST_INFO_BOX_HEIGHT = CARD_HEIGHT * 0.9 - CARD_WIDTH;
+const USER_INFO_HEADER_HEIGHT = CARD_HEIGHT * 0.1;
 
 const PostCardsVerticalSwipe = ({ 
 	postSource,
@@ -48,31 +54,6 @@ const PostCardsVerticalSwipe = ({
 	const isFocused = useIsFocused();
 	const _cardListView = useRef(null);
 
-  // useEffect(() => {
-  // 	let isMounted = true;
-  //   const postScrollAnimListener = postCardVerticalSwipeAnim.addListener(({ value }) => {
-  //   	if (value) {
-  //   		const getIndex = new Promise((res, rej) => {
-  //   		});
-  //   		getIndex
-  //   		.then((index) => {
-  //   			isMounted && setCurrentFocusedCardIndex(index);
-  //   		});
-  //   	};
-  //   });
-
-  //   return () => {
-  //   	isMounted = false;
-  //   	postCardVerticalSwipeAnim.removeListener(postScrollAnimListener);
-  //   	// console.log("removed postScrollAnimListener");
-  //   }
-  // });
-
-  // when get new posts data scroll to top
-  useEffect(() => {
-  	_cardListView.current.scrollToOffset(0);
-  }, [postSource, cardIndex]);
-
  	// Video auto play 
  	// currnet focused card index
   const [focusedCardIndex, setFocusedCardIndex] = useState(0)
@@ -83,7 +64,7 @@ const PostCardsVerticalSwipe = ({
 	  minimumViewTime: 1000, // stay at least 1 second
 	})
 
-	const onViewableItemsChanged = React.useRef(({ viewableItems, changed }) => {
+	const onViewableItemsChanged = useRef(({ viewableItems, changed }) => {
 	  if (changed && changed.length > 0) {
 	    setFocusedCardIndex(changed[0].index);
 	    // console.log("changed focused card index to: ", changed[0].index);
@@ -92,9 +73,29 @@ const PostCardsVerticalSwipe = ({
 	  }
 	});
 
+	// // move flatlist to the card with showCommentPostIndex
+	// const [ showCommentPostIndex, setShowCommentPostIndex ] = useState(null); 
+	// const scrollToIndex = (index) => {
+ //    _cardListView.current.scrollToIndex({ animated: true, index: index })
+ //  }
+ //  // setTimeout prevents out of range error of scrollToIndex
+	// useEffect(() => {
+	// 	if (showCommentPostIndex) {
+	// 		const scrollToIndexPromise = new Promise ((res, rej) => {
+	// 			setTimeout(() => scrollToIndex(showCommentPostIndex), 500);
+	// 			res();
+	// 		})
+	// 		scrollToIndexPromise
+	// 		.then(() => {
+	// 			setShowCommentPostIndex(null);
+	// 		});
+	// 	}
+	// }, [showCommentPostIndex]);
+
 	return (
-		<Animated.FlatList
+		<FlatList
 	    ref={_cardListView}
+	    initialScrollIndex={cardIndex}
 	    onViewableItemsChanged={onViewableItemsChanged.current}
       viewabilityConfig={viewabilityConfig.current}
 	    onEndReached={() => {
@@ -102,21 +103,21 @@ const PostCardsVerticalSwipe = ({
 					isFocused && setSwipePostState(true);
 					let getSwipePosts;
 					postSource === 'hot'
-          ? getSwipePosts = getPosts(swipePostLast, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast)
           : postSource === 'account'
-          ? getSwipePosts = getPosts(swipePostLast, currentUser.id, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, currentUser.id)
           : postSource === 'accountDisplay'
-          ? getSwipePosts = getPosts(swipePostLast, currentUser.id, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, currentUser.id)
           // business user posts (ex. search screen)
           : postSource === 'businessUser'
-          ? getSwipePosts = getPosts(swipePostLast, businessUserId, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, businessUserId)
           // business tagged posts (ex. serach screen reviews)
           : postSource === 'businessTagged'
-          ? getSwipePosts = getPosts(swipePostLast, businessUserId, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, businessUserId)
           : postSource === 'userAccount'
-          ? getSwipePosts = getPosts(swipePostLast, accountUserId, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, accountUserId)
           : postSource === 'userAccountDisplay'
-          ? getSwipePosts = getPosts(swipePostLast, accountUserId, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, accountUserId)
           : null
 
           getSwipePosts
@@ -140,25 +141,20 @@ const PostCardsVerticalSwipe = ({
         right: 0
       }}
       contentContainerStyle={{
+      	backgroundColor: "white",
         paddingVertical: Platform.OS === 'android' ? 0 : 0
       }}
 	    vertical
-	    // pagingEnabled
-	    // stickyHeaderIndices={[0]}
-	    scrollEventThrottle={1000}
 	    showsVerticalScrollIndicator={false}
-	    // snapToInterval={cardHeight + CARD_MARGIN}
-	    decelerationRate={"fast"}
-	    snapToAlignment="center"
-	    data={swipePosts.slice(cardIndex)}
+	    data={swipePosts}
 	    keyExtractor={(post, index) => index.toString()}
-	    // getItemLayout = {(data, index) => (
-	    //   {
-	    //     length: cardHeight + CARD_MARGIN,
-	    //     offset: ( cardHeight + CARD_MARGIN ) * index,
-	    //     index
-	    //   }
-	    // )}
+	    getItemLayout = {(data, index) => (
+	      {
+	        length: CARD_HEIGHT + CARD_MARGIN,
+	        offset: ( CARD_HEIGHT + CARD_MARGIN ) * index,
+	        index
+	      }
+	    )}
 	    renderItem={({ item: post, index }) => {
 				return (
 					<PostCard 
@@ -177,6 +173,11 @@ const PostCardsVerticalSwipe = ({
 						postTimestamp={post.data.createdAt}
 						currentUserPhotoURL={currentUser.photoURL}
 						isCardFocused={focusedCardIndex === index}
+						CARD_HEIGHT={CARD_HEIGHT}
+						CARD_WIDTH={CARD_WIDTH}
+						CARD_MARGIN={CARD_MARGIN}
+						cardIndex={index}
+						// setShowCommentPostIndex={setShowCommentPostIndex}
 					/>
 			  )
 			}}

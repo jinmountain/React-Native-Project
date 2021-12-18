@@ -1,16 +1,18 @@
-import Firebase from '../firebase/config'
-import { navigate } from '../navigationRef';
+import Firebase from '../../firebase/config';
+import firebase from 'firebase/app';
 
 const usersRef = Firebase.firestore().collection("users");
 const postsRef = Firebase.firestore().collection("posts");
 
-const postCommentFire = (postId, currentUserId, newComment) => {
+const postCommentFire = (postId, currentUserId, newText) => {
 	return new Promise (async (res, rej) => {
 		try {
+			const commentCountIncrement = firebase.firestore.FieldValue.increment(1);
+
 			const commentsRef = postsRef.doc(postId).collection("comments");
 			const id = await commentsRef.doc().id;
 			const newCommentJson = { 
-				comment: newComment,
+				text: newText,
 				count_likes: 0,
 				count_replies: 0,
 				createdAt: Date.now(),
@@ -21,6 +23,14 @@ const postCommentFire = (postId, currentUserId, newComment) => {
 			.doc(id)
 			.set(newCommentJson);
 
+			const postRef = postsRef.doc(postId);
+			postRef
+			.set({
+				commentCount: commentCountIncrement
+			}, {
+			 	merge: true
+			});
+
 			res({ id: id, data: newCommentJson });
 		} catch (error) {
 			rej(error);
@@ -28,14 +38,14 @@ const postCommentFire = (postId, currentUserId, newComment) => {
 	});
 };
 
-const editCommentFire = (postId, commentId, eidtedComment) => {
+const editCommentFire = (postId, commentId, editedText) => {
 	return new Promise (async (res, rej) => {
 		try {
 			const commentsRef = postsRef.doc(postId).collection("comments");
 			commentsRef
 			.doc(commentId)
 			.set({
-				comment: eidtedComment,
+				text: editedText,
 				edited: true
 			}, { merge: true });
 
@@ -45,7 +55,6 @@ const editCommentFire = (postId, commentId, eidtedComment) => {
 		}
 	});
 };
-
 
 export default { 
 	postCommentFire,

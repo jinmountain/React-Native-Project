@@ -206,7 +206,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"12"}
                 onPress={() => {
                   setStartHour(12);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={12}
@@ -215,7 +214,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"1"}
                 onPress={() => {
                   setStartHour(1);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={1}
@@ -224,7 +222,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"2"}
                 onPress={() => {
                   setStartHour(2);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={2}
@@ -233,7 +230,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"3"}
                 onPress={() => {
                   setStartHour(3);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={3}
@@ -242,7 +238,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"4"}
                 onPress={() => {
                   setStartHour(4);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={4}
@@ -251,7 +246,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"5"}
                 onPress={() => {
                   setStartHour(5);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={5}
@@ -260,7 +254,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"6"}
                 onPress={() => {
                   setStartHour(6);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={6}
@@ -269,7 +262,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"7"}
                 onPress={() => {
                   setStartHour(7);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={7}
@@ -278,7 +270,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"8"}
                 onPress={() => {
                   setStartHour(8);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={8}
@@ -287,7 +278,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"9"}
                 onPress={() => {
                   setStartHour(9);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={9}
@@ -296,7 +286,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"10"}
                 onPress={() => {
                   setStartHour(vibrationTime);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={10}
@@ -305,7 +294,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"11"}
                 onPress={() => {
                   setStartHour(11);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startHour}
                 conditionalValue={11}
@@ -318,7 +306,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"0"}
                 onPress={() => {
                   setStartMin(0);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startMin}
                 conditionalValue={0}
@@ -327,7 +314,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"15"}
                 onPress={() => {
                   setStartMin(15);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startMin}
                 conditionalValue={15}
@@ -336,7 +322,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"30"}
                 onPress={() => {
                   setStartMin(30);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startMin}
                 conditionalValue={30}
@@ -345,7 +330,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"45"}
                 onPress={() => {
                   setStartMin(45);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startMin}
                 conditionalValue={45}
@@ -361,7 +345,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"AM"}
                 onPress={() => {
                   setStartMeridiem('AM');
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startMeridiem}
                 conditionalValue={'AM'}
@@ -370,7 +353,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"PM"}
                 onPress={() => {
                   setStartMeridiem('PM');
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={startMeridiem}
                 conditionalValue={'PM'}
@@ -402,7 +384,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"12"}
                 onPress={() => {
                   setEndHour(12);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={12}
@@ -411,7 +392,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"1"}
                 onPress={() => {
                   setEndHour(1);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={1}
@@ -420,7 +400,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"2"}
                 onPress={() => {
                   setEndHour(2);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={2}
@@ -429,7 +408,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"3"}
                 onPress={() => {
                   setEndHour(3);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={3}
@@ -438,7 +416,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"4"}
                 onPress={() => {
                   setEndHour(4);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={4}
@@ -447,7 +424,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"5"}
                 onPress={() => {
                   setEndHour(5);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={5}
@@ -456,7 +432,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"6"}
                 onPress={() => {
                   setEndHour(6);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={6}
@@ -465,7 +440,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"7"}
                 onPress={() => {
                   setEndHour(7);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={7}
@@ -474,7 +448,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"8"}
                 onPress={() => {
                   setEndHour(8);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={8}
@@ -483,7 +456,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"9"}
                 onPress={() => {
                   setEndHour(9);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={9}
@@ -491,8 +463,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
               <SetHourButton
                 buttonText={"10"}
                 onPress={() => {
-                  setEndHour(vibrationTime);
-                  Vibration.vibrate(vibrationTime);
+                  setEndHour(10);
                 }}
                 currentValue={endHour}
                 conditionalValue={10}
@@ -501,7 +472,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"11"}
                 onPress={() => {
                   setEndHour(11);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endHour}
                 conditionalValue={11}
@@ -514,7 +484,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"0"}
                 onPress={() => {
                   setEndMin(0);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endMin}
                 conditionalValue={0}
@@ -523,7 +492,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"15"}
                 onPress={() => {
                   setEndMin(15);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endMin}
                 conditionalValue={15}
@@ -532,7 +500,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"30"}
                 onPress={() => {
                   setEndMin(30);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endMin}
                 conditionalValue={30}
@@ -541,7 +508,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"45"}
                 onPress={() => {
                   setEndMin(45);
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endMin}
                 conditionalValue={45}
@@ -554,7 +520,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"AM"}
                 onPress={() => {
                   setEndMeridiem('AM');
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endMeridiem}
                 conditionalValue={'AM'}
@@ -563,7 +528,6 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 buttonText={"PM"}
                 onPress={() => {
                   setEndMeridiem('PM');
-                  Vibration.vibrate(vibrationTime);
                 }}
                 currentValue={endMeridiem}
                 conditionalValue={'PM'}

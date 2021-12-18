@@ -15,6 +15,7 @@ import HomeStack from './HomeStack';
 import SearchStack from './SearchStack';
 import CreateStack from './CreateStack';
 import AccountStack from './AccountStack';
+import UserAccountStack from './UserAccountStack';
 import ActivityTopTab from './ActivityTopTab';
 
 // Designs
@@ -50,6 +51,17 @@ const MainBottomTab = () => {
       <BottomTab.Screen 
         name="HomeTab" 
         component={HomeStack}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            focused
+            ? <Foundation name="home" size={RFValue(24)} color={color.black1} />
+            : <Feather name="home" size={RFValue(24)} color={color.black1} />
+          ),
+        }}
+      />
+      <BottomTab.Screen 
+        name="UserAccountTab" 
+        component={UserAccountStack}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             focused

@@ -41,13 +41,29 @@ const CommentBar = ({
 	commentId,
   commentData,
   currentUserId,
-  postId
+  postId,
+  decrementCommentCount
 }) => {
 	const navigation = useNavigation();
 
+  const [ currentCommentData, setCurrentCommentData ] = useState(commentData);
+  const [ replyCountState, setReplyCountState ] = useState(commentData.count_replies)
   const [ commentUser, setCommentUser ] = useState(null);
   const [ like, setLike ] = useState(false);
   const [ likeButtonReady, setLikeButtonReady ] = useState(false);
+
+  const [ countLikes, setCountLikes ] = useState(commentData.count_likes);
+
+  const deleteCurrentCommentState = () => {
+    setCurrentCommentData(null);
+  };
+
+  const incrementReplyCount = () => {
+    setReplyCountState(replyCountState + 1);
+  };
+  const decrementReplyCount = () => {
+    setReplyCountState(replyCountState - 1);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -87,8 +103,9 @@ const CommentBar = ({
   }, []);
 
 	return (
-    <View key={index}>
-  		<View
+    currentCommentData &&
+    <View>
+      <View
         style={styles.commentBar}
       >
         <View style={styles.userPhotoContainer}>
@@ -110,12 +127,12 @@ const CommentBar = ({
           <View style={styles.commentBarHeader}>
             { 
               commentUser && commentUser.username
-              ? <Text style={styles.headerText}>{commentUser.username} {expoIcons.entypoDot(RFValue(15), color.grey1)} {timeDifference(Date.now(), commentData.createdAt)}</Text>
+              ? <Text style={styles.headerText}>{commentUser.username} {expoIcons.entypoDot(RFValue(11), color.grey1)} {timeDifference(Date.now(), currentCommentData.createdAt)} {currentCommentData.edited && "(edited)"}</Text>
               : null
             }
           </View>
           <ExpandableText 
-            caption={commentData.comment}
+            caption={currentCommentData.text}
             defaultCaptionNumLines={5}
           />
           <View style={styles.commentActionBar}>
@@ -127,6 +144,7 @@ const CommentBar = ({
                   undoLike
                   .then(() => {
                     setLike(false);
+                    setCountLikes(countLikes - 1);
                   })
                   .catch((error) => {
                     // handle error
@@ -136,6 +154,7 @@ const CommentBar = ({
                   doLike
                   .then(() => {
                     setLike(true);
+                    setCountLikes(countLikes + 1);
                   })
                   .catch((error) => {
                     // handle error
@@ -154,19 +173,42 @@ const CommentBar = ({
                   expoIcons.antdesignHearto(RFValue(15), color.red2)
                   :
                   null
-                } {commentData.count_likes} 
+                } {countLikes} 
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
+              onPress={() => {
+                navigation.navigate("Reply", {
+                  postId: postId, 
+                  commentId: commentId, 
+                  commentData: currentCommentData,
+                  commentUser: commentUser,
+                  currentUserId: currentUserId,
+                  textInputAutoFocus: false,
+                  setReplyCountState: setReplyCountState
+                });
+              }}
             >
               <View style={styles.actionIconContainer}>
-                <Text>{expoIcons.matMessageTextOutline(RFValue(15), color.black2)} {commentData.count_replies}</Text>
+                <Text>{expoIcons.matMessageTextOutline(RFValue(15), color.black2)} {replyCountState}</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
+              onPress={() => {
+                navigation.navigate("Reply", {
+                  postId: postId, 
+                  commentId: commentId, 
+                  commentData: currentCommentData,
+                  commentUser: commentUser,
+                  currentUserId: currentUserId,
+                  textInputAutoFocus: true,
+                  incrementReplyCount: incrementReplyCount,
+                  decrementReplyCount: decrementReplyCount
+                });
+              }}
             >
               <View style={styles.actionIconContainer}>
                 <Text>Reply</Text>
@@ -178,9 +220,11 @@ const CommentBar = ({
                 navigation.navigate("CommentManager", {
                   postId: postId,
                   commentId: commentId,
-                  commentData: commentData,
+                  commentData: currentCommentData,
                   commentUser: commentUser,
-                  currentUserId: currentUserId
+                  currentUserId: currentUserId,
+                  deleteCurrentCommentState: deleteCurrentCommentState,
+                  decrementCommentCount: decrementCommentCount
                 });
               }}
             >
@@ -206,7 +250,7 @@ const styles = StyleSheet.create({
   commentContainer: {
     flex: 1,
     paddingVertical: RFValue(3),
-    paddingRight: RFValue(7)
+    marginRight: RFValue(7),
   },
 
   commentBarHeader: {
@@ -232,8 +276,9 @@ const styles = StyleSheet.create({
   },
 
   userPhotoContainer: {
-    padding: RFValue(10),
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingTop: RFValue(9),
+    paddingRight: RFValue(9),
     width: RFValue(70)
   },
   userPhoto: {

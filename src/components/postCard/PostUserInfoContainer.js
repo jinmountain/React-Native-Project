@@ -6,6 +6,7 @@ import {
   StyleSheet,  
   TouchableOpacity,
   TouchableHighlight,
+  TouchableWithoutFeedback,
   Dimensions,
   ScrollView,
 } from 'react-native';
@@ -24,12 +25,7 @@ import { AntDesign } from '@expo/vector-icons';
 import usersGetFire from '../../firebase/usersGetFire';
 
 // Hooks
-import { navigate } from '../../navigationRef';
-import convertEtcToHourMin from '../../hooks/convertEtcToHourMin';
-
-const { width, height } = Dimensions.get("window");
-// const CARD_HEIGHT = height * 0.77;
-const USER_INFO_BOX_HEIGHT = RFValue(55);
+import { timeDifference } from '../../hooks/timeDifference';
 
 // color
 import color from '../../color';
@@ -37,7 +33,11 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const PostUserInfoContainer = ({ postId, postData, currentUserId }) => {
+const { width, height } = Dimensions.get("window");
+// const CARD_HEIGHT = height * 0.77;
+const DEFAULT_USER_INFO_BOX_HEIGHT = RFValue(55);
+
+const PostUserInfoContainer = ({ postId, postData, currentUserId, postTimestamp }) => {
   const [ postUser, setPostUser ] = useState(null);
 
   useEffect(() => {
@@ -67,6 +67,7 @@ const PostUserInfoContainer = ({ postId, postData, currentUserId }) => {
   return (
     <View style={styles.userInfoContainer}>
       <ScrollView 
+        contentContainerStyle={{paddingRight: RFValue(50)}}
         horizontal={true}
         fadingEdgeLength={RFValue(100)}
         showsHorizontalScrollIndicator={false}
@@ -76,9 +77,9 @@ const PostUserInfoContainer = ({ postId, postData, currentUserId }) => {
           onPress={() => {
             postData.uid === currentUserId
             ?
-            navigation.navigate('Account')
+            navigation.navigate('AccountTab')
             :
-            navigation.navigate('UserAccountStack', {
+            navigation.navigate('UserAccountTab', {
               screen: 'UserAccount',
               params: {
                 accountUserId: postUser.id
@@ -103,71 +104,40 @@ const PostUserInfoContainer = ({ postId, postData, currentUserId }) => {
           </View>
           <View style={styles.textInfoContainer}>
             {
-              postUser && postUser.name
-              ?
-              <Text
-                numberOfLines={1}
-                style={styles.nameText}
-              >{postUser.name}</Text>
-              :
-              <Text
-                numberOfLines={1}
-                style={[ styles.nameText, {fontStyle: 'italic', color: color.grey3} ]}
-              >Name</Text>
-            }
-            {
               postUser && postUser.username
               ?
               <Text 
                 numberOfLines={1}
                 style={styles.usernameText}
               >
-                @{postUser.username}
+                {postUser.username}
               </Text>
               :
               <Text 
                 numberOfLines={1}
                 style={[ styles.usernameText, {fontStyle: 'italic', color: color.grey3} ]}
               >
-                @Username
+                Username
               </Text>
             }
+            <Text style={styles.timeDifferenceText}>{timeDifference(Date.now(), postTimestamp)}</Text>
           </View>
         </TouchableOpacity>
         {
           postData.display
           ?
-          <TouchableHighlight 
-            style={styles.displayPostInfoTH}
-            onPress={() => {
-              console.log("shop");
-            }}
-            underlayColor={color.grey4}
-          >
-            <View style={styles.displayPostInfoContainer}>
-              <Feather name="shopping-bag" size={RFValue(17)} color={color.black1} />
-              <View style={styles.displayPostInfoInner}>
-                <View style={styles.displayPostInfoElement}>
-                  <Text style={styles.displayPostInfoText}>$</Text>
-                </View>
-                <View style={styles.displayPostInfoElement}>
-                  <Text style={styles.displayPostInfoText}>
-                    {postData.price}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.displayPostInfoInner}>
-                <View style={styles.displayPostInfoElement}>
-                  <AntDesign name="clockcircleo" size={RFValue(13)} color={color.black1} />
-                </View>
-                <View style={styles.displayPostInfoElement}>
-                  <Text style={styles.displayPostInfoText}>
-                    {convertEtcToHourMin(postData.etc)}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </TouchableHighlight>
+          <View style={styles.displayPostInfoContainer}>
+            <TouchableWithoutFeedback 
+              style={styles.titleTextContainer}
+              onPress={() => {
+                navigation.navigate("PostDetail", {
+                  postId: postId
+                })
+              }}
+            >
+              <Text style={styles.titleText}>{postData.title}</Text>
+            </TouchableWithoutFeedback>
+          </View>
           : null
         }
       </ScrollView>
@@ -198,7 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: width,
     paddingVertical: 3,
-    height: USER_INFO_BOX_HEIGHT,
+    height: DEFAULT_USER_INFO_BOX_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'flex-end'
   },
@@ -210,7 +180,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: RFValue(7),
   },
   userPhotoContainer: {
-    borderWidth: 1,
     height: "100%",
   },
   userPhoto: {
@@ -221,17 +190,13 @@ const styles = StyleSheet.create({
   textInfoContainer: {
     justifyContent: 'center',
     paddingHorizontal: RFValue(7),
-    borderWidth: 1
-  },
-  nameText: {
-    color: color.black1,
-    fontSize: RFValue(16),
   },
   usernameText: {
     color: color.black1,
     fontSize: RFValue(15),
   },
   postManagerButtonContainer: {
+    backgroundColor: color.white2,
     position: "absolute",
     alignSelf: 'center',
     // paddingRight: RFValue(3),
@@ -244,32 +209,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  displayPostInfoTH: {
-    borderWidth: RFValue(1),
-    borderRadius: RFValue(15),
-    paddingHorizontal: RFValue(7),
-    marginVertical: RFValue(5),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   displayPostInfoContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleTextContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  displayPostInfoInner: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: RFValue(3),
+  titleText: {
+    paddingHorizontal: RFValue(10),
+    fontWeight: 'bold',
+    fontSize: RFValue(19),
+    color: color.black1
   },
-  displayPostInfoElement: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: RFValue(1),
-  },
-  displayPostInfoText: {
-    fontSize: RFValue(15),
+  timeDifferenceText: {
+    fontSize: RFValue(13),
+    color: color.grey3
   },
 });
 

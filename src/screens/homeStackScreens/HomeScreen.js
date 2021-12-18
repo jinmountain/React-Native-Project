@@ -34,6 +34,7 @@ import tagGetFire from '../../firebase/tags/tagGetFire';
 import { HeaderForm } from '../../components/HeaderForm';
 import MainTemplate from '../../components/MainTemplate';
 import MultiplePhotosIndicator from '../../components/MultiplePhotosIndicator';
+import NavigationBar from '../../components/NavigationBar';
 
 // I18n
 import i18n from '../../i18n/i18n';
@@ -93,7 +94,7 @@ const HomeScreen = ({ navigation }) => {
 		tagsHot
 		.then((tags) => {
 			isMounted && setTrendingTags(tags);
-			console.log("fetched hot tags", trendingTags);
+			// console.log("fetched hot tags", trendingTags);
 		})
 		.catch((error) => {
 			console.log("failed to fetch tags hot: ", error);
@@ -198,9 +199,9 @@ const HomeScreen = ({ navigation }) => {
 						>
 							<TouchableOpacity
 		            onPress={() => {
-		              navigation.navigate( 'PostsSwipeStack', {
-	              		screen: 'PostsSwipe',
-	                	params: {
+		              navigation.navigate( 
+	              		'PostsSwipe',
+	                	{
 		                	postSource: "hot",
 		                  cardIndex: 0,
                 			posts: hotPosts,
@@ -208,7 +209,7 @@ const HomeScreen = ({ navigation }) => {
 											postFetchSwitch: hotPostFetchSwitch,
 											postLast: hotPostLast,
 		                } 
-		              });
+		              );
 		            }}
 		          > 
 		          	{ 
@@ -360,6 +361,7 @@ const HomeScreen = ({ navigation }) => {
 			    </View>
 				</View>
 			</ScrollView>
+			<NavigationBar/>
 		</View>
   );
 };

@@ -41,6 +41,9 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
+// timezone
+import timezoneList from '../../timezoneList';
+
 const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, businessDay, setHours, userType, techId }) => {
   return (
     <View style={styles.settingContainer}>
@@ -178,19 +181,16 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
       user
     }
   } = useContext(AuthContext);
-  
+
   const [ showTba, setShowTba ] = useState(false);
   const [ alertBoxText, setAlertBoxText ] = useState('');
   const [ alertBoxStatus, setAlertBoxStatus ] = useState(false);
 
-  const [ businessHours, setBusinessHours ] = useState(
-    userType === 'bus' && user.business_hours 
-    ? user.business_hours 
-    : []
-  ); // business user's business hours
   // businessHours structure
   // [
   //   {
+  //      timezone: string,
+  //      timezoneOffset: number,
   //      sun_open: boolean,
   //      mon_open: boolean,
   //      ...
@@ -214,7 +214,39 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
   //       }
   //     }
   //   ]
+  const [ timezone, setTimezone ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.timezone 
+    ? user.business_hours.timezone
+    : false 
+  );
+  const [ currentTimezone, setCurrentTimezone ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.timezone 
+    ? user.business_hours.timezone
+    : false
+  ); 
 
+  const [ timezoneOffset, setTimezoneOffset ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.timezoneOffset 
+    ? user.business_hours.timezoneOffset
+    : false 
+  );
+  const [ currentTimezoneOffset, setCurrentTimezoneOffset ] = useState(
+    userType === 'bus' && user.business_hours && user.business_hours.timezoneOffset 
+    ? user.business_hours.timezoneOffset
+    : false
+  );
+  const [ currentGmt, setCurrentGmt ] = useState(null);
+
+  useEffect(() => {
+    const date = new Date();
+    const split = date.toString().split(" ");
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const diff = date.getTimezoneOffset();
+
+    setCurrentTimezone(tz);
+    setCurrentTimezoneOffset(diff)
+  }, []);
+  
   const [ sunOpen, setSunOpen ] = useState(
     userType === 'bus' && user.business_hours && user.business_hours.sun_open 
     ? user.business_hours.sun_open
@@ -299,6 +331,8 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
         // set to the states
         if (currentBusinessHours && currentBusinessHours.sun_open && isMounted) {
           setBusinessHours(currentBusinessHours);
+          setTimezone(currentBusinessHours.timezone);
+          setTimezoneOffset(currentBusinessHours.timezoneOffset);
           setSunOpen(currentBusinessHours.sun_open);
           setSunHours(currentBusinessHours.sun_hours);
           setMonOpen(currentBusinessHours.mon_open);
@@ -318,7 +352,24 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
       .catch((error) => {
         console.log("error: ", error);
       });
-    } 
+    };
+
+    const date = new Date();
+    const split = date.toString().split(" ");
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const diff = date.getTimezoneOffset();
+
+    console.log(tz);
+
+    const getGmt = timezoneList.filter((zone) => zone.timezone == tz);
+
+    console.log(getGmt[0].gmt);
+    const gmt = getGmt[0].gmt;
+
+    setCurrentTimezone(tz);
+    setCurrentTimezoneOffset(diff)
+    setCurrentGmt(getGmt[0].gmt);
+
     return () => {
       isMounted = false;
       // navigation.setParams({ 
@@ -383,20 +434,22 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
         rightButtonPress={() => {
           const newBusinessHours = 
           { 
-            sun_open: sunOpen, 
-            mon_open: monOpen, 
-            tue_open: tueOpen, 
-            wed_open: wedOpen, 
-            thu_open: thuOpen, 
-            fri_open: friOpen, 
-            sat_open: satOpen,
-            sun_hours: sunHours,
-            mon_hours: monHours,
-            tue_hours: tueHours,
-            wed_hours: wedHours,
-            thu_hours: thuHours,
-            fri_hours: friHours,
-            sat_hours: satHours
+            timezone: timezone,
+            timezoneOffset: timezoneOffset,
+            sun_open: newSunOpen, 
+            mon_open: newMonOpen, 
+            tue_open: newTueOpen, 
+            wed_open: newWedOpen, 
+            thu_open: newThuOpen, 
+            fri_open: newFriOpen, 
+            sat_open: newSatOpen,
+            sun_hours: newSunHours,
+            mon_hours: newMonHours,
+            tue_hours: newTueHours,
+            wed_hours: newWedHours,
+            thu_hours: newThuHours,
+            fri_hours: newFriHours,
+            sat_hours: newSatHours
           };
 
           let readyToSave = false;
@@ -458,155 +511,169 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
           }
         }}
       />
-      <ScrollView>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Sunday"}
-          dayOpen={sunOpen}
-          setDayOpen={setSunOpen}
-          hours={sunHours}
-          businessDay={'sun'}
-          setHours={setSunHours}
-          userType={userType}
-          techId={techId}
-        />
-        <HeaderBottomLine/>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Monday"}
-          dayOpen={monOpen}
-          setDayOpen={setMonOpen}
-          hours={monHours}
-          businessDay={'mon'}
-          setHours={setMonHours}
-          userType={userType}
-          techId={techId}
-        />
-        <HeaderBottomLine/>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Tuesday"}
-          dayOpen={tueOpen}
-          setDayOpen={setTueOpen}
-          hours={tueHours}
-          businessDay={'tue'}
-          setHours={setTueHours}
-          userType={userType}
-          techId={techId}
-        />
-        <HeaderBottomLine/>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Wednesday"}
-          dayOpen={wedOpen}
-          setDayOpen={setWedOpen}
-          hours={wedHours}
-          businessDay={'wed'}
-          setHours={setWedHours}
-          userType={userType}
-          techId={techId}
-        />
-        <HeaderBottomLine/>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Thursday"}
-          dayOpen={thuOpen}
-          setDayOpen={setThuOpen}
-          hours={thuHours}
-          businessDay={'thu'}
-          setHours={setThuHours}
-          userType={userType}
-          techId={techId}
-        />
-        <HeaderBottomLine/>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Friday"}
-          dayOpen={friOpen}
-          setDayOpen={setFriOpen}
-          hours={friHours}
-          businessDay={'fri'}
-          setHours={setFriHours}
-          userType={userType}
-          techId={techId}
-        />
-        <HeaderBottomLine/>
-        <SettingHoursDayContainer
-          navigation={navigation} 
-          dayText={"Saturday"}
-          dayOpen={satOpen}
-          setDayOpen={setSatOpen}
-          hours={satHours}
-          businessDay={'sat'}
-          setHours={setSatHours}
-          userType={userType}
-          techId={techId}
-        />
-      </ScrollView>
-      { showTba && 
-        <TwoButtonAlert 
-          title={"Ready to Save?"}
-          message={
-            "Please, make sure all the hours are correct."
-          }
-          buttonOneText={"Save"}
-          buttonTwoText={"No"} 
-          buttonOneAction={() => {
-            console.log("save");
-            console.log(userType);
-            console.log(techId);
-            const newBusinessHours = 
-            { 
-              sun_open: sunOpen, 
-              mon_open: monOpen, 
-              tue_open: tueOpen, 
-              wed_open: wedOpen, 
-              thu_open: thuOpen, 
-              fri_open: friOpen, 
-              sat_open: satOpen,
-              sun_hours: sunHours,
-              mon_hours: monHours,
-              tue_hours: tueHours,
-              wed_hours: wedHours,
-              thu_hours: thuHours,
-              fri_hours: friHours,
-              sat_hours: satHours
-            };
-            if (userType === 'bus') {
-              const updateBusBusinessHours = businessUpdateFire.updateBusBusinessHours(newBusinessHours);
-              updateBusBusinessHours
-              .then(() => {
-                setBusinessHours(newBusinessHours);
-                setShowTba(false);
-              })
-              .catch((error) => {
-                console.log("error: updateBusUser: ", error);
-              });
+      <View>
+        <ScrollView>
+          <View style={styles.timezoneSetting}>
+            <Text style={styles.timezoneLabelText}>Timezone:</Text>
+            <ScrollView 
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            > 
+              <Text style={styles.timezoneText}>{currentGmt}</Text> 
+            </ScrollView>
+          </View>
+
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Sunday"}
+            dayOpen={sunOpen}
+            setDayOpen={setSunOpen}
+            hours={sunHours}
+            businessDay={'sun'}
+            setHours={setSunHours}
+            userType={userType}
+            techId={techId}
+          />
+          <HeaderBottomLine/>
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Monday"}
+            dayOpen={monOpen}
+            setDayOpen={setMonOpen}
+            hours={monHours}
+            businessDay={'mon'}
+            setHours={setMonHours}
+            userType={userType}
+            techId={techId}
+          />
+          <HeaderBottomLine/>
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Tuesday"}
+            dayOpen={tueOpen}
+            setDayOpen={setTueOpen}
+            hours={tueHours}
+            businessDay={'tue'}
+            setHours={setTueHours}
+            userType={userType}
+            techId={techId}
+          />
+          <HeaderBottomLine/>
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Wednesday"}
+            dayOpen={wedOpen}
+            setDayOpen={setWedOpen}
+            hours={wedHours}
+            businessDay={'wed'}
+            setHours={setWedHours}
+            userType={userType}
+            techId={techId}
+          />
+          <HeaderBottomLine/>
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Thursday"}
+            dayOpen={thuOpen}
+            setDayOpen={setThuOpen}
+            hours={thuHours}
+            businessDay={'thu'}
+            setHours={setThuHours}
+            userType={userType}
+            techId={techId}
+          />
+          <HeaderBottomLine/>
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Friday"}
+            dayOpen={friOpen}
+            setDayOpen={setFriOpen}
+            hours={friHours}
+            businessDay={'fri'}
+            setHours={setFriHours}
+            userType={userType}
+            techId={techId}
+          />
+          <HeaderBottomLine/>
+          <SettingHoursDayContainer
+            navigation={navigation} 
+            dayText={"Saturday"}
+            dayOpen={satOpen}
+            setDayOpen={setSatOpen}
+            hours={satHours}
+            businessDay={'sat'}
+            setHours={setSatHours}
+            userType={userType}
+            techId={techId}
+          />
+        </ScrollView>
+        { showTba && 
+          <TwoButtonAlert 
+            title={"Ready to Save?"}
+            message={
+              "Please, make sure all the hours are correct."
             }
-            if (userType === 'tech' && techId) {
-              const updateTechBusinessHours = businessUpdateFire.updateTechBusinessHours(techId, newBusinessHours);
-              updateTechBusinessHours
-              .then(() => {
-                setBusinessHours(newBusinessHours);
-                setShowTba(false);
-              })
-              .catch((error) => {
-                console.log("error: ", error);
-              });
-            }
-          }} 
-          buttonTwoAction={() => {
-            setShowTba(false);
-          }}
-        />
-      }
-      {
-        alertBoxStatus &&
-        <AlertBoxTop
-          alertText={alertBoxText}
-          setAlert={setAlertBoxStatus}
-        />
-      }
+            buttonOneText={"Save"}
+            buttonTwoText={"No"} 
+            buttonOneAction={() => {
+              console.log("save");
+              console.log(userType);
+              console.log(techId);
+              const newBusinessHours =
+              { 
+                timezone: timezone,
+                timezoneOffset: timezoneOffset,
+                sun_open: sunOpen, 
+                mon_open: monOpen, 
+                tue_open: tueOpen, 
+                wed_open: wedOpen, 
+                thu_open: thuOpen, 
+                fri_open: friOpen, 
+                sat_open: satOpen,
+                sun_hours: sunHours,
+                mon_hours: monHours,
+                tue_hours: tueHours,
+                wed_hours: wedHours,
+                thu_hours: thuHours,
+                fri_hours: friHours,
+                sat_hours: satHours
+              };
+              if (userType === 'bus') {
+                const updateBusBusinessHours = businessUpdateFire.updateBusBusinessHours(newBusinessHours);
+                updateBusBusinessHours
+                .then(() => {
+                  setBusinessHours(newBusinessHours);
+                  setShowTba(false);
+                })
+                .catch((error) => {
+                  console.log("error: updateBusUser: ", error);
+                });
+              }
+              if (userType === 'tech' && techId) {
+                const updateTechBusinessHours = businessUpdateFire.updateTechBusinessHours(techId, newBusinessHours);
+                updateTechBusinessHours
+                .then(() => {
+                  setBusinessHours(newBusinessHours);
+                  setShowTba(false);
+                })
+                .catch((error) => {
+                  console.log("error: ", error);
+                });
+              }
+            }} 
+            buttonTwoAction={() => {
+              setShowTba(false);
+            }}
+          />
+        }
+        {
+          alertBoxStatus &&
+          <AlertBoxTop
+            alertText={alertBoxText}
+            setAlert={setAlertBoxStatus}
+          />
+        }
+      </View>
     </View>
   )
 };
@@ -737,6 +804,24 @@ const styles = StyleSheet.create({
     width: RFValue(1),
     height: RFValue(28.5),
     backgroundColor: color.black1,
+  },
+
+  timezoneSetting: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: RFValue(9),
+    height: RFValue(57)
+  },
+  timezoneLabelText: {
+    fontSize: RFValue(19),
+    fontWeight: 'bold',
+    color: color.black1
+  },
+  timezoneText: {
+    justifyContent: 'center',
+    paddingLeft: RFValue(9),
+    color: color.black1,
+    fontSize: RFValue(13)
   },
 });
 

@@ -24,6 +24,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 
+// color
+import color from '../color';
+
 function getRandomColor() {
   var letters = '0123456789ABCDEF';
   var color = '#';
@@ -116,7 +119,7 @@ const NavigationBar = () => {
 		  		? <Image 
 		  				style={
 		  					accountTab
-		  					? { ...styles.userPhoto, ...{ borderWidth: 2, borderColor: getRandomColor()}}
+		  					? { ...styles.userPhoto, ...{ borderWidth: 2, borderColor: color.red2 }}
 		  					: styles.userPhoto
 		  				} 
 		  				source={{uri: user.photoURL}} 
@@ -130,16 +133,16 @@ const NavigationBar = () => {
 
 const styles = StyleSheet.create({
 	navBar: {
-		flex: 1,
+		height: RFValue(55),
 		flexDirection: "row", 
 		backgroundColor: 'white',
 		justifyContent: "center", 
 		alignItems: "center", 
 		width: "100%",
+		borderWidth: 1,
 	},
 	navBarElement: {
 		flex: 1, 
-		height: '100%',
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
@@ -156,4 +159,4 @@ const styles = StyleSheet.create({
 	}
 })
 
-export {NavigationBar};
+export default NavigationBar;

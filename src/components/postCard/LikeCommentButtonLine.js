@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { useNavigation } from '@react-navigation/native';
@@ -25,19 +26,27 @@ import likeGetFire from '../../firebase/like/likeGetFire.js'
 // Color
 import color from '../../color';
 
+// expo icons
+import expoIcons from '../../expoIcons';
+
 // Components
 import THButtonWOBorder from '../buttons/THButtonWOBorder';
-import TagLine from '../TagLine';
+import AliveHighlight from '../buttons/AliveHighlight';
 
 const LikeCommentButtonLine = ({ 
   countRating, 
   postId, 
   uid, 
-  tags, 
   likeCount,
   commentCount,
-  currentUserId
+  currentUserId,
+  moreDetailExists,
+  expandInfoBox,
+  setExpandInfoBox,
+  cardIndex,
+  // setShowCommentPostIndex
 }) => {
+  const [ commentCountState, setCommentCountState ] = useState(commentCount);
   const [ likeCountState, setLikeCountState ] = useState(likeCount);
   const [ like, setLike ] = useState(false);
   const [ likeButtonReady, setLikeButtonReady ] = useState(false);
@@ -64,87 +73,123 @@ const LikeCommentButtonLine = ({
   }, []);
 
   return (
-    <View 
-      style={styles.likeCommentButtonContainer}
-    >
-      { 
-        likeButtonReady && like
-        ? 
-        <TouchableOpacity
-          style={styles.buttonContainer}
+    <AliveHighlight
+      content={
+        <View 
+          style={styles.likeCommentButtonContainer}
           onPress={() => {
-            setLike(false); 
-            likePostFire.undoLikePostFire(postId, uid);
-            setLikeCountState(likeCountState - 1);
+            if (moreDetailExists) {
+              setExpandInfoBox(!expandInfoBox)
+            }
           }}
         >
-          <AntDesign name="heart" size={styles.buttonSize} color="red" />
-          <Text style={styles.buttonText}>{likeCountState}</Text>
-        </TouchableOpacity>
-        : likeButtonReady && !like
-        ?
-        <TouchableOpacity
-          style={styles.buttonContainer}
-          onPress={() => {
-            setLike(true);
-            likePostFire.likePostFire(postId, uid);
-            setLikeCountState(likeCountState + 1);
-          }}
-        >
-          <AntDesign name="hearto" size={styles.buttonSize} color="black" />
-          <Text style={styles.buttonText}>{likeCountState}</Text>
-        </TouchableOpacity>
-        : null
+          {
+            moreDetailExists &&
+            <View style={styles.expandInfoBoxIconContainer}>
+              {
+                !expandInfoBox
+                ? expoIcons.evilIconsChevronDown(RFValue(27), color.black1)
+                : expoIcons.evilIconsChevronUp(RFValue(27), color.black1)
+              }
+            </View>
+          }
+          { 
+            likeButtonReady && like
+            ? 
+            <TouchableOpacity
+              style={styles.buttonContainer}
+              onPress={() => {
+                setLike(false); 
+                likePostFire.undoLikePostFire(postId, uid);
+                setLikeCountState(likeCountState - 1);
+              }}
+            >
+              <AntDesign name="heart" size={RFValue(29)} color={color.red2} />
+              <Text style={styles.buttonText}>{likeCountState}</Text>
+            </TouchableOpacity>
+            : likeButtonReady && !like
+            ?
+            <TouchableOpacity
+              style={styles.buttonContainer}
+              onPress={() => {
+                setLike(true);
+                likePostFire.likePostFire(postId, uid);
+                setLikeCountState(likeCountState + 1);
+              }}
+            >
+              <Text style={styles.buttonText}><AntDesign name="hearto" size={styles.buttonSize} color={color.red2} /> {likeCountState}</Text>
+            </TouchableOpacity>
+            : null
+          }
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => {
+              // setShowCommentPostIndex(cardIndex);
+              navigation.navigate('Comment', {
+                postId: postId,
+                commentCount: commentCountState,
+                setCommentCountState: setCommentCountState
+              });
+            }}
+          >
+            <Text style={styles.buttonText}>
+              <AntDesign name="message1" size={styles.buttonSize} color="black" /> {count.kOrNo(commentCountState)}
+            </Text>
+          </TouchableOpacity>
+          { 
+            countRating
+            ?
+            <TouchableOpacity
+              style={styles.buttonContainer}
+            >
+              <Text style={styles.buttonText}><AntDesign name="staro" size={styles.buttonSize} color={color.black1} /> {count.kOrNo(countRating)}</Text>
+            </TouchableOpacity>
+            :
+            null
+          }
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => {
+              console.log("book mark");
+            }}
+          >
+            {expoIcons.featherBookmark(styles.buttonSize, color.black1)}
+          </TouchableOpacity>
+        </View>
       }
-      <TouchableOpacity
-        style={styles.buttonContainer}
-        onPress={() => {
-          navigation.navigate('Comment', {
-            postId: postId,
-            commentCount: commentCount
-          });
-        }}
-      >
-        <AntDesign name="message1" size={styles.buttonSize} color="black" />
-      </TouchableOpacity>
-      { 
-        countRating
-        ?
-        <TouchableOpacity
-          style={styles.buttonContainer}
-        >
-          <AntDesign name="staro" size={styles.buttonSize} color={color.black1} />
-          <Text style={styles.buttonText}>{count.kOrNo(countRating)}</Text>
-        </TouchableOpacity>
-        :
-        null
-      }
-      <TagLine 
-        tags={tags}
-      />
-    </View>
+      onPressOutAction={() => {
+        if (moreDetailExists) {
+          setExpandInfoBox(!expandInfoBox)
+        }
+      }}
+      customStyles={{ width: '100%', height: RFValue(40) }}
+    />
   )
 };
 
 const styles = StyleSheet.create({
   likeCommentButtonContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    width: '100%',
+    justifyContent: 'space-around',
     paddingVertical: RFValue(3),
     height: RFValue(40),
-    alignItems: 'center'
   },
   buttonContainer: {
     flexDirection: 'row',
-    marginRight: RFValue(11),
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
     fontSize: RFValue(17),
     paddingHorizontal: RFValue(3),
+    justifyContent: 'center',
   },
-  buttonSize: RFValue(27),
+  buttonSize: RFValue(23),
+  expandInfoBoxIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default LikeCommentButtonLine;

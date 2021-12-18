@@ -110,7 +110,23 @@ export const getCalendarDates = (
       };
     }
 
-    mounted && setDatesOnCalendar(datesInPreMonth.concat(datesInMonth, datesInNextMonth));
+    const datesOnFullCalendarPage = datesInPreMonth.concat(datesInMonth, datesInNextMonth);
+    // turn the long line of dates into shelf like a structure
+    let datesOnShelf = [];
+
+    const datesLen = datesOnFullCalendarPage.length;
+    const numOfRows = Math.ceil(datesLen / 7);
+
+    let rowIndex = 0;
+
+    for (rowIndex; rowIndex < numOfRows; rowIndex++) {
+      const adjustedIndex = rowIndex * 7
+      console.log("slice index: ", adjustedIndex, adjustedIndex + 7)
+      const datesOnRow = datesOnFullCalendarPage.slice(adjustedIndex, adjustedIndex + 7);
+      datesOnShelf.push(datesOnRow);
+    }
+
+    mounted && setDatesOnCalendar(datesOnShelf);
 
     return () => {
       mounted = false;

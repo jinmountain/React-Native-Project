@@ -577,12 +577,13 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 	});
 };
 
-const postBusSpecialDate = (busId, dateInMs, dateStatus) => {
+const postBusSpecialDate = (busId, timezoneOffset, dateInMs, dateStatus) => {
 	return new Promise (async (res, rej) => {
 		const newDocId = await usersRef.doc(busId).collection("special_hours").doc().id;
 
 		const newSpecialDate = {
 			id: newDocId,
+			timezoneOffset: timezoneOffset,
 			date_in_ms: dateInMs,
 			status: dateStatus,
 			hours: []
@@ -604,12 +605,13 @@ const postBusSpecialDate = (busId, dateInMs, dateStatus) => {
 	});
 }
 
-const postTechSpecialDate = (busId, techId, dateInMs, dateStatus) => {
+const postTechSpecialDate = (busId, techId, timezoneOffset, dateInMs, dateStatus) => {
 	return new Promise (async (res, rej) => {
 		const newDocId = await usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc().id;
 
 		const newSpecialDate = {
 			id: newDocId,
+			timezoneOffset: timezoneOffset,
 			date_in_ms: dateInMs,
 			status: dateStatus,
 			hours: []

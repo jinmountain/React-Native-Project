@@ -34,7 +34,9 @@ const TagLine = ({ tags }) => {
           return (
             <TouchableOpacity 
               onPress={() => {
+
               }}
+              style={{ justifyContent: 'center' }}
             >
               <View style={styles.unitContainer}>
                 <View style={styles.tagsContainer}>
@@ -55,7 +57,8 @@ const TagLine = ({ tags }) => {
 const styles = StyleSheet.create({
   // Tags
   tagBoxContainer: {
-    justifyContent: 'center',
+    height: RFValue(50),
+    paddingHorizontal: RFValue(9)
   },
   unitContainer: {
     borderWidth: 0.5,

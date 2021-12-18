@@ -81,6 +81,7 @@ export default () => {
 					} 
 
 					if (result.type === 'image') {
+						console.log(result);
 						res({id: id, type: result.type, uri: result.uri});
 						// if (screen === 'profile') {
 						// 	updateProfilePhotoFire(result.uri, currentUser);

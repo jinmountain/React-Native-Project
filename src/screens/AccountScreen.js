@@ -6,6 +6,7 @@ import {
 	Image, 
 	Text,  
 	TouchableOpacity,
+	TouchableWithoutFeedback,
 	Dimensions,
 	FlatList,
 	ScrollView, } from 'react-native';
@@ -97,26 +98,27 @@ const AccountScreen = ({ navigation }) => {
 		const getScreenReady = new Promise ((res, rej) => {
 			if(accountPostFetchSwitch && !accountPostState && mounted) {
 				mounted && setAccountPostState(true);
-				const getUserPosts = contentGetFire.getUserPostsFire(null, user.id, user.id);
+				const getUserPosts = contentGetFire.getUserPostsFire(null, user.id);
 				getUserPosts
 				.then((posts) => {
 					mounted && setAccountPosts(posts.fetchedPosts);
-					if (posts.lastPost !== undefined && mounted) {
-						mounted && setAccountPostLast(posts.lastPost);
-					} else {
+					// if lastPost is undefined turn off fetch switch
+					mounted && setAccountPostLast(posts.lastPost);
+					if (!posts.lastPost) {
+						console.log("turn off switch");
 						mounted && setAccountPostFetchSwtich(false);
-					};
+					}
 					mounted && setAccountPostState(false);
 				})
 			}
 
 			if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
 				mounted && setAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, user.id, user.id);
+				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, user.id);
 				getDisplayPosts
 				.then((posts) => {
 					mounted && setAccountDisplayPosts(posts.fetchedPosts);
-					if (posts.lastPost !== undefined) {
+					if (posts.lastPost) {
 						mounted && setAccountDisplayPostLast(posts.lastPost);
 					} else {
 						mounted && setAccountDisplayPostFetchSwtich(false);
@@ -129,7 +131,7 @@ const AccountScreen = ({ navigation }) => {
 
 		getScreenReady
 		.then(() => {
-			setScreenReady(true);
+			mounted && setScreenReady(true);
 		})
 		.catch((error) => {
 			console.log(error);
@@ -173,7 +175,7 @@ const AccountScreen = ({ navigation }) => {
     .then(() => {
     	if(accountPostFetchSwitch && !accountPostState && mounted) {
 				mounted && setAccountPostState(true);
-				const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user.id, user.id);
+				const getUserPosts = contentGetFire.getUserPostsFire(null, user.id);
 				getUserPosts
 				.then((posts) => {
 					mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
@@ -188,7 +190,7 @@ const AccountScreen = ({ navigation }) => {
 
 			if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
 				mounted && setAccountDisplayPostState(true);
-				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id, user.id);
+				const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, user.id);
 				getDisplayPosts
 				.then((posts) => {
 					mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
@@ -246,7 +248,7 @@ const AccountScreen = ({ navigation }) => {
 	        	let mounted = true;
 			      if (isCloseToBottom(nativeEvent) && accountPostFetchSwitch && !accountPostState && mounted) {
 			      	mounted && setAccountPostState(true);
-							const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user.id, user.id);
+							const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user.id);
 							getUserPosts
 							.then((posts) => {
 								mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
@@ -334,7 +336,7 @@ const AccountScreen = ({ navigation }) => {
 									let mounted = true;
 									if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
 										mounted && setAccountDisplayPostState(true);
-										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id, user.id);
+										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id);
 										getDisplayPosts
 										.then((posts) => {
 											mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
@@ -359,16 +361,16 @@ const AccountScreen = ({ navigation }) => {
 		            keyExtractor={(displayPost, index ) => index.toString()}
 		            renderItem={({ item, index }) => {
 		              return (
-		                <TouchableOpacity 
+		                <TouchableWithoutFeedback 
 		                  style={{ ...styles.postImageContainer, ...{ height: windowWidth/2 + RFValue(50), width: windowWidth/2 } }}
 		                  onPress={() => {
 		                  	// navigation.navigate('PostDetail', {
 		                  	// 	post: item,
 		                  	// 	postSource: 'account'
 		                  	// });
-		                  	navigation.navigate('PostsSwipeStack', {
-		                  		screen: 'PostsSwipe',
-		                  		params: {
+		                  	navigation.navigate(
+		                  		'PostsSwipe',
+		                  		{
 		                  			postSource: 'accountDisplay',
 		                  			cardIndex: index,
 		                  			posts: accountDisplayPosts,
@@ -376,29 +378,31 @@ const AccountScreen = ({ navigation }) => {
 														postFetchSwitch: accountDisplayPostFetchSwitch,
 														postLast: accountDisplayPostLast,
 		                  		}
-		                  	});
+		                  	);
 		                  }}
 		                >
-			                <DisplayPostImage
-			                	type={item.data.files[0].type}
-			                	url={item.data.files[0].url}
-			                	imageWidth={windowWidth/2}
-			                />
-			                <DisplayPostInfo
-			                	containerWidth={windowWidth/2}
-			                	taggedCount={count.kOrNo(item.data.taggedCount)}
-			                	title={item.data.title}
-			                	likeCount={count.kOrNo(item.data.likeCount)}
-			                	price={item.data.price}
-			                	etc={item.data.etc}
-			                />
-		                  { item.data.files.length > 1
-		                  	? <MultiplePhotosIndicator
-		                  			size={RFValue(24)}
-		                  		/>
-		                  	: null
-		                  }
-		                </TouchableOpacity>
+		                	<View>
+				                <DisplayPostImage
+				                	type={item.data.files[0].type}
+				                	url={item.data.files[0].url}
+				                	imageWidth={windowWidth/2}
+				                />
+				                <DisplayPostInfo
+				                	containerWidth={windowWidth/2}
+				                	taggedCount={count.kOrNo(item.data.taggedCount)}
+				                	title={item.data.title}
+				                	likeCount={count.kOrNo(item.data.likeCount)}
+				                	price={item.data.price}
+				                	etc={item.data.etc}
+				                />
+			                  { item.data.files.length > 1
+			                  	? <MultiplePhotosIndicator
+			                  			size={RFValue(24)}
+			                  		/>
+			                  	: null
+			                  }
+			                </View>
+		                </TouchableWithoutFeedback>
 		              )
 		            }}
 		          />

@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  StyleSheet 
+  StyleSheet,
+  Pressable,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -17,71 +17,98 @@ const ExpandableText = ({ caption, defaultCaptionNumLines }) => {
   const [ textShown, setTextShown ] = useState(false); //To show ur remaining Text
   const [ lengthMore, setLengthMore ] = useState(false); //to show the "Read more & Less Line"
 
+  const [ loadMore, setLoadMore ] = useState(false);
+  const [ numOfLines, setNumOfLines ] = useState(0);
+
   const navigation = useNavigation();
-  
-  const toggleNumberOfLines = () => { 
-    //To toggle the show text or hide it
-    setTextShown(!textShown);
+
+  const onLoadMoreToggle = () => {
+    setLoadMore(!loadMore);
   }
+  const onTextLayout = useCallback(e => {
+      if(numOfLines == 0) {
+        setNumOfLines(e.nativeEvent.lines.length);
+      }
+  });
 
-  // const onTextLayout = useCallback(e => {
-  //   setLengthMore(e.nativeEvent.lines.length >= defaultCaptionNumLines + 1); 
-  //   //to check the text is more than 1 lines or not
-  // },[]);
+  const backgroundColorAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    let isMounted = true;
-    const numOfLines = caption.split(/\r\n|\r|\n/).length;
-    if (numOfLines > 1) {
-      isMounted && setLengthMore(true);
-    }
-    return () => {
-      isMounted = false;
-      setLengthMore(false);
-      setTextShown(false);
-    };
-  }, []);
-    
+  const dimBackground = Animated.timing(backgroundColorAnim, {
+    toValue: 100,
+    duration: 100,
+    useNativeDriver: false,
+  });
+
+  const lightBackground = Animated.timing(backgroundColorAnim, {
+    toValue: 0,
+    duration: 300,
+    useNativeDriver: false,
+  });
+
+  const borderColorAnim = useRef(new Animated.Value(0)).current;
+
+  const dimBorderColor = Animated.timing(borderColorAnim, {
+    toValue: 100,
+    duration: 100,
+    useNativeDriver: false,
+  });
+
+  const lightBorderColor = Animated.timing(borderColorAnim, {
+    toValue: 0,
+    duration: 500,
+    useNativeDriver: false,
+  });
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.captionAndLineControlContainer}>
-        {
-          lengthMore 
-          ? 
-          <TouchableWithoutFeedback
-            style={styles.textLineControlButton}
-            onPress={() => {
-              toggleNumberOfLines()
-            }}
+        <Pressable
+          style={styles.textLineControlButton}
+          onPressIn={() => {
+            dimBackground.start();
+            dimBorderColor.start();
+          }}
+          onPressOut={() => {
+            lightBackground.start();
+            lightBorderColor.start();
+            onLoadMoreToggle();
+          }}
+        >
+          <Animated.View 
+            style={[
+              styles.captionContainer,
+              {
+                backgroundColor: backgroundColorAnim.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: [color.white2, color.grey4],
+                }),
+                borderWidth: 1,
+                borderColor: borderColorAnim.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: [color.white2, color.grey4],
+                })
+              }
+            ]}
           >
-            <View style={styles.captionContainer}>
-              <Text
-                // onTextLayout={onTextLayout}
-                numberOfLines={textShown ? undefined : defaultCaptionNumLines}
-                style={styles.captionText}
-              >
-                {caption}
-              </Text>
-              <Text
-                numberOfLines={1}
-                style={styles.moreLessText}
-              >
-                {textShown ? "hide" : "read more"}
-              </Text>
-            </View>
-            
-          </TouchableWithoutFeedback>
-          : 
-          <View style={styles.captionContainer}>
             <Text
-              // onTextLayout={onTextLayout}
-              numberOfLines={textShown ? undefined : defaultCaptionNumLines}
+              numberOfLines={numOfLines == 0 ? null : loadMore ? numOfLines : defaultCaptionNumLines} 
+              onTextLayout={onTextLayout}
               style={styles.captionText}
             >
               {caption}
             </Text>
-          </View>
-        }
+            {
+              numOfLines > defaultCaptionNumLines 
+              &&
+              <Text
+                numberOfLines={1}
+                style={styles.moreLessText}
+              >
+                {loadMore ? 'Show less' :'Read more'}
+              </Text>
+            }
+          </Animated.View>
+        </Pressable>
       </View>
     </View>
   )
@@ -89,10 +116,9 @@ const ExpandableText = ({ caption, defaultCaptionNumLines }) => {
 
 const styles = StyleSheet.create({
   mainContainer: {
-    flex: 1,
+
   },
   captionAndLineControlContainer: {
-    height: '100%',
     flexDirection: 'row',
   },
   captionContainer: {

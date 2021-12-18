@@ -179,10 +179,12 @@ const App = () => {
   // const route = useRoute();
   // console.log(route.name);
   const { 
-    state: { user, userLogin },
+    state: { user, userRealtimeListenerSwitch },
     localSignin,
     addCurrentUserData,
-    changeUserLogin
+    changeUserLogin,
+    turnOnUserRealtimeListener,
+    turnOffUserRealtimeListener
   } = useContext(AuthContext);
 
   const { 
@@ -216,7 +218,7 @@ const App = () => {
     setAppStateVisible(appState.current);
   };
 
-  const [ userRealtimeListenerSwitch, setUserRealtimeListenerSwitch ] = useState(false);
+  // const [ userRealtimeListenerSwitch, setUserRealtimeListenerSwitch ] = useState(false);
 
   // start local sign in and app state listener
   useEffect(() => {
@@ -226,7 +228,7 @@ const App = () => {
       wait(1000).then(() => {
         setSplash(false);
         changeUserLogin(true);
-        setUserRealtimeListenerSwitch(true);
+        turnOnUserRealtimeListener();
         AppState.addEventListener('change', handleAppStateChange);
       });
     })
@@ -241,7 +243,7 @@ const App = () => {
       isReadyRef.current = false;
       // remove app state listener
       AppState.removeEventListener('change', handleAppStateChange);
-      setUserRealtimeListenerSwitch(false);
+      turnOffUserRealtimeListener();
     };
   }, []);
 
@@ -250,14 +252,16 @@ const App = () => {
     let notificationListener;
     let userDataListener;
 
-    if (userRealtimeListenerSwitch && userLogin && user && user.id) {
+    if (userRealtimeListenerSwitch && user && user.id) {
       notificationListener = usersGetFire.getUserNotificationsRealtime(user.id, schedulePushNotification);
       userDataListener = usersGetFire.getUserDataRealtime(user.id, addCurrentUserData);
     } else {
-      if (notificationListener) {
+      if (notificationListener && !userRealtimeListenerSwitch) {
+        console.log("realtime listener is off. unsubscribe: notificationListener");
         notificationListener()
       };
-      if (userDataListener) {
+      if (userDataListener && !userRealtimeListenerSwitch) {
+        console.log("realtime listener is off. unsubscribe: userDataListener");
         userDataListener()
       };
     }

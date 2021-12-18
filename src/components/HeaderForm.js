@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, TouchableHighlight, Text, Platform, Animated } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -12,6 +12,9 @@ import { AntDesign } from '@expo/vector-icons';
 
 // Color
 import color from '../color';
+
+// sizes
+import sizes from '../sizes';
 
 // Components
 import HeaderBottomLine from './HeaderBottomLine';
@@ -31,6 +34,8 @@ const headerIconFinder = (iconName) => {
   }
 }
 
+const headerBoxHeight = sizes.headerBoxHeight;
+
 const HeaderForm = (
   {
     leftButtonTitle, 
@@ -49,10 +54,13 @@ const HeaderForm = (
   }
 ) => {
 
+  const [ isPad, setIsPad ] = useState(Platform.isPad);
+
   return (
     <View style={styles.headerShadow}>
       {
-        addPaddingTop &&
+        addPaddingTop
+        ?
         <View 
           style={
             paddingTopCustomStyle
@@ -62,6 +70,7 @@ const HeaderForm = (
             styles.safeAreaPadding
           }
         />
+        : null
       }
       <View 
         style={
@@ -177,7 +186,7 @@ const styles = StyleSheet.create({
     height: RFValue(30)
   },
   headerContainer: {
-    height: RFValue(70),
+    height: headerBoxHeight,
     justifyContent: "center",
     
     // ...Platform.select({
@@ -195,7 +204,7 @@ const styles = StyleSheet.create({
 
   compartmentOuter: {
     flex: 1, 
-    height: RFValue(70),
+    height: headerBoxHeight,
   },
 
   compartmentIconContainer: {
@@ -220,7 +229,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    height: RFValue(70)
+    height: headerBoxHeight
   },
   middleTitleTextContainer: {
     justifyContent: 'center',
@@ -232,13 +241,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   leftCompartmentInnerContainer: {
-    paddingLeft: RFValue(10),
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
   },
   rightCompartmentInnerContainer: {
-    paddingRight: RFValue(10),
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -246,8 +253,8 @@ const styles = StyleSheet.create({
   compartmentHighlight: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: RFValue(70),
-    height: RFValue(70),
+    width: headerBoxHeight,
+    height: headerBoxHeight,
     borderRadius: RFValue(100),
   },
   headerTitle: {

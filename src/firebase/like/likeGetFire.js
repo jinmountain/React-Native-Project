@@ -1,6 +1,5 @@
 import Firebase from '../../firebase/config'
 import firebase from 'firebase/app';
-// import { navigate } from '../../navigationRef';
 const db = Firebase.firestore();
 const postsRef = db.collection("posts");
 const usersRef = db.collection("users");
@@ -41,5 +40,31 @@ const checkCommentLikeFire = (postId, commentId, uid) => {
   });
 };
 
+const checkReplyLikeFire = (postId, commentId, replyId, uid) => {
+  return new Promise ((res, rej) => {
+    const likesRef = postsRef
+    .doc(postId)
+    .collection("comments")
+    .doc(commentId)
+    .collection("replies")
+    .doc(replyId)
+    .collection("whoLike")
+    .doc(uid);
 
-export default { checkLikeFire, checkCommentLikeFire }; 
+    likesRef
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        res(true);
+      } else {
+        res(false);
+      }
+    })
+    .catch((error) => {
+      rej(false);
+    });
+  });
+};
+
+
+export default { checkLikeFire, checkCommentLikeFire, checkReplyLikeFire }; 

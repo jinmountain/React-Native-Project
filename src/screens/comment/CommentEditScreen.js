@@ -14,7 +14,8 @@ import {
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // npms
-import BottomSheet from 'reanimated-bottom-sheet';
+// import BottomSheet from 'reanimated-bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 // Components
 import HeaderBottomLine from '../../components/HeaderBottomLine';
@@ -23,8 +24,8 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 
 // firebase
-import commentGetFire from '../../firebase/commentGetFire';
-import commentPostFire from '../../firebase/commentPostFire';
+import commentGetFire from '../../firebase/comment/commentGetFire';
+import commentPostFire from '../../firebase/comment/commentPostFire';
 // Design
 
 // contexts
@@ -43,11 +44,11 @@ import expoIcons from '../../expoIcons';
 
 
 const CommentEditScreen = ({ navigation, route }) => {
-	const { postId, commentId, commentData, commentUser, currentUserId } = route.params;
+	const { postId, commentId, commentData, commentUser, currentUserId, setCurrentCommentData } = route.params;
 
 	const [ isKeyboardVisible ] = useIsKeyboardVisible();
 
-	const [ editedComment, setEditedComment ] = useState(commentData.comment);
+	const [ editedText, setEditedText ] = useState(commentData.text);
 
 	const [ editCommentState, setEditCommentState ] = useState(false);
 
@@ -74,13 +75,18 @@ const CommentEditScreen = ({ navigation, route }) => {
         rightButtonPress={() => {
         	if (!editCommentState) {
         		setEditCommentState(true);
-        		const editComment = commentPostFire.editCommentFire(postId, commentId, editedComment);
+        		const editComment = commentPostFire.editCommentFire(postId, commentId, editedText);
 	        	editComment
 	        	.then(() => {
+	        		const editedCommentData = { 
+	        			...commentData,
+	        			text: editedText,
+	        			edited: true
+	        		}
+	        		console.log(editedCommentData)
 	        		setEditCommentState(false);
-	        		navigation.navigate("Comment", {
-		          	postId: postId
-		          });
+	        		setCurrentCommentData(editedCommentData);
+	        		navigation.goBack();
 	        	})
 	        	.catch((error) => {
 	        		setEditCommentState(false);
@@ -117,8 +123,8 @@ const CommentEditScreen = ({ navigation, route }) => {
 		          </View>
 		          <TextInput 
 		          	style={styles.editTextInput}
-				        onChangeText={setEditedComment}
-				        value={editedComment}
+				        onChangeText={setEditedText}
+				        value={editedText}
 				        multiline={true}
 				        autoComplete={false}
 				        autoCorrect={false}

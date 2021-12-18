@@ -214,7 +214,7 @@ const ChatScreen = ({ route, navigation }) => {
 		    	// get theOtherUser's display posts if theOtherUser is business
 		    	if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
 						isMounted && setUserAccountDisplayPostState(true);
-						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, theOtherUser.id, user.id);
+						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, theOtherUser.id);
 						getDisplayPosts
 						.then((posts) => {
 							isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
@@ -424,7 +424,7 @@ const ChatScreen = ({ route, navigation }) => {
 								let isMounted = true;
 								if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
 									isMounted && setUserAccountDisplayPostState(true);
-									const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chatScreenDisplayPostLast, theOtherUser, user.id);
+									const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chatScreenDisplayPostLast, theOtherUser.id);
 									getDisplayPosts
 									.then((posts) => {
 										isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);

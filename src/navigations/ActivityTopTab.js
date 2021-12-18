@@ -60,6 +60,10 @@ const ActivityTopTab = () => {
 	      					}
 	      				</View>
 	      			)
+						},
+						tabBarIconStyle: {  
+							width: '100%',
+							height: '100%'
 						}
 	      	}}
 	      />
@@ -83,6 +87,10 @@ const ActivityTopTab = () => {
 	      					}
 	      				</View>
 	      			)
+						},
+						tabBarIconStyle: {  
+							width: '100%',
+							height: '100%'
 						}
 	      	}}
 	      />
@@ -106,6 +114,10 @@ const ActivityTopTab = () => {
 	      					}
 	      				</View>
 	      			)
+						},
+						tabBarIconStyle: {  
+							width: '100%',
+							height: '100%'
 						}
 	      	}}
 	      />
@@ -129,6 +141,10 @@ const ActivityTopTab = () => {
 	      					}
 	      				</View>
 	      			)
+						},
+						tabBarIconStyle: {  
+							width: '100%',
+							height: '100%'
 						}
 	      	}}
 	      />

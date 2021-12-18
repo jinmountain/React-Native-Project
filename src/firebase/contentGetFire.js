@@ -9,7 +9,7 @@ const usersRef = Firebase.firestore().collection("users");
 const postsRef = Firebase.firestore().collection("posts");
 
 // accept user as a parameter then use user data to merge in userPost
-const getUserPostsFire = (lastPost, accountUserId, currentUserId) => {
+const getUserPostsFire = (lastPost, accountUserId) => {
 	return new Promise ((res, rej) => {
 		let postRef;
 		if (lastPost) {
@@ -26,45 +26,38 @@ const getUserPostsFire = (lastPost, accountUserId, currentUserId) => {
 			.orderBy("createdAt", "desc")
 		};
 		postRef
-		.limit(27)
+		.limit(15)
 		.get()
-		.then((querySnapshot) => {
-			// querySnapshot.forEach((doc) => {
-			// 	console.log(doc.id, " => ", doc.data());
-			// });
-			const userPosts = []
-			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			let docIndex = 0;
+			const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
 			if (docLength > 0) {
-	      querySnapshot.forEach(async (doc) => {
-	      	const docId = doc.id
-	      	const docData = doc.data()
+				const postDocs = querySnapshot.docs.map((doc) => {
+					const docId = doc.id;
+	      	const docData = doc.data();
 
-	      	const userPost = {
+	      	const postDoc = {
 	      		id: docId, 
 	      		data: docData, 
 	      	};
 
-					userPosts.push(userPost);
+	      	return postDoc;
+				});
 
-					docIndex += 1;
+				const userPosts = await Promise.all(postDocs);
 
-		  		if (docIndex === docLength) {
-						res({ fetchedPosts: userPosts, lastPost: lastVisible });
-					};
-	      });
-	    } else {
 	    	res({ fetchedPosts: userPosts, lastPost: lastVisible });
+	    } else {
+	    	res({ fetchedPosts: [], lastPost: lastVisible });
 	    };
 		})
 		.catch((error) => {
-			console.log("Error occured while getting user posts: ", error);
+			rej(error);
 		});
 	})
 };
 
-const getBusinessDisplayPostsFire = (lastPost, businessUserId, currentUserId) => {
+const getBusinessDisplayPostsFire = (lastPost, businessUserId) => {
 	return new Promise ((res, rej) => {
 		let postRef;
 		if (lastPost) {
@@ -81,97 +74,86 @@ const getBusinessDisplayPostsFire = (lastPost, businessUserId, currentUserId) =>
 			.orderBy("createdAt", "desc")
 		};
 		postRef
-		.limit(7)
+		.limit(6)
 		.get()
-		.then((querySnapshot) => {
-			// querySnapshot.forEach((doc) => {
-			// 	console.log(doc.id, " => ", doc.data());
-			// });
-			const userPosts = []
-			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			let docIndex = 0;
+			var lastVisible = querySnapshot.docs[docLength - 1];
 			if (docLength > 0) {
-	      querySnapshot.forEach(async (doc) => {
-	      	const docId = doc.id
-	      	const docData = doc.data()
+	      const postDocs = querySnapshot.docs.map((doc) => {
+					const docId = doc.id;
+	      	const docData = doc.data();
 
-	      	const userPost = {
+	      	const postDoc = {
 	      		id: docId, 
 	      		data: docData, 
 	      	};
 
-					userPosts.push(userPost);
+	      	return postDoc;
+				});
 
-					docIndex += 1;
-
-		  		if (docIndex === docLength) {
-						res({fetchedPosts: userPosts, lastPost: lastVisible});
-		  		};
-	      });
-	    } else {
+				const userPosts = await Promise.all(postDocs);
 	    	res({ fetchedPosts: userPosts, lastPost: lastVisible });
+	    } else {
+	    	res({ fetchedPosts: [], lastPost: lastVisible });
 	    };
 		})
 		.catch((error) => {
-			console.log("Error occured while getting user posts: ", error);
+			rej(error);
 		});
 	})
 };
 
-// posts that tagged the business user 
-const getTaggedPostsFire = (lastPost, businessUserId, userId) => {
+// posts that rated the business user 
+const getTaggedPostsFire = (lastPost, businessUserId) => {
 	return new Promise (async (res, rej) => {
-		let postRef;
+		let ratedPostsRef;
 		if (lastPost) {
-			postRef = postsRef
+			ratedPostsRef = postsRef
 			.where("tid", "==", businessUserId)
 			.orderBy("createdAt", "desc")
 			.startAfter(lastPost)
 			console.log("Start from the last post.");
 		} else {
-			postRef = postsRef
+			ratedPostsRef = postsRef
 			.where("tid", "==", businessUserId)
 			.orderBy("createdAt", "desc")
 		};
 
-		await postRef
+		ratedPostsRef
 		.limit(15)
 		.get()
 		.then(async (querySnapshot) => {
-			let lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-			const businessPosts = []
 			const docLength = querySnapshot.docs.length;
-			let docIndex = 0;
+			let lastVisible = querySnapshot.docs[docLength - 1];
+			
 			if (docLength > 0) {
-				querySnapshot.forEach(async (doc) => {
-					let docId = doc.id;
-			  	let docData = doc.data();
+				const postDocs = querySnapshot.docs.map((doc) => {
+					const docId = doc.id;
+	      	const docData = doc.data();
 
-		  		let businessPost = {
+	      	const businessPost = {
 		  			id: docId, 
 		  			data: docData, 
 		  		};
 
-					businessPosts.push(businessPost);
-
-		  		docIndex += 1;
-
-		  		if (docIndex === docLength) {
-						res({ fetchedPosts: businessPosts, lastPost: lastVisible });
-		  		};
+		  		return businessPost
 				});
-			} else {
+
+				const businessPosts = await Promise.all(postDocs);
+
 				res({ fetchedPosts: businessPosts, lastPost: lastVisible });
+			} else {
+				res({ fetchedPosts: [], lastPost: lastVisible });
 			}
 		})
 		.catch((error) => {
-			console.log("Error occured while getting business tagged posts: ", error);
+			rej(error);
 		});
 	});
 };
 
-const getHotPostsFire = (lastPost, userId) => {
+const getHotPostsFire = (lastPost) => {
 	return new Promise ((res, rej) => {
 		let postRef;
 		if (lastPost) {
@@ -186,32 +168,28 @@ const getHotPostsFire = (lastPost, userId) => {
 		postRef
 		.limit(6)
 		.get()
-		.then((querySnapshot) => {
-			const hotPosts = [];
-			var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			let docIndex = 0;
+			const lastVisible = querySnapshot.docs[docLength - 1];
+			
 			if (docLength > 0) {
-	      querySnapshot.forEach(async (doc) => {
-	      	const docId = doc.id;
+				const postDocs = querySnapshot.docs.map((doc) => {
+					const docId = doc.id;
 	      	const docData = doc.data();
 	      	
 	      	const post = {
 	      		id: docId, 
 	      		data: docData, 
 	      	};
-	      	
-					hotPosts.push(post);
 
-					docIndex += 1;
+	      	return post;
+				});
 
-					if (docIndex === docLength) {
-						//console.log("first hot post: ", hotPosts[0])
-						res({fetchedPosts: hotPosts, lastPost: lastVisible});
-		  		}
-	      });
+				const hotPosts = await Promise.all(postDocs);
+	      
+	      res({fetchedPosts: hotPosts, lastPost: lastVisible});
 	    } else {
-	    	res({fetchedPosts: hotPosts, lastPost: lastVisible});
+	    	res({fetchedPosts: [], lastPost: lastVisible});
 	    }
 		})
 		.catch((error) => {

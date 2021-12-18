@@ -16,6 +16,10 @@ import BottomSheet from 'reanimated-bottom-sheet';
 // Components
 import MainTemplate from '../../components/MainTemplate';
 import HeaderBottomLine from '../../components/HeaderBottomLine';
+import TwoButtonAlert from '../../components/TwoButtonAlert';
+
+// firebase
+import commentDeleteFire from '../../firebase/comment/commentDeleteFire';
 
 // Designs
 import { Feather } from '@expo/vector-icons';
@@ -35,7 +39,9 @@ const RenderContent = ({
   commentId, 
   commentData, 
   commentUser, 
-  currentUserId 
+  currentUserId,
+  deleteCurrentCommentState,
+  decrementCommentCount
 }) => {
   return (
     <View
@@ -131,12 +137,20 @@ const RenderContent = ({
         	<View>
   		      <TouchableOpacity
   		        onPress={() => {
-                navigation.navigate("CommentEdit", {
-                  postId: postId, 
-                  commentId: commentId, 
-                  commentData: commentData,
-                  commentUser: commentUser,
-                  currentUserId: currentUserId
+                const goBackFirst = new Promise ((res, rej) => {
+                  navigation.goBack();
+                  res()
+                });
+                goBackFirst
+                .then(() => {
+                  navigation.navigate("CommentEdit", {
+                    postId: postId, 
+                    commentId: commentId, 
+                    commentData: commentData,
+                    commentUser: commentUser,
+                    currentUserId: currentUserId,
+                    setCurrentCommentData: setCurrentCommentData
+                  });
                 });
   		        }}
   		        style={styles.bsButtonTouch}
@@ -155,14 +169,17 @@ const RenderContent = ({
   							});
   							goBackFirst
   							.then(() => {
-  								// navigation.navigate(
-  								// 	"DeletionConfirmationScreen",
-  								// 	{ 
-  								// 		requestType: 'post',
-  		      //           postId: postId,
-  		      //           postData: postData
-  		      //         }
-  								// );
+  								navigation.navigate(
+  									"CommentDeleteConfirmation",
+  									{ 
+  		                headerText: "Delete Comment?",
+                      messageText: "This can’t be undone and it will be removed from your account and Snail search results.",
+                      postId: postId,
+                      commentId: commentId,
+                      deleteCurrentCommentState: deleteCurrentCommentState,
+                      decrementCommentCount: decrementCommentCount
+  		              }
+  								);
   							});
   						}}
   		      >
@@ -185,7 +202,7 @@ const RenderContent = ({
 };
 
 const CommentManagerScreen = ({ route, navigation }) => {
-	const { postId, commentId, commentData, commentUser, currentUserId } = route.params;
+	const { postId, commentId, commentData, commentUser, currentUserId, deleteCurrentCommentState, decrementCommentCount } = route.params;
 
 	const sheetRef = useRef(null);
   const [ bottomSheetHeight, setBottomSheetHeight ] = useState(RFValue(300));
@@ -218,6 +235,8 @@ const CommentManagerScreen = ({ route, navigation }) => {
               commentData={commentData}
               commentUser={commentUser}
               currentUserId={currentUserId}
+              deleteCurrentCommentState={deleteCurrentCommentState}
+              decrementCommentCount={decrementCommentCount}
             />
           )
         }}

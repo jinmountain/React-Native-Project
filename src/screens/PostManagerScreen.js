@@ -13,7 +13,9 @@ import {
 	Pressable,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+// import BottomSheet from 'reanimated-bottom-sheet';
 import BottomSheet from 'reanimated-bottom-sheet';
+
 
 // Components
 import MainTemplate from '../components/MainTemplate';

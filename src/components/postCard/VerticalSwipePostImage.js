@@ -5,8 +5,9 @@ import {
   Image,
   Dimensions,
   FlatList,
-  Animated,
+  Text,
   TouchableWithoutFeedback,
+  TouchableHighlight,
   TouchableOpacity,
 } from 'react-native';
 import { Video, AVPlaybackStatus } from 'expo-av';
@@ -17,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 
 // hooks
 import { wait } from '../../hooks/wait';
+import useConvertTime from '../../hooks/useConvertTime';
 
 // Components
 import PhotosPageIndicator from './PhotosPageIndicator';
@@ -24,10 +26,13 @@ import PhotosPageIndicator from './PhotosPageIndicator';
 // Color
 import color from '../../color';
 
+// expo icons
+import expoIcons from '../../expoIcons';
+
 const { width, height } = Dimensions.get("window");
 
 let currentFileIndex = 0;
-const VerticalSwipePostImage = ({files, onFocus}) => {
+const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displayEtc}) => {
   // files
   // {
   //  type: string
@@ -37,9 +42,6 @@ const VerticalSwipePostImage = ({files, onFocus}) => {
   const _fileListView = useRef(null);
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
-  const [ currentFileIndex, setCurrentFileIndex ] = useState(0);
-  let fileIndex = 0;
-  let fileAnimation = new Animated.Value(0);
   const navigation = useNavigation();
 
   const [ showPage, setShowPage ] = useState(true);
@@ -55,41 +57,35 @@ const VerticalSwipePostImage = ({files, onFocus}) => {
   }, [showPage]);
 
   useEffect(() => {
-    fileAnimation.addListener(({ value }) => {
-      if (value > 0) {
-        // set showPage to true when detect index change
-        setShowPage(true);
-        const getIndex = new Promise((res, rej) => {
-          // console.log("value: ", value, "cardWidth: ", width);
-          let index = Math.floor((value + width) / width) - 1; 
-          if (index >= files.length) {
-            index = files.length - 1;
-          };
-          if (index <= 0) {
-            index = 0;
-          };
-          res(index);
-        });
-        getIndex
-        .then((index) => {
-          // console.log("file index: ", index);
-          setCurrentFileIndex(index);
-        });
-      }
-    });
-  });
-
-  useEffect(() => {
     _fileListView.current.scrollToOffset(0);
-  }, [files])
+  }, [files]);
+
+  const [focusedCardIndex, setFocusedCardIndex] = useState(0);
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+    waitForInteraction: true,
+    minimumViewTime: 500, // stay at least 0.5 second
+  })
+
+  const onViewableItemsChanged = useRef(({ viewableItems, changed }) => {
+    if (changed && changed.length > 0) {
+      setFocusedCardIndex(changed[0].index);
+      setShowPage(true);
+      // console.log("changed focused card index to: ", changed[0].index);
+      // console.log("Visible items are", viewableItems);
+      // console.log("Changed in this iteration", changed);
+    }
+  });
 
   return (
     <View>
-      <Animated.FlatList
+      <FlatList
         horizontal
         ref={_fileListView}
+        onViewableItemsChanged={onViewableItemsChanged.current}
+        viewabilityConfig={viewabilityConfig.current}
         pagingEnabled={true}
-        decelerationRate={'normal'}
         snapToInterval={width}
         showsHorizontalScrollIndicator={false}
         data={files}
@@ -133,7 +129,7 @@ const VerticalSwipePostImage = ({files, onFocus}) => {
                       //   : video.current.pauseAsync()
                       // }}
                       // isLooping={true}
-                      shouldPlay={onFocus && currentFileIndex === index }
+                      shouldPlay={onFocus && focusedCardIndex === index }
                       onPlaybackStatusUpdate={status => setStatus(() => status)}
                     />
                   </View>
@@ -152,28 +148,55 @@ const VerticalSwipePostImage = ({files, onFocus}) => {
             </TouchableWithoutFeedback>
           )
         }}
-        onScroll={Animated.event(
-          [
-            {
-              nativeEvent: {
-                contentOffset: {
-                  x: fileAnimation,
-                }
-              },
-            },
-          ],
-          {useNativeDriver: true}
-        )}
       />
       { 
         files.length > 1 && showPage
         ?
         <PhotosPageIndicator 
-          currentIndex={currentFileIndex}
+          currentIndex={focusedCardIndex}
           imageLength={files.length}
           marginTop={width}
         />
         : null
+      }
+
+      {
+        isDisplay &&
+        <View style={styles.displayPostShopButtonContainer}>
+          <TouchableHighlight 
+            style={styles.displayPostInfoTH}
+            onPress={() => {
+              console.log("shop");
+            }}
+            underlayColor={color.grey4}
+          >
+            <View style={styles.shopButtonInner}>
+              {expoIcons.featherShoppingBack(RFValue(17), color.red2)}
+              <View style={styles.displayPostInfoInner}>
+                <View style={styles.displayPostInfoElement}>
+                  <Text style={styles.displayPostInfoText}>$</Text>
+                </View>
+                <View style={styles.displayPostInfoElement}>
+                  <Text style={styles.displayPostInfoText}>
+                    {displayPrice}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.displayPostInfoInner}>
+                <View style={styles.displayPostInfoElement}>
+                  { 
+                    expoIcons.antdesignClockCircleO(RFValue(13), color.black1)
+                  }
+                </View>
+                <View style={styles.displayPostInfoElement}>
+                  <Text style={styles.displayPostInfoText}>
+                    {useConvertTime.convertEtcToHourMin(displayEtc)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </TouchableHighlight>
+        </View>
       }
     </View>
   );
@@ -196,7 +219,52 @@ const styles = StyleSheet.create({
     backgroundColor: color.white2,
     width: width,
     height: width,
-  }
+  },
+
+  displayPostShopButtonContainer: {
+    position: 'absolute',
+    width: "100%",
+    paddingRight: RFValue(9),
+    marginTop: RFValue(9),
+  },
+  displayPostInfoTH: {
+    alignSelf: 'flex-end',
+    borderWidth: RFValue(1),
+    borderRadius: RFValue(15),
+    paddingHorizontal: RFValue(7),
+    paddingVertical: RFValue(7),
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    elevation: 5, // for android
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { 
+      width: 0,
+      height: 2, 
+    },
+  },
+  shopButtonInner: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  displayPostInfoInner: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: RFValue(3),
+  },
+  displayPostInfoElement: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: RFValue(1),
+  },
+  displayPostInfoText: {
+    fontSize: RFValue(15),
+  },
 });
 
 export default VerticalSwipePostImage;

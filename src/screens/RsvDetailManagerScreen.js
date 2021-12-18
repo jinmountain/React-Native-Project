@@ -10,7 +10,7 @@ import {
   Dimensions
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
-import BottomSheet from 'reanimated-bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 // Components
 import HeaderBottomLine from '../components/HeaderBottomLine';

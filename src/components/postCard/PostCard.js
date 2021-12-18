@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef, useCallback } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -6,7 +6,7 @@ import {
   ScrollView,
   StyleSheet,  
   TouchableOpacity,
-  Dimensions,
+  TouchableWithoutFeedback,
   FlatList,
   Animated,
   Platform,
@@ -33,10 +33,6 @@ import { wait } from '../../hooks/wait';
 import { isCloseToBottom } from '../../hooks/isCloseToBottom';
 import { useNavigation } from '@react-navigation/native';
 
-const { width, height } = Dimensions.get("window");
-const cardMargin = height * 0.03;
-const cardWidth = width;
-
 const PostCard = ({ 
 	post,
 	postId,
@@ -52,7 +48,14 @@ const PostCard = ({
 	likeCount,
 	postTimestamp,
 	currentUserPhotoURL,
-	isCardFocused
+	isCardFocused,
+
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  CARD_MARGIN,
+
+  cardIndex,
+  // setShowCommentPostIndex
 }) => {
 	// const orientation = useOrientation();
 	// const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
@@ -89,18 +92,35 @@ const PostCard = ({
  	const isFocused = useIsFocused();
 	const navigation = useNavigation();
 
+  const [ expandInfoBox, setExpandInfoBox ] = useState(false);
 	return (
 		<View
-      style={{ ...styles.card, ...{ width: cardWidth, marginBottom: cardMargin } }}
+      style={
+        expandInfoBox
+        ?
+        { 
+          ...styles.card, 
+          ...{ width: CARD_WIDTH, marginBottom: CARD_MARGIN } 
+        }
+        :
+        { 
+          ...styles.card, 
+          ...{ height: CARD_HEIGHT, width: CARD_WIDTH, marginBottom: CARD_MARGIN } 
+        }
+      }
     >
       <PostUserInfoContainer
     		postId={post.id}
     		postData={post.data}
     		currentUserId={currentUserId}
+        postTimestamp={post.data.createdAt}
     	/>
       <VerticalSwipePostImage
         files={post.data.files}
         onFocus={isCardFocused}
+        isDisplay={post.data.display}
+        displayPrice={post.data.price}
+        displayEtc={post.data.etc}
       />
       <PostInfoBox
         tags={post.data.tags}
@@ -111,10 +131,14 @@ const PostCard = ({
         postId={post.id}
         postUserId={post.data.uid}
         likeCount={post.data.likeCount}
-        commentCount={post.data.comment_count}
+        commentCount={post.data.commentCount}
         postTimestamp={post.data.createdAt}
         currentUserPhotoURL={currentUserPhotoURL}
         currentUserId={currentUserId}
+        expandInfoBox={expandInfoBox}
+        setExpandInfoBox={setExpandInfoBox}
+        cardIndex={cardIndex}
+        // setShowCommentPostIndex={setShowCommentPostIndex}
       />
     </View>
   )
