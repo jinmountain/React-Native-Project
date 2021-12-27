@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
 	Text, 
 	View, 
@@ -24,14 +24,58 @@ import { Context as SocialContext } from '../../context/SocialContext';
 import busTechGetFire from '../../firebase/busTechGetFire';
 import busTechPostFire from '../../firebase/busTechPostFire';
 import businessGetFire from '../../firebase/businessGetFire';
+import usersGetFire from '../../firebase/usersGetFire';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import { RatingReadOnly } from '../../components/RatingReadOnly';
+import UserPhotoForm from '../../components/UserPhotoForm'
 
 // Color
 import color from '../../color';
+
+const TechBoxHeader = ({ techId }) => {
+  const [ tech, setTech ] = useState(null);
+
+  useEffect(() => {
+    let isMounted = false;
+    const getUserInfo = usersGetFire.getUserInfoFire(techId);
+    getUserInfo
+    .then((user) => {
+      const techUserData = {
+        id: user.id,
+        photoURL: user.photoURL,
+        username: user.username,
+        name: user.name
+      };
+      setTech(techUserData);
+    })
+    .catch((error) => {
+      // handle error;
+    });
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+  	tech &&
+  	<View style={styles.techBoxHeaderContainer}>
+			<View style={styles.techPhotoContainer}>
+				<UserPhotoForm
+					photoURL={tech.photoURL}
+					imageWidth={RFValue(55)}
+					imageHeight={RFValue(55)}
+				/>
+			</View>
+			<View style={styles.techUsernameContainer}>
+				<Text style={styles.usernameText}>{tech.username}</Text>
+			</View>
+		</View>
+  )
+};
 
 const BusinessManagerTechnicianScreen = ({ navigation, isFocused }) => {
 	// Contexts
@@ -43,38 +87,33 @@ const BusinessManagerTechnicianScreen = ({ navigation, isFocused }) => {
 	const [ techFetchSwitch, setTechFetchSwitch ] = useState(true);
 	const [ currentTechs, setCurrentTechs ] = useState([]);
 
-	const appendTechs = useCallback((techs) => {
-      setCurrentTechs([ ...currentTechs, ...techs ]);
-    },
-    []
-	);
-
 	// main effect
 	useEffect(() => {
 		let isMounted = true;
 
-		// get current technicians
-		if (isMounted && techFetchSwitch && !techFetchState) {
-			isMounted && setTechFetchState(true);
-			const getTechnicians = businessGetFire.getTechnicians(
-				user.id, 
-				setTechFetchLast,
-				setTechFetchSwitch,
-				techFetchLast,
-			);
-			getTechnicians
-			.then((techs) => {
-				isMounted && appendTechs(techs);
-				isMounted && setTechFetchState(false);
-			});
-		} else {
-			console.log(
-				"techFetchSwitch: "
-				+ techFetchSwitch
-				+ "techFetchState: "
-				+ techFetchState
-			);
-		}
+    if (isMounted && techFetchSwitch && !techFetchState) {
+      setTechFetchState(true);
+      const getTechnicians = businessGetFire.getTechnicians(
+        user.id, 
+        techFetchLast,
+      );
+      getTechnicians
+      .then((result) => {
+        setCurrentTechs(result.techs);
+        isMounted && setTechFetchLast(result.lastTech);
+        if (!result.lastTech) {
+          isMounted && setTechFetchSwitch(false);
+        }
+        isMounted && setTechFetchState(false);
+      })
+    } else {
+      console.log(
+        "techFetchSwitch: "
+        + techFetchSwitch
+        + "techFetchState: "
+        + techFetchState
+      );
+    };
 
 		return () => { 
     	isMounted = false
@@ -87,73 +126,53 @@ const BusinessManagerTechnicianScreen = ({ navigation, isFocused }) => {
 
 	return (
 		<View style={styles.managerContainer}>
-			<View style={styles.contentContainer}>
-				<FlatList
-					//onEndReached={}
-					onEndReachedThreshold={0.01}
-				  vertical
-				  showsVerticalScrollIndicator={true}
-				  data={currentTechs}
-				  keyExtractor={(tech, index) => index.toString()}
-				  renderItem={({ item }) => {
-				 	// techData: {
-	        //  	id: techData.id,
-	        //  	username: techData.username,
-	        //  	photoURL: techData.photoURL,
-	        //  },
-	        //  techBusData: {
-	        //  	countRating: docData.countRating,
-	        //  	totalRating: docData.totalRating
-	        //  }
-				  	return (
-				  		<TouchableOpacity
-				  			style={styles.techAppContainer}
-				  			onPress={() => {
-				  				navigation.navigate("BusinessManagerManageTechnician", {
-				  					techId: item.techData.id
-				  				});
-				  			}}
-				  		>
-				  			<View style={styles.techApp}>
-				  				<View style={styles.techPhotoContainer}>
-				  					{ 
-				  						item.techData.photoURL
-				  						?
-				  						<Image 
-					              source={{uri: item.techData.photoURL}}
-					              style={{width: RFValue(77), height: RFValue(77)}}
-					            />
-				  						:
-				  						<DefaultUserPhoto 
-				  							customSizeBorder={77}
-				  							customSizeUserIcon={37}
-				  						/>
-				  					}
-				  				</View>
-				  				<View style={styles.techAppInfoContainer}>
-					  				<View style={styles.techUsernameContainer}>
-					  					<Text style={styles.usernameText}>{item.techData.username}</Text>
-					  				</View>
-					  				<View style={styles.techRatingContainer}>
-							  			<RatingReadOnly rating={Number((Math.round(item.techData.totalRating/item.techData.countRating * 10) / 10).toFixed(1))} />
-							  		</View>
+			<FlatList
+				//onEndReached={}
+				onEndReachedThreshold={0.01}
+			  vertical
+			  showsVerticalScrollIndicator={true}
+			  contentContainerStyle={{  }}
+			  data={currentTechs}
+			  keyExtractor={(tech, index) => index.toString()}
+			  renderItem={({ item }) => {
+        //  item: {
+        //    techId: string
+        //  	countRating: docData.countRating,
+        //  	totalRating: docData.totalRating
+        //  }
+			  	return (
+			  		<TouchableHighlight
+			  			style={styles.techBoxContainer}
+			  			onPress={() => {
+			  				navigation.navigate("BusinessManagerManageTechnician", {
+			  					techId: item.techId
+			  				});
+			  			}}
+			  			underlayColor={color.grey4}
+			  		>
+			  			<View style={styles.techInner}>
+			  				<TechBoxHeader
+			  					techId={item.techId}
+			  				/>
+			  				<View style={styles.techBoxBottomContainer}>
+			  					<View style={styles.techRatingContainer}>
+						  			<RatingReadOnly rating={Number((Math.round(item.totalRating/item.countRating * 10) / 10).toFixed(1))} />
 						  		</View>
 					  		</View>
-				  		</TouchableOpacity>
-				  	)
-				  }}
-				/>
-			</View>
+				  		</View>
+			  		</TouchableHighlight>
+			  	)
+			  }}
+			/>
 		</View>
   );
 };
 
 const styles = StyleSheet.create({
 	managerContainer: {
-		backgroundColor: '#fff',
+		backgroundColor: color.white2,
 		flex: 1,
 	},
-
 	categoryContainer: {
 		flex: 1,
 		flexDirection: 'row',
@@ -172,57 +191,37 @@ const styles = StyleSheet.create({
 		backgroundColor: color.gray2,
 	},
 
-	contentContainer: {
-		backgroundColor: color.white1,
-		flex: 9,
+	techBoxContainer: {
+		backgroundColor: color.white2,
+		paddingVertical: RFValue(5)
 	},
-	techAppContainer: {
-		width: '100%',
-		paddingTop: RFValue(7),
-		paddingLeft: RFValue(7),
-	},
-	techApp: {
-		flex: 1,
+
+	// tech box header
+	techBoxHeaderContainer: {
 		flexDirection: 'row',
+		alignItems: 'center',
+		paddingLeft: RFValue(9),
 	},
 	techPhotoContainer: {
-		flex: 1,
-	},
-	techAppInfoContainer: {
-		flexDirection: 'row',
-		flex: 3,
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingHorizontal: RFValue(5),
 	},
 	techUsernameContainer: {
-		flex: 1,
 		justifyContent: 'center',
 	},
 	usernameText: {
-		fontSize: RFValue(15),
-	},
-	techAppButtonsContainer: {
-		flex: 2,
-		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
-		padding: RFValue(3),
-	},
-	techAppButton: {
-		borderWidth: 2,
-		paddingHorizontal: RFValue(7),
-		paddingVertical: RFValue(11),
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	buttonText: {
-		fontSize: RFValue(17),
+		color: color.black1,
+		fontSize: RFValue(19),
 	},
 
+	// tech box bottom
+	techBoxBottomContainer: {
+
+	},
 	techRatingContainer: {
-		flex: 2,
-		flexDirection: 'row',
 		justifyContent: 'center',
-		alignItems: 'center',
-		padding: RFValue(3),
+		paddingLeft: RFValue(15),
 	},
 });
 

@@ -1,22 +1,26 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { 
-	View, 
+	View,
+	SafeAreaView,
+	StatusBar,
 	StyleSheet,
-	RefreshControl,
-	Image, 
+	Image,
+	ImageBackground,
 	Text,  
 	TouchableOpacity,
 	TouchableWithoutFeedback,
 	Dimensions,
 	FlatList,
-	ScrollView, } from 'react-native';
+	Animated,
+	Pressable
+} from 'react-native';
 
 // NPMs
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { Video, AVPlaybackStatus } from 'expo-av';
 
 // Components
-import ThreePostsRow from '../components/ThreePostsRow';
+import BusRatePosts from '../components/accountScreen/BusRatePosts';
 import ButtonA from '../components/ButtonA';
 import ProfileCardUpper from '../components/profilePage/ProfileCardUpper';
 import ProfileCardBottom from '../components/profilePage/ProfileCardBottom';
@@ -32,6 +36,7 @@ import DisplayPostLoading from '../components/displayPost/DisplayPostLoading';
 import GetPostLoading from '../components/GetPostLoading';
 // horizontal line
 import HeaderBottomLine from '../components/HeaderBottomLine';
+import CollapsibleTabView from '../components/CollapsibleTabView';
 
 // Last Page Sign
 import PostEndSign from '../components/PostEndSign';
@@ -41,7 +46,6 @@ import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderFo
 
 // Context
 import { Context as AuthContext } from '../context/AuthContext';
-import { Context as PostContext } from '../context/PostContext';
 
 // Firebase
 import contentGetFire from '../firebase/contentGetFire';
@@ -59,8 +63,6 @@ import expoIcons from '../expoIcons';
 
 // Hooks
 import count from '../hooks/count';
-import { wait } from '../hooks/wait';
-import { isCloseToBottom } from '../hooks/isCloseToBottom';
 import { useOrientation } from '../hooks/useOrientation';
 
 const AccountScreen = ({ navigation }) => {
@@ -76,7 +78,6 @@ const AccountScreen = ({ navigation }) => {
   	setWindowHeight(Dimensions.get("window").height);
   }, [orientation]);
 
-	const [refreshing, setRefreshing] = useState(false);
 	const [ screenReady, setScreenReady ] = useState(false);
 
 	const { state: { user }, accountRefresh } = useContext(AuthContext);
@@ -91,23 +92,25 @@ const AccountScreen = ({ navigation }) => {
 	const [ accountDisplayPostFetchSwitch, setAccountDisplayPostFetchSwtich ] = useState(true);
 	const [ accountDisplayPostState, setAccountDisplayPostState ] = useState(false);
 
+	const [ userPostLabelValue, setUserPostLabelValue ] = useState("userPost");
+	const [ enableScroll, setEnableScroll ] = useState(true);
+
 	useEffect(() => {
 		console.log("account screen user: ", user.id);
 
 		let mounted = true;
 		const getScreenReady = new Promise ((res, rej) => {
-			if(accountPostFetchSwitch && !accountPostState && mounted) {
+			if (accountPostFetchSwitch && !accountPostState && mounted) {
 				mounted && setAccountPostState(true);
 				const getUserPosts = contentGetFire.getUserPostsFire(null, user.id);
 				getUserPosts
 				.then((posts) => {
 					mounted && setAccountPosts(posts.fetchedPosts);
-					// if lastPost is undefined turn off fetch switch
-					mounted && setAccountPostLast(posts.lastPost);
-					if (!posts.lastPost) {
-						console.log("turn off switch");
+					if (posts.lastPost !== undefined) {
+						mounted && setAccountPostLast(posts.lastPost);
+					} else {
 						mounted && setAccountPostFetchSwtich(false);
-					}
+					};
 					mounted && setAccountPostState(false);
 				})
 			}
@@ -118,7 +121,7 @@ const AccountScreen = ({ navigation }) => {
 				getDisplayPosts
 				.then((posts) => {
 					mounted && setAccountDisplayPosts(posts.fetchedPosts);
-					if (posts.lastPost) {
+					if (posts.lastPost !== undefined) {
 						mounted && setAccountDisplayPostLast(posts.lastPost);
 					} else {
 						mounted && setAccountDisplayPostFetchSwtich(false);
@@ -154,7 +157,6 @@ const AccountScreen = ({ navigation }) => {
 
   const onRefresh = useCallback(() => {
   	let mounted = true;
-    setRefreshing(true);
     accountRefresh();
 
     const clearState = new Promise((res, rej) => {
@@ -204,208 +206,155 @@ const AccountScreen = ({ navigation }) => {
 			}
     });
 
-    wait(2000).then(() => setRefreshing(false));
-
     return () => {
     	mounted = false;
     }
   }, []);
 
-  const [status, setStatus] = useState({});
-
-	return (
-		screenReady
-		?
-		<View style={styles.mainContainer}>
-			<UserAccountHeaderForm
-				leftButtonTitle={null} 
-			  leftButtonIcon={null}
-			  leftButtonPress={null}
-				username={user.username}
-				title={null}
-				firstIcon={<AntDesign name="plus" size={RFValue(27)} color={color.black1} />}
-				secondIcon={<AntDesign name="message1" size={RFValue(27)} color={color.black1} />}
-				thirdIcon={<Feather name="menu" size={RFValue(27)} color={color.black1} />}
-				firstOnPress={() => {
-					navigation.navigate("ContentCreate");
-				}}
-				secondOnPress={() => {
-					navigation.navigate("ChatListStack");
-				}}
-				thirdOnPress={() => {
-					navigation.navigate("AccountManagerStack");
-				}}
-				addPaddingTop={true}
-			/>
-			<View
-				contentContainerStyle={styles.accountInfoAndContentContainer}
-			>
-				<ScrollView
-					refreshControl={
-	          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-	        }
-	        onScroll={({nativeEvent}) => {
-	        	let mounted = true;
-			      if (isCloseToBottom(nativeEvent) && accountPostFetchSwitch && !accountPostState && mounted) {
-			      	mounted && setAccountPostState(true);
-							const getUserPosts = contentGetFire.getUserPostsFire(accountPostLast, user.id);
-							getUserPosts
-							.then((posts) => {
-								mounted && setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
-								if (posts.lastPost !== undefined && mounted) {
-									mounted && setAccountPostLast(posts.lastPost);
-								} else {
-									mounted && setAccountPostFetchSwtich(false);
-								};
-								mounted && setAccountPostState(false);
-							})
-			      }
-			      return () => {
-							mounted = false;
-						}
-			    }}
-			    scrollEventThrottle={1000}
-			    style={styles.userPostsContainer}
-				>
-					<ProfileCardUpper 
-						photoURL={user.photoURL}
-						postCount={user.postCount}
-					/>
-					<ProfileCardBottom
-						locationType={user.type === 'business' && user.locationType}
-						address={user.type === 'business' && user.formatted_address}
-						googleMapUrl={user.type === 'business' && user.googlemapsUrl}
-						sign={user.sign}
-						websiteAddress={user.website}
-					/>
-					<View style={styles.accountManagerContainer}>
-						<View style={styles.managerButtonContainer}>
-							<TouchableOpacity onPress={() => navigation.navigate('UpdateProfileStack')}>
+  const TabHeader = () => {
+  	return (
+  		<View>
+  			<ProfileCardUpper 
+					photoURL={user.photoURL}
+					postCount={user.postCount}
+				/>
+				<ProfileCardBottom
+					locationType={user.type === 'business' && user.locationType}
+					address={user.type === 'business' && user.formatted_address}
+					googleMapUrl={user.type === 'business' && user.googlemapsUrl}
+					sign={user.sign}
+					websiteAddress={user.website}
+				/>
+				<View style={styles.accountManagerContainer}>
+					<View style={styles.managerButtonContainer}>
+						<TouchableOpacity onPress={() => navigation.navigate('UpdateProfileStack')}>
+							<ButtonA 
+								text="Edit Profile"
+								customStyles={{
+									fontSize: RFValue(15), 
+									color: color.black1,
+								}}
+							/>
+						</TouchableOpacity>
+					</View>
+					<View style={styles.managerButtonContainer}>
+						{ user.type === 'business'
+							?
+							<TouchableOpacity onPress={() => navigation.navigate('BusinessMain')}>
 								<ButtonA 
-									text="Edit Profile"
+									text="Manage Shop"
 									customStyles={{
 										fontSize: RFValue(15), 
 										color: color.black1,
 									}}
 								/>
 							</TouchableOpacity>
-						</View>
-						<View style={styles.managerButtonContainer}>
-							{ user.type === 'business'
-								?
-								<TouchableOpacity onPress={() => navigation.navigate('BusinessMain')}>
-									<ButtonA 
-										text="Manage Shop"
-										customStyles={{
-											fontSize: RFValue(15), 
-											color: color.black1,
-										}}
-									/>
-								</TouchableOpacity>
-								: null
-							}
-						</View>
+							: null
+						}
 					</View>
-					{ 
-						user.type === 'business'
-						?
-						<View style={styles.userPostsLabelContainer}>
-							<Text style={styles.userPostsLabelText}>
-								<Feather name="menu" size={RFValue(23)} color={color.black1} />
-							</Text>
-							<TouchableOpacity 
-								style={styles.showTwoColumnButtonContainer}
-								onPress={() => {
-									console.log("two");
-								}}
-							>
-								{expoIcons.featherColumns(RFValue(23), color.black1)}
-							</TouchableOpacity>
-						</View>
-						:
-						null
-					}
-					{ 
-						// don't use the loading spinner for display posts
-						// already has a spinner for whole account screen
-						screenReady && user.type === 'business' && accountDisplayPosts.length > 0
-						?
-						<View style={styles.displayPostsContainer}>
-							<FlatList
-								onEndReached={() => {
-									let mounted = true;
-									if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
-										mounted && setAccountDisplayPostState(true);
-										const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id);
-										getDisplayPosts
-										.then((posts) => {
-											mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
-											if (posts.lastPost !== undefined) {
-												mounted && setAccountDisplayPostLast(posts.lastPost);
-											} else {
-												mounted && setAccountDisplayPostFetchSwtich(false);
-											};
-											mounted && setAccountDisplayPostState(false);
-										})
-									} else {
-										console.log("accountScreen: FlatList: onEndReached: display switch: " + accountDisplayPostFetchSwitch + " display state: " + accountDisplayPostState );
-									}
-									return () => {
-										mounted = false;
-									}
-								}}
-								onEndReachedThreshold={0.01}
-		            horizontal
-		            showsHorizontalScrollIndicator={false}
-		            data={accountDisplayPosts}
-		            keyExtractor={(displayPost, index ) => index.toString()}
-		            renderItem={({ item, index }) => {
-		              return (
-		                <TouchableWithoutFeedback 
-		                  style={{ ...styles.postImageContainer, ...{ height: windowWidth/2 + RFValue(50), width: windowWidth/2 } }}
-		                  onPress={() => {
-		                  	// navigation.navigate('PostDetail', {
-		                  	// 	post: item,
-		                  	// 	postSource: 'account'
-		                  	// });
-		                  	navigation.navigate(
-		                  		'PostsSwipe',
-		                  		{
-		                  			postSource: 'accountDisplay',
-		                  			cardIndex: index,
-		                  			posts: accountDisplayPosts,
-        										postState: accountDisplayPostState,
-														postFetchSwitch: accountDisplayPostFetchSwitch,
-														postLast: accountDisplayPostLast,
-		                  		}
-		                  	);
-		                  }}
-		                >
-		                	<View>
-				                <DisplayPostImage
-				                	type={item.data.files[0].type}
-				                	url={item.data.files[0].url}
-				                	imageWidth={windowWidth/2}
-				                />
-				                <DisplayPostInfo
-				                	containerWidth={windowWidth/2}
-				                	taggedCount={count.kOrNo(item.data.taggedCount)}
-				                	title={item.data.title}
-				                	likeCount={count.kOrNo(item.data.likeCount)}
-				                	price={item.data.price}
-				                	etc={item.data.etc}
-				                />
-			                  { item.data.files.length > 1
-			                  	? <MultiplePhotosIndicator
-			                  			size={RFValue(24)}
-			                  		/>
-			                  	: null
-			                  }
-			                </View>
-		                </TouchableWithoutFeedback>
-		              )
-		            }}
-		          />
+				</View>
+				{ 
+					user.type === 'business'
+					?
+					<View style={styles.displayPostLabelContainer}>
+						<Text style={styles.userPostsLabelText}>
+							<Feather name="menu" size={RFValue(23)} color={color.black1} />
+						</Text>
+						<TouchableOpacity 
+							style={styles.showTwoColumnButtonContainer}
+							onPress={() => {
+								console.log("two");
+							}}
+						>
+							{expoIcons.featherColumns(RFValue(23), color.black1)}
+						</TouchableOpacity>
+					</View>
+					:
+					null
+				}
+				{ 
+					// don't use the loading spinner for display posts
+					// already has a spinner for whole account screen
+					screenReady && user.type === 'business'
+					?
+					<View style={styles.displayPostsContainer}>
+						<FlatList
+							onEndReached={() => {
+								let mounted = true;
+								if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && mounted) {
+									mounted && setAccountDisplayPostState(true);
+									const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id);
+									getDisplayPosts
+									.then((posts) => {
+										mounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
+										if (posts.lastPost !== undefined) {
+											mounted && setAccountDisplayPostLast(posts.lastPost);
+										} else {
+											mounted && setAccountDisplayPostFetchSwtich(false);
+										};
+										mounted && setAccountDisplayPostState(false);
+									})
+								} else {
+									console.log("accountScreen: FlatList: onEndReached: display switch: " + accountDisplayPostFetchSwitch + " display state: " + accountDisplayPostState );
+								}
+								return () => {
+									mounted = false;
+								}
+							}}
+							onEndReachedThreshold={0.01}
+							ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+	            horizontal
+	            showsHorizontalScrollIndicator={false}
+	            data={accountDisplayPosts}
+	            keyExtractor={(displayPost, index ) => index.toString()}
+	            renderItem={({ item, index }) => {
+	              return (
+	                <TouchableWithoutFeedback 
+	                  style={styles.displayPostContainer}
+	                  onPress={() => {
+	                  	// navigation.navigate('PostDetail', {
+	                  	// 	post: item,
+	                  	// 	postSource: 'account'
+	                  	// });
+	                  	navigation.navigate(
+	                  		'PostsSwipe',
+	                  		{
+	                  			postSource: 'accountDisplay',
+	                  			cardIndex: index,
+	                  			posts: accountDisplayPosts,
+      										postState: accountDisplayPostState,
+													postFetchSwitch: accountDisplayPostFetchSwitch,
+													postLast: accountDisplayPostLast,
+	                  		}
+	                  	);
+	                  }}
+	                >
+	                	<View style={styles.displayPostInner}>
+			                <DisplayPostImage
+			                	type={item.data.files[0].type}
+			                	url={item.data.files[0].url}
+			                	imageWidth={RFValue(150)}
+			                />
+			                <DisplayPostInfo
+			                	containerWidth={RFValue(150)}
+			                	taggedCount={count.kOrNo(item.data.taggedCount)}
+			                	title={item.data.title}
+			                	likeCount={count.kOrNo(item.data.likeCount)}
+			                	price={item.data.price}
+			                	etc={item.data.etc}
+			                />
+		                  { item.data.files.length > 1
+		                  	? <MultiplePhotosIndicator
+		                  			size={RFValue(24)}
+		                  		/>
+		                  	: null
+		                  }
+		                </View>
+	                </TouchableWithoutFeedback>
+	              )
+	            }}
+	          />
+	          <View style={styles.displayLoadingContainer}>
 							{ 
 								accountDisplayPostState
 								?
@@ -414,45 +363,119 @@ const AccountScreen = ({ navigation }) => {
 								null
 							}
 						</View>
-						: screenReady && user.type === 'business' && accountDisplayPosts.length === 0
-						? <DisplayPostsDefault />
-						: null
-					}
-					<View style={styles.userPostsLabelContainer}>
-						<Text style={styles.userPostsLabelText}>
-							<AntDesign name="picture" size={RFValue(23)} color={color.black1} />
-						</Text>
 					</View>
-					<ThreePostsRow
-						navigate={navigation.navigate}
-						screen={"account"}
-						targetUser={null}
-						posts={accountPosts} 
-						postState={accountPostState}
-					  postFetchSwitch={accountPostFetchSwitch}
-					  postLast={accountPostLast}
-						threePostsRowImageWH={threePostsRowImageWH}
-					/>
-					{ 
-						accountPostState 
-						?
-						<GetPostLoading />
-						: 
-						null
-					}
-					{ 
-						accountPostFetchSwitch === false && accountPosts.length > 27
-						?
-						<PostEndSign />
-						: null
-					}
-				</ScrollView>
+					: <DisplayPostsDefault />
+				}
+  		</View>
+  	)
+  }
+
+  const renderFirstTabItem = ({ item, index }) => {
+    return (
+      <View
+        key={item.id}
+        style={[styles.imageContainer, 
+          index % 3 !== 0 ? { paddingLeft: 2 } : { paddingLeft: 0 }
+        ]}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => {
+            navigation.navigate(
+              'PostsSwipe',
+              { 
+                postSource: 'account',
+                cardIndex: index,
+                accountUserId: user.id,
+                posts: accountPosts,
+                postState: accountPostState,
+                postFetchSwitch: accountPostFetchSwitch,
+                postLast: accountDisplayPostLast,
+              }
+            );
+          }}
+        > 
+          <View>
+            { 
+              item.data.files[0].type === 'video'
+              ?
+              <View style={{width: threePostsRowImageWH, height: threePostsRowImageWH}}>
+                <Video
+                  // ref={video}
+                  style={{backgroundColor: color.white2, borderWidth: 0, width: threePostsRowImageWH, height: threePostsRowImageWH}}
+                  source={{
+                    uri: item.data.files[0].url,
+                  }}
+                  useNativeControls={false}
+                  resizeMode="contain"
+                  shouldPlay={false}
+                />
+              </View>
+              : item.data.files[0].type === 'image'
+              ?
+              <ImageBackground 
+                // defaultSource={require('../../img/defaultImage.jpeg')}
+                source={{uri: item.data.files[0].url}}
+                style={{width: threePostsRowImageWH, height: threePostsRowImageWH}}
+              />
+              : null
+            }
+            { item.data.files.length > 1
+              ? <MultiplePhotosIndicator size={16}/>
+              : null
+            }
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
+    );
+  };
+
+	return (
+		screenReady
+		?
+		<View style={{ flex: 1, backgroundColor: color.white1 }}>
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView />
+				<UserAccountHeaderForm
+					leftButtonTitle={null} 
+				  leftButtonIcon={null}
+				  leftButtonPress={null}
+					username={user.username}
+					title={null}
+					firstIcon={<AntDesign name="plus" size={RFValue(27)} color={color.black1} />}
+					secondIcon={<AntDesign name="message1" size={RFValue(27)} color={color.black1} />}
+					thirdIcon={<Feather name="menu" size={RFValue(27)} color={color.black1} />}
+					firstOnPress={() => {
+						navigation.navigate("ContentCreate");
+					}}
+					secondOnPress={() => {
+						navigation.navigate("ChatListStack");
+					}}
+					thirdOnPress={() => {
+						navigation.navigate("AccountManagerStack");
+					}}
+				/>
+			</View>
+			<View style={styles.mainContainer}>
+				<CollapsibleTabView
+					TabHeader={<TabHeader />}
+					tabRoutes={[
+				    {key: 'tab1', title: 'Tab1'},
+				    {key: 'tab2', title: 'Tab2'},
+  				]}
+  				tabIcons={[ 
+  					expoIcons.antdesignPicture(RFValue(23), color.black1),
+  					expoIcons.antdesignStaro(RFValue(23), color.yellow2)
+  				]}
+  				firstTabData={accountPosts}
+  				renderFirstTabItem={renderFirstTabItem}
+  				onRefresh={onRefresh}
+				/>
 			</View>
 		</View>
 		: 
-		<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+		<SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 			<SpinnerFromActivityIndicator/>
-		</View>
+		</SafeAreaView>
 	);
 };
 
@@ -460,11 +483,19 @@ const styles = StyleSheet.create({
 	mainContainer: {
 		flex: 1,
 	},
-  accountInfoAndContentContainer: {
-  	flex: 1,
-  },
-  userPostsContainer: {
-
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
 	accountManagerContainer: {
 		flexDirection: 'row',
@@ -480,13 +511,33 @@ const styles = StyleSheet.create({
     marginVertical: RFValue(15),
 	},
 	// zIndex shadow 5
-	userPostsLabelContainer: {
+	displayPostLabelContainer: {
+		backgroundColor: color.white2,
 		justifyContent: 'center',
 		alignItems: 'center',
-		shadowColor: '#ccc',
-		backgroundColor: '#fff',
     padding: RFValue(10),
     height: RFValue(57),
+	},
+
+	userPostLabelContainer: {
+		height: RFValue(60),
+		backgroundColor: color.white2,
+	},
+	userPostLabelIndicatorContainer: {
+		height: RFValue(3)
+	},
+	userPostLabelButtonsContainer: {
+		backgroundColor: color.white2,
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+    padding: RFValue(10),
+    height: RFValue(57),
+	},
+	userPostLabelButton: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 	userPostsLabelText: {
 		fontSize: RFValue(15),
@@ -498,12 +549,22 @@ const styles = StyleSheet.create({
 	},
 
 	displayPostsContainer: {
-		flex: 1,
 		backgroundColor: color.white2,
 	},
-	postImageContainer: {
+	displayLoadingContainer: {
+		position: 'absolute',
+		width: '100%',
+		justifyContent: 'center',
+		paddingTop: 30
+	},
+	displayPostContainer: {
 		alignItems: 'center',
+		height: RFValue(200),
+		width: RFValue(15),
 		marginRight: 2,
+	},
+	displayPostInner: { 
+		height: RFValue(200),
 	},
 	multiplePhotosSymbol: {
 		position: 'absolute',
@@ -511,6 +572,21 @@ const styles = StyleSheet.create({
 		paddingRight: 10,
 		marginTop: 10,
 	},
+
+	imageContainer: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  emptyPostContainer: {
+    marginVertical: RFValue(7),
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyPostText: {
+    fontSize: RFValue(17),
+    color: color.grey3,
+  },
 });
 
 export default AccountScreen;

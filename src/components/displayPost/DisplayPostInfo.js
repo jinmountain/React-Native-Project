@@ -26,7 +26,7 @@ const DisplayPostInfo = ({ containerWidth, title, taggedCount, likeCount, etc, p
 	return (
 		<View style={{ ...styles.displayPostInfoContainer, ...{ width: containerWidth } }}>
 			<View style={styles.infoTop}>
-				<Text style={styles.infoText} numberOfLines={1}>
+				<Text style={styles.infoTitleText} numberOfLines={1}>
 					{title}
 				</Text>
 			</View>
@@ -65,8 +65,9 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 2,
-		backgroundColor: color.white1,
+		backgroundColor: color.white2,
 		paddingVertical: RFValue(3),
+		height: RFValue(50),
 	},
 	infoContainer: {
 		flex: 1,
@@ -78,21 +79,26 @@ const styles = StyleSheet.create({
 	infoTop: {
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: color.white2,
-		borderRadius: RFValue(7)
 	},
 	infoBottom: {
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: color.white2,
-		borderRadius: RFValue(7)
+		paddingVertical: 1
+	},
+	infoTitleText: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginHorizontal: RFValue(3),
+		fontSize: RFValue(15),
+		fontWeight: 'bold'
 	},
 	infoText: {
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginHorizontal: RFValue(3),
-		fontSize: RFValue(15)
+		fontSize: RFValue(11),
+		color: color.grey3
 	},
 });
 

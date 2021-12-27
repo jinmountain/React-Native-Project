@@ -40,7 +40,7 @@ const ActivityTopTab = () => {
 					tabBarShowLabel: false,
 			  })}
 	    >
-	      <Tab.Screen 
+	      {/*<Tab.Screen 
 	      	name="UserRsvStack" 
 	      	component={UserRsvStack}
 	      	options={{ 
@@ -66,7 +66,7 @@ const ActivityTopTab = () => {
 							height: '100%'
 						}
 	      	}}
-	      />
+	      />*/}
 	      <Tab.Screen 
 	      	name="UserBook" 
 	      	component={UserBookScreen}

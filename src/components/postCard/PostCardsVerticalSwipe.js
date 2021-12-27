@@ -105,19 +105,12 @@ const PostCardsVerticalSwipe = ({
 					postSource === 'hot'
           ? getSwipePosts = getPosts(swipePostLast)
           : postSource === 'account'
-          ? getSwipePosts = getPosts(swipePostLast, currentUser.id)
+          ? getSwipePosts = getPosts(swipePostLast, accountUserId)
           : postSource === 'accountDisplay'
-          ? getSwipePosts = getPosts(swipePostLast, currentUser.id)
-          // business user posts (ex. search screen)
-          : postSource === 'businessUser'
-          ? getSwipePosts = getPosts(swipePostLast, businessUserId)
+          ? getSwipePosts = getPosts(swipePostLast, accountUserId)
           // business tagged posts (ex. serach screen reviews)
           : postSource === 'businessTagged'
           ? getSwipePosts = getPosts(swipePostLast, businessUserId)
-          : postSource === 'userAccount'
-          ? getSwipePosts = getPosts(swipePostLast, accountUserId)
-          : postSource === 'userAccountDisplay'
-          ? getSwipePosts = getPosts(swipePostLast, accountUserId)
           : null
 
           getSwipePosts

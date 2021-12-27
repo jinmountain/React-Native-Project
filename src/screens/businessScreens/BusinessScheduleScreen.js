@@ -10,8 +10,8 @@ import {
 	FlatList,
 	Dimensions,
 	Image,
+	Vibration,
 	Animated,
-	Vibration
 } from 'react-native';
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -54,12 +54,8 @@ import DisplayPostsDefault from '../../components/defaults/DisplayPostsDefault';
 // Color
 import color from '../../color';
 
-const windowWidth = Dimensions.get("window").width;
-// const pressedLabelWidth = windowWidth * 0.77;
-const pressedLabelWidth = 0;
-const stretchedLabelWidth = windowWidth;
-const windowHeight = Dimensions.get("window").height;
-const techBoxWidth = windowWidth/3;
+// expo icons
+import expoIcons from '../../expoIcons';
 
 // animation
 import { useCardAnimation } from '@react-navigation/stack';
@@ -146,26 +142,63 @@ const getAvailableHours = (busBusinessHours, techBusinessHours, busSpecialHours,
 	return availableHours;
 };
 
-const convertEtcToHourMin = (etc) => {
-	if (etc >= 60) {
-		const hour = Math.floor(etc/60)
-		const min = ((etc/60) - hour) * 60
-		if (min == 0) {
-			return hour + ' hour'
+// label animation form
+const LabelAnimation = ({ labelText, changeScale, changeOpacity }) => {
+	// changeScale
+	// true => bigger
+	// false => smaller
+	const springAnim = useRef(new Animated.Value(1)).current;
+	const springBiggerText = Animated.spring(springAnim, {
+		toValue: 1.2,
+		friction: 3,
+		useNativeDriver: false
+	});
+	const springSmallerText = Animated.spring(springAnim, {
+		toValue: 1,
+		friction: 3,
+		useNativeDriver: false
+	});
+
+	useEffect(() => {
+		if (changeScale) {
+			springBiggerText.start();
 		} else {
-			return hour + ' hour ' + min + ' min'
+			springSmallerText.start();
 		}
-	} else {
-		return etc + ' min'
-	}
-}
+	}, [changeScale])
+
+	return (
+		<Animated.View style={[
+			styles.labelInnerContainer,
+			{
+        transform: [
+          {
+            scale: springAnim,
+          },
+        ],
+      },
+      !changeOpacity && {
+				opacity: 0.3
+      }
+		]}>
+			<View style={[
+				styles.labelTextContainer,
+			]}>
+				<Text style={styles.labelText}>{labelText}</Text>
+			</View>
+		</Animated.View>
+	)
+};
 
 const BusinessScheduleScreen = ({ route, navigation }) => {
 	const vibrationTime = 30;
 
+	const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
+	const [ techBoxWidth, setTechBoxWidth ] = useState(Dimensions.get("window").width/3);
+
 	const { businessUser } = route.params;
 	const [ dateNow, setDateNow ] = useState(Date.now());
-	const [ timezoneOffset, setTimezoneOffset ] = useState(null);
+	const [ currentUserTimezoneOffset, setCurrentUserTimezoneOffset ] = useState(null);
 
 	// business and special hours
 	const [ busBusinessHours, setBusBusinessHours ] = useState(null);
@@ -189,9 +222,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	// business info
 	const [ rsvTimeLimit, setRsvTimeLimit ] = useState(60*60*1000); // default 1 hour
 
-	// picked display post state
-	const [ pickedDisplayPost, setPickedDisplayPost ] = useState(null);
-
 	// techs state
 	const [ displayPostTechs, setDisplayPostTechs ] = useState([]);
 	const [ displayPostTechsState, setDisplayPostTechsState ] = useState(false);
@@ -204,92 +234,13 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	// User pick states
 	// selected tech 
 	const [ selectedTech, setSelectedTech ] = useState(null);
+	// picked display post state
+	const [ pickedDisplayPost, setPickedDisplayPost ] = useState(null);
 	// display post
 	const [ userAccountDisplayPosts, setUserAccountDisplayPosts ] = useState([]);
 	const [ userAccountDisplayPostLast, setUserAccountDisplayPostLast ] = useState(null);
 	const [ userAccountDisplayPostFetchSwitch, setUserAccountDisplayPostFetchSwtich ] = useState(true);
 	const [ userAccountDisplayPostState, setUserAccountDisplayPostState ] = useState(false);
-
-	// animation
-	const { current } = useCardAnimation();
-
-	const firstLabelWidthAnim = useRef(new Animated.Value(pressedLabelWidth)).current;
-	const firstLabelHeightAnim = useRef(new Animated.Value(0)).current;
-	const firstLabelBorderRadiusAnim = useRef(new Animated.Value(RFValue(100))).current;
-
-	const secondLabelWidthAnim = useRef(new Animated.Value(pressedLabelWidth)).current;
-	const secondLabelHeightAnim = useRef(new Animated.Value(0)).current;
-	const secondLabelBorderRadiusAnim = useRef(new Animated.Value(RFValue(100))).current;
-
-	const thirdLabelWidthAnim = useRef(new Animated.Value(pressedLabelWidth)).current;
-	const thirdLabelHeightAnim = useRef(new Animated.Value(0)).current;
-	const thirdLabelBorderRadiusAnim = useRef(new Animated.Value(RFValue(100))).current;
-
-	const stretchLabelWidth = (widthAnim) => {
-		return new Promise((res, rej) => {
-	    Animated.timing(widthAnim, {
-	      toValue: stretchedLabelWidth,
-	      duration: 300,
-	      useNativeDriver: false
-	    }).start();
-	    res(true);
-		});
-  };
-
-  const stretchLabelHeight = (heightAnim) => {
-		return new Promise((res, rej) => {
-	    Animated.timing(heightAnim, {
-	      toValue: RFValue(70),
-	      duration: 300,
-	      useNativeDriver: false
-	    }).start();
-	    res(true);
-		});
-  };
-
-  const pressLabelWidth = (widthAnim) => {
-		return new Promise((res, rej) => {
-	    Animated.timing(widthAnim, {
-	      toValue: pressedLabelWidth,
-	      duration: 300,
-	      useNativeDriver: false
-	    }).start();
-	    res(true);
-		});
-  };
-
-  const pressLabelHeight = (heightAnim) => {
-		return new Promise((res, rej) => {
-	    Animated.timing(heightAnim, {
-	      toValue: 0,
-	      duration: 300,
-	      useNativeDriver: false
-	    }).start();
-	    res(true);
-		});
-  };
-
-  const unfoldLabelBorder = (radiusAnim) => {
-		return new Promise((res, rej) => {
-	    Animated.timing(radiusAnim, {
-	      toValue: 0,
-	      duration: 300,
-	      useNativeDriver: false
-	    }).start();
-	    res(true);
-		});
-  };
-
-  const foldLabelBorder = (radiusAnim) => {
-  	return new Promise((res, rej) => {
-	    Animated.timing(radiusAnim, {
-	      toValue: 100,
-	      duration: 300,
-	      useNativeDriver: false
-	    }).start();
-	    res(true);
-		});
-  };
 
   const resetCalendar = () => {
   	setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
@@ -380,7 +331,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 		const dateNow = new Date();
 		const diff = dateNow.getTimezoneOffset();
-		setTimezoneOffset(diff);
+		// mounted && setCurrentUserTimezoneOffset(diff);
+		mounted && setCurrentUserTimezoneOffset(diff);
 
 		const getScreenReady = new Promise ((res, rej) => {
 			if (userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState && mounted) {
@@ -611,7 +563,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				paddingTopCustomStyle={{ backgroundColor: color.red2 }}
 				addPaddingTop={true}
         leftButtonTitle={null}
-        leftButtonIcon={<Ionicons name="md-arrow-back" size={RFValue(27)} color={color.white2} />}
+        leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.white2)}
         headerTitle={'Scheduler'} 
         rightButtonTitle={null} 
         leftButtonPress={() => {
@@ -632,30 +584,29 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
         }
 			>
 				<View style={styles.labelContainer}>
-					<View style={styles.labelInnerContainer}>
-						{/*<View style={styles.labelIcon}>
-							<MaterialCommunityIcons name="numeric-1-circle-outline" size={RFValue(17)} color="black" />
-						</View>*/}
-						<Animated.View style={[
-							styles.labelTextContainer,
-							{
-								// width: `${firstLabelWidthAnim}%`,
-								minWidth: firstLabelWidthAnim,
-								minHeight: firstLabelHeightAnim,
-								borderRadius: firstLabelBorderRadiusAnim
-							},
-							{ backgroundColor: color.red2 }
-						]}>
-							<Text style={styles.labelText}>Pick a Design</Text>
-						</Animated.View>
-					</View>
+					<LabelAnimation
+						labelText={"Pick Design"}
+						changeScale={
+							pickedDisplayPost
+							? true
+							: false
+						}
+						changeOpacity={true}
+					/>
 				</View>
 				<View>
 					{ 
 						// show display posts if the other user is business and displayPostsShown is true
 						screenReady && userAccountDisplayPosts.length > 0 
 						?
-						<View style={styles.displayPostsContainer}>
+						<View 
+							style={[
+								styles.displayPostsContainer,
+								{
+									height: windowWidth/2 + RFValue(50)
+								}
+							]}
+						>
 							<FlatList
 								onEndReached={() => {
 									let mounted = true;
@@ -691,10 +642,6 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		                  		setDisplayPostTechs([]);
 		                  		setPickedDisplayPost(null);
 		                  		setSelectedTech(null);
-		                  		// animate
-		                  		pressLabelWidth(firstLabelWidthAnim);
-		                  		pressLabelHeight(firstLabelHeightAnim);
-		                  		foldLabelBorder(firstLabelBorderRadiusAnim);
 		                  	} else {
 			                  	if (!displayPostTechsState) {
 			                  		// new pickedDisplayPost reset selctedTech
@@ -712,11 +659,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 														.catch((error) => {
 															console.log("Error occured: BusinessScheduleScreen: getDisplayPostTechs: ", error);
 															setDisplayPostTechsState(false);
-														})
-														// animate
-			                  		stretchLabelWidth(firstLabelWidthAnim);
-			                  		stretchLabelHeight(firstLabelHeightAnim);
-			                  		unfoldLabelBorder(firstLabelBorderRadiusAnim);
+														});
 													}
 		                  	}
 		                  }}
@@ -743,11 +686,33 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                { 
 			                	pickedDisplayPost && pickedDisplayPost.id === item.id
 			                	?
-			                	<View style={styles.chosenStatus}>
-				                	<View style={styles.chosenShadow}>
-				                	
-					                </View>
-					                <View style={styles.chosenCheck}>
+			                	<View 
+			                		style={[
+			                			styles.chosenStatus,
+			                			{
+			                				height: windowWidth/2 + RFValue(50), 
+  														width: windowWidth/2 , 
+			                			}
+			                		]}
+			                	>
+				                	<View 
+					                	style={
+					                		[styles.chosenShadow],
+					                		{
+					                			height: windowWidth/2 + RFValue(50), 
+  															width: windowWidth/2 ,
+					                		}
+					                	}
+				                	/>
+					                <View 
+					                	style={[
+					                		styles.chosenCheck,
+					                		{
+					                			height: windowWidth/2 + RFValue(50), 
+  															width: windowWidth/2, 
+					                		}
+					                	]}
+					                >
 					                	<AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
 					                </View>
 					              </View>
@@ -774,40 +739,30 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 					}
 				</View>
 				<View style={styles.labelContainer}>
-					<View style={
-						pickedDisplayPost
-						?
-						styles.labelInnerContainer
-						:
-						[
-							styles.labelInnerContainer,
-							{ opacity: 0.3 }
-						]
-					}>
-						{/*<View style={styles.labelIcon}>
-							<MaterialCommunityIcons name="numeric-2-circle-outline" size={RFValue(17)} color="black" />
-						</View>*/}
-						<Animated.View style={[
+					<LabelAnimation
+						labelText={"Pick Technician"}
+						changeScale={
+							selectedTech
+							? true
+							: false
+						}
+						changeOpacity={
 							pickedDisplayPost
-							?
-							{ ...styles.labelTextContainer, ...{ backgroundColor: color.red2 }}
-							:
-							{ ...styles.labelTextContainer, ...{ backgroundColor: color.black2 }},
-							{
-								minWidth: secondLabelWidthAnim,
-								minHeight: secondLabelHeightAnim,
-								borderRadius: secondLabelBorderRadiusAnim
-							}
-						]}>
-							<Text style={styles.labelText}>Pick a Technician</Text>
-						</Animated.View>
-					</View>
+							? true
+							: false
+						}
+					/>
 				</View>
 				<View style={styles.pickTechContainerOuter}>
 					{
 						screenReady && pickedDisplayPost && displayPostTechs.length > 0
 						?
-						<View style={styles.pickTechContainer}>
+						<View style={[ 
+							styles.pickTechContainer,
+							{
+						  	height: techBoxWidth,
+							}
+						]}>
 			        <FlatList
 			          horizontal
 			          showsHorizontalScrollIndicator={false}
@@ -820,11 +775,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                  if (selectedTech && selectedTech.id === item.techData.id) {
 			                    setSelectedTech(null)
 			                    setChartGrids([[]]);
-			                    // animate
-		                  		pressLabelWidth(secondLabelWidthAnim);
-		                  		pressLabelHeight(secondLabelHeightAnim)
-		                  		foldLabelBorder(secondLabelBorderRadiusAnim);
-		                  		resetCalendar();
+			                    resetCalendar();
 			                  } else {
 			                    setSelectedTech({ 
 			                    	id: item.techData.id, 
@@ -833,13 +784,15 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                    	businessHours: item.techData.businessHours,
 			                    	specialHours: item.techData.specialHours
 			                    });
-			                  	// animate
-		                  		stretchLabelWidth(secondLabelWidthAnim);
-		                  		stretchLabelHeight(secondLabelHeightAnim);
-		                  		unfoldLabelBorder(secondLabelBorderRadiusAnim);
 			                  }
 			                }}
-			                style={styles.techContainer}
+			                style={[
+			                	styles.techContainer,
+			                	{
+			                		height: techBoxWidth, 
+    											width: techBoxWidth, 
+			                	}
+			                ]}
 			              >
 			                <View style={styles.techInnerContainer}>
 			                  { 
@@ -907,11 +860,27 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 			                { 
 			                  selectedTech && selectedTech.id === item.techData.id
 			                  ?
-			                  <View style={styles.chosenTechStatus}>
-			                    <View style={styles.chosenTechShadow}>
-			                    
-			                    </View>
-			                    <View style={styles.chosenTechCheck}>
+			                  <View style={[
+			                  	styles.chosenTechStatus,
+			                  	{
+			                  		height: techBoxWidth, 
+    												width: techBoxWidth,
+			                  	}
+			                  ]}>
+			                    <View style={[
+			                    	styles.chosenTechShadow,
+			                    	{
+			                    		height: techBoxWidth, 
+    													width: techBoxWidth,
+			                    	}
+			                    ]}/>
+			                    <View style={[
+			                    	styles.chosenTechCheck,
+			                    	{
+			                    		height: techBoxWidth, 
+    													width: techBoxWidth, 
+			                    	}
+			                    ]}>
 			                      <AntDesign name="checkcircle" size={RFValue(23)} color={color.red2} />
 			                    </View>
 			                  </View>
@@ -925,7 +894,12 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		      	</View>
 		      	: screenReady && pickedDisplayPost && displayPostTechs.length === 0 && !displayPostTechsState
 		      	?
-		      	<View style={styles.pickTechContainer}>
+		      	<View style={[
+		      		styles.pickTechContainer,
+		      		{
+  							height: techBoxWidth,
+		      		}
+		      	]}>
 		      		<View style={styles.pickTechDefault}>
 		      			<Text style={styles.guideText}>Technicians aren't available for the chosen design</Text>
 		      		</View>
@@ -935,7 +909,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				</View>
 				<View style={styles.labelContainer}>
 					<View style={
-						selectedTech
+						pickedDisplayPost && selectedTech
 						?
 						styles.labelInnerContainer
 						:
@@ -944,23 +918,9 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 							{ opacity: 0.3 }
 						]
 					}>
-						{/*<View style={styles.labelIcon}>
-							<MaterialCommunityIcons name="numeric-3-circle-outline" size={RFValue(17)} color="black" />
-						</View>*/}
-						<Animated.View style={[
-							selectedTech
-							?
-							{ ...styles.labelTextContainer, ...{ backgroundColor: color.red2 }}
-							:
-							{ ...styles.labelTextContainer, ...{ backgroundColor: color.black2 }},
-							{
-								minWidth: thirdLabelWidthAnim,
-								minHeight: thirdLabelHeightAnim,
-								borderRadius: thirdLabelBorderRadiusAnim
-							}
-						]}>
+						<View style={styles.labelTextContainer}>
 							<Text style={styles.labelText}>Choose Time</Text>
-						</Animated.View>
+						</View>
 					</View>
 				</View>
 				<View style={styles.showHoursContainer}>
@@ -1217,15 +1177,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 																	setSelectedTech(null),
 
 																	setChartGridsState(false),
-																	setChartGrids([[]]),
-
-																	// animate back to default
-																	pressLabelWidth(firstLabelWidthAnim),
-																	pressLabelHeight(firstLabelHeightAnim),
-																	foldLabelBorder(firstLabelBorderRadiusAnim),
-																	pressLabelWidth(secondLabelWidthAnim),
-																	pressLabelHeight(secondLabelWidthAnim),
-																	foldLabelBorder(secondLabelBorderRadiusAnim)
+																	setChartGrids([[]])
 						    								)
 								      					: console.log("not ready yet")
 								      				}
@@ -1340,12 +1292,6 @@ const styles = StyleSheet.create({
 	labelContainer: {
 		height: RFValue(70),
 		backgroundColor: color.white2,
-		alignItems: 'center',
-		justifyContent: 'center'
-		// shadowColor: "#000",
-	  //   shadowOffset: { width: 0, height: -2 },
-	  //   shadowOpacity: 0.3,
-	  //   shadowRadius: 3,
 	},
 	labelInnerContainer: {
 		height: RFValue(70),
@@ -1369,11 +1315,10 @@ const styles = StyleSheet.create({
 	labelText: {
 		fontSize: RFValue(19),
 		fontWeight: 'bold',
-		color: color.white2
+		color: color.black1
 	},
 
 	displayPostsContainer: {
-		height: windowWidth/2 + RFValue(50),
 		width: '100%',
 		backgroundColor: color.white2,
 		// shadowColor: "#000",
@@ -1389,14 +1334,10 @@ const styles = StyleSheet.create({
 	},
   chosenStatus: {
   	flex: 1, 
-  	height: windowWidth/2 + RFValue(50), 
-  	width: windowWidth/2 , 
   	position: 'absolute', 
   },
   chosenShadow: {
   	flex: 1, 
-  	height: windowWidth/2 + RFValue(50), 
-  	width: windowWidth/2 , 
   	position: 'absolute', 
   	backgroundColor: color.black1, 
   	opacity: 0.1 
@@ -1404,8 +1345,6 @@ const styles = StyleSheet.create({
   chosenCheck: {
   	flex: 1, 
   	position: 'absolute', 
-  	height: windowWidth/2 + RFValue(50), 
-  	width: windowWidth/2, 
   	justifyContent: 'center', 
   	alignItems: 'center'
   },
@@ -1416,7 +1355,6 @@ const styles = StyleSheet.create({
   pickTechContainer: {
     flexDirection: 'row',
     width: '100%',
-  	height: techBoxWidth,
   },
   pickTechDefault: {
   	width: '100%',
@@ -1424,8 +1362,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   techContainer: {
-    height: techBoxWidth, 
-    width: techBoxWidth, 
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: RFValue(3),
@@ -1461,15 +1397,11 @@ const styles = StyleSheet.create({
   },
 
   chosenTechStatus: {
-    flex: 1, 
-    height: techBoxWidth, 
-    width: techBoxWidth, 
+    flex: 1,  
     position: 'absolute', 
   },
   chosenTechShadow: {
-    flex: 1, 
-    height: techBoxWidth, 
-    width: techBoxWidth, 
+    flex: 1,  
     position: 'absolute', 
     backgroundColor: color.black1, 
     opacity: 0.1 
@@ -1477,8 +1409,6 @@ const styles = StyleSheet.create({
    chosenTechCheck: {
     flex: 1, 
     position: 'absolute', 
-    height: techBoxWidth, 
-    width: techBoxWidth, 
     justifyContent: 'center', 
     alignItems: 'center'
   },

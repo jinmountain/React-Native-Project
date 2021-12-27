@@ -33,14 +33,14 @@ const BusinessManagerTopTab = () => {
 			    }
 			  })}
 	    >
-	    	<Tab.Screen
+	    	{/*<Tab.Screen
 	    		name="BusinessManagerReservationStack"
 	    		component={BusinessManagerReservationStack}
 	    		options={{
 	    			tabBarLabel: "Reservations",
 	          headerShown: true,
 	        }}
-	    	/>
+	    	/>*/}
 	      <Tab.Screen
 	      	name="BusinessManagerTechnicianStack" 
 	      	component={BusinessManagerTechnicianStack} 

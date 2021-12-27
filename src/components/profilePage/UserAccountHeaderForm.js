@@ -146,7 +146,7 @@ const UserAccountHeaderForm = ({
     				</View>
     		  </View>
         </View>
-        {/*<HeaderBottomLine />*/}
+        <HeaderBottomLine />
   		</View>
     </View>
 	)
@@ -155,15 +155,15 @@ const UserAccountHeaderForm = ({
 const styles = StyleSheet.create({
   headerShadow: {
     backgroundColor: color.white2,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    // shadowColor: "#000",
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // 
+
     // for android
-    elevation: 10,
+    // elevation: 10,
     // for ios
     zIndex: 5,
   },

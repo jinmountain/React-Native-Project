@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import {
   View,
   ScrollView, 
   Text, 
-  TextInput, 
   StyleSheet, 
   TouchableHighlight,
 } from "react-native";
@@ -14,15 +13,10 @@ import {
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Components
-import DefaultUserPhoto from './defaults/DefaultUserPhoto';
-import { InputFormBottomLine } from './InputFormBottomLine';
 
 // Designs
-import { AntDesign } from '@expo/vector-icons';
 
 // Hooks
-import useConvertTime from '../hooks/useConvertTime';
-import { capitalizeFirstLetter } from '../hooks/capitalizeFirstLetter';
 
 // Color
 import color from '../color';
@@ -50,24 +44,26 @@ const VerticalScrollModalButton = ({ label, value, setValue, setIsModalVisible }
 const VerticalScrollPicker = ({ content, setValue, setIsModalVisible, defaultLabel, defaultValue }) => {
   return (
     <ScrollView>
-      <TouchableHighlight
-        style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
-        onPress={() => {
-          setValue(defaultValue);
-          setIsModalVisible(false);
-        }}
-        underlayColor={color.grey4}
-      >
-        <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%", flexDirection: 'row'}}>
-          <View style={styles.modalCloseContainer}>
-            {expoIcons.chevronBack(RFValue(27), color.black1)}
+      {
+        defaultValue &&
+        <TouchableHighlight
+          style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
+          onPress={() => {
+            setValue(defaultValue);
+            setIsModalVisible(false);
+          }}
+          underlayColor={color.grey4}
+        >
+          <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%", flexDirection: 'row'}}>
+            <View style={styles.modalCloseContainer}>
+              {expoIcons.chevronBack(RFValue(27), color.black1)}
+            </View>
+            <View>
+              <Text style={{ fontSize: RFValue(17) }}>{defaultLabel}</Text>
+            </View>
           </View>
-          <View>
-            <Text style={{ fontSize: RFValue(17) }}>{defaultLabel}</Text>
-          </View>
-        </View>
-      </TouchableHighlight>
-      
+        </TouchableHighlight>
+      }
       {
         content.map((item, index) => (
           <VerticalScrollModalButton

@@ -6,6 +6,7 @@ import {
   View, 
   Platform,
   TouchableOpacity,
+  Pressable,
   FlatList,
   Text,
   TouchableHighlight,
@@ -16,7 +17,7 @@ import {
 import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 // Components
 import CancelButton from '../components/CancelButton';
@@ -32,10 +33,10 @@ import THButtonWithBorder from '../components/buttons/THButtonWithBorder';
 import THButtonWOBorder from '../components/buttons/THButtonWOBorder';
 import AlertBoxTop from '../components/AlertBoxTop'; 
 import TwoButtonAlert from '../components/TwoButtonAlert';
-import MainTemplate from '../components/MainTemplate';
 import DisplayPostInfoInputForm from '../components/createPost/DisplayPostInfoInputForm';
 import HeaderBottomLine from '../components/HeaderBottomLine';
 import Picker from '../components/Picker';
+import BottomSheetHeader from '../components/BottomSheetHeader';
 
 // Contexts
 import { Context as LocationContext } from '../context/LocationContext';
@@ -60,6 +61,9 @@ import authFire from '../firebase/authFire';
 
 // Color
 import color from '../color';
+
+// expo icons
+import expoIcons from '../expoIcons';
 
 // business' services
 const services = [
@@ -752,46 +756,59 @@ const ContentCreateScreen = ({ route, navigation }) => {
       }
       {
         isModalVisible &&
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={0}
-          snapPoints={snapPoints}
-          onChange={handleSheetChanges}
-          enablePanDownToClose={true}
-          handleComponent={() => {
-            return (
-              <View 
-                style={styles.bottomSheetHeaderContainer}
-              > 
-                <View style={styles.sliderIndicatorContainer}>
-                  <View style={styles.sliderIndicator}/>
-                </View>
-              </View>
-            )
-          }}
-        >
-          {
-            pickerType === 'time'
-            ?
-            <Picker 
-              content={times}
-              setValue={setPostETC}
-              setIsModalVisible={setIsModalVisible}
-              defaultLabel={"Choose Estimated Time to Complete"}
-              defaultValue={null}
-            />
-            : pickerType === 'service'
-            ?
-            <Picker 
-              content={services}
-              setValue={setPostService}
-              setIsModalVisible={setIsModalVisible}
-              defaultLabel={"Choose Service Type"}
-              defaultValue={null}
-            />
-            : null
-          }
-        </BottomSheet>
+        <View style={{ position: 'absolute', width: "100%", height: "100%" }}>
+          <Pressable
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+            ]}
+            onPress={() => setIsModalVisible(false)}
+          >
+          </Pressable>
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={0}
+            snapPoints={snapPoints}
+            onChange={handleSheetChanges}
+            enablePanDownToClose={true}
+            handleComponent={() => {
+              return (
+                <BottomSheetHeader 
+                  headerText={
+                    pickerType === "time"
+                    ?
+                    "Time"
+                    : pickerType === "service"
+                    ?
+                    "Services"
+                    : null
+                  }
+                  closeButtonOnPress={() => {
+                    setIsModalVisible(false);
+                  }}
+                />
+              )
+            }}
+          >
+            {
+              pickerType === 'time'
+              ?
+              <Picker 
+                content={times}
+                setValue={setPostETC}
+                setIsModalVisible={setIsModalVisible}
+              />
+              : pickerType === 'service'
+              ?
+              <Picker 
+                content={services}
+                setValue={setPostService}
+                setIsModalVisible={setIsModalVisible}
+              />
+              : null
+            }
+          </BottomSheet>
+        </View>
       }
     </View>
   );
@@ -897,30 +914,6 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: RFValue(17),
     paddingHorizontal: RFValue(5),
-  },
-
-  bottomSheetHeaderContainer: {
-    paddingLeft: RFValue(15),
-    height: RFValue(55),
-    width: "100%", 
-    justifyContent: 'center',
-    borderTopLeftRadius: 9,
-    borderTopRightRadius: 9
-  },
-  bottomSheetHeaderTitleText: {
-    fontSize: RFValue(19),
-    color: color.black1,
-    fontWeight: 'bold'
-  },
-  sliderIndicatorContainer: {
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  sliderIndicator: {
-    width: 35,
-    height: 7,
-    backgroundColor: color.black1,
-    borderRadius: 100
   },
 });
 

@@ -13,7 +13,7 @@ const DisplayPostImage = ({ type, url, imageWidth }) => {
 	return (
     type === 'video'
     ?
-    <View style={{ width: imageWidth, height: imageWidth }}>
+    <View style={{ width: imageWidth, height: imageWidth, borderRadius: 9 }}>
       <Video
         // ref={video}
         style={styles.postImage}
@@ -30,7 +30,7 @@ const DisplayPostImage = ({ type, url, imageWidth }) => {
     ?
     <Image
       defaultSource={require('../../../img/defaultImage.jpeg')}
-    	style={{ width: imageWidth, height: imageWidth }} 
+    	style={{ width: imageWidth, height: imageWidth, borderRadius: 9 }} 
     	source={{ uri: url }}
     />
     : null

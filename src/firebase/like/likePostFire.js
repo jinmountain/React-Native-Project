@@ -30,7 +30,11 @@ const likePostFire = (postId, uid) => {
           const newHeat = Number((postData.likeCount + 1) / timePassedInSec);
           // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
           // make a new doc in linkes
-          postsUserLikesRef.doc(uid).set({});
+          postsUserLikesRef.doc(uid).set({
+            uid: uid,
+            postId: postId,
+            createdAt: Date.now()
+          });
           // Posts Ref
           postsRef
           .doc(postId)
@@ -129,7 +133,12 @@ const likeCommentFire = (postId, commentId, currentUserId) => {
           const newHeat = Number((commentData.count_likes + 1) / timePassedInSec);
           // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
           // make a new doc in linkes
-          commentsWhoLikeRef.doc(currentUserId).set({});
+          commentsWhoLikeRef.doc(currentUserId).set({
+            uid: currentUserId,
+            postId: postId,
+            commentId: comemntId,
+            createdAt: Date.now()
+          });
           
           // comment ref
           commentRef
@@ -233,7 +242,12 @@ const likeReplyFire = (postId, commentId, replyId, currentUserId) => {
           const newHeat = Number((replyData.count_likes + 1) / timePassedInSec);
           // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
           // make a new doc in linkes
-          repliesWhoLikeRef.doc(currentUserId).set({});
+          repliesWhoLikeRef.doc(currentUserId).set({
+            uid: currentUserId,
+            postId: postId,
+            commentId: commentId,
+            replyId: replyId
+          });
           
           // reply ref
           replyRef

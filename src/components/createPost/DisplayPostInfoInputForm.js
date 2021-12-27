@@ -130,7 +130,7 @@ const DisplayPostInfoInputForm = ({
         + "techFetchState: "
         + techFetchState
       );
-    }
+    };
 
     return () => {
       isMounted = false;
@@ -294,7 +294,7 @@ const DisplayPostInfoInputForm = ({
                 let i;
                 let currentTechsId = [];
                 for (i = 0; i < currentTechs.length; i++) {
-                  currentTechsId.push(currentTechs[i].techBusData.techId);
+                  currentTechsId.push(currentTechs[i].techId);
                 }
                 setSelectedTechs(currentTechsId);
                 setClickedAll(!clickedAll);
@@ -319,27 +319,27 @@ const DisplayPostInfoInputForm = ({
               return (
                 <TouchableOpacity 
                   onPress={() => {
-                    console.log(item.techBusData.techId);
-                    if (selectedTechs.includes(item.techBusData.techId)) {
+                    console.log(item.techId);
+                    if (selectedTechs.includes(item.techId)) {
                       setSelectedTechs([
-                        ...selectedTechs.filter((techId) => techId !== item.techBusData.techId)
+                        ...selectedTechs.filter((techId) => techId !== item.techId)
                       ])
                     } else {
-                      setSelectedTechs([...selectedTechs, item.techBusData.techId]);
+                      setSelectedTechs([...selectedTechs, item.techId]);
                     }
                   }}
                   style={styles.techContainer}
                 >
                   <TechBox 
-                    techId={item.techBusData.techId}
+                    techId={item.techId}
                   />
                   <View>
                     <Text stlye={styles.techInfoText}>
-                      {expoIcons.antdesignStaro(RFValue(13), color.yellow2)} {item.techBusData.countRating ? (Math.round(item.techBusData.totalRating/item.techBusData.countRating * 10) / 10) : "-"}
+                      {expoIcons.antdesignStaro(RFValue(13), color.yellow2)} {item.countRating ? (Math.round(item.totalRating/item.countRating * 10) / 10) : "-"}
                     </Text>
                   </View>
                   { 
-                    selectedTechs.includes(item.techBusData.techId)
+                    selectedTechs.includes(item.techId)
                     ?
                     <View style={styles.chosenStatus}>
                       <View style={styles.chosenShadow}>

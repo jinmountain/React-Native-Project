@@ -4,17 +4,19 @@
 // if they make any change and click save a two button alert 
 // will pop and ask again to confirm.
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo, useCallback } from 'react';
 import { 
   StyleSheet, 
   View,
-  ScrollView, 
+  ScrollView,
+  Pressable,
   Text,
   Switch,
   TouchableOpacity,
   TouchableHighlight,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import BottomSheet from '@gorhom/bottom-sheet';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -22,6 +24,7 @@ import HeaderBottomLine from '../../components/HeaderBottomLine';
 import { HeaderForm } from '../../components/HeaderForm';
 import TwoButtonAlert from '../../components/TwoButtonAlert';
 import AlertBoxTop from '../../components/AlertBoxTop';
+import BottomSheetHeader from '../../components/BottomSheetHeader';
 
 // Design
 
@@ -44,6 +47,109 @@ import expoIcons from '../../expoIcons';
 // timezone
 import timezoneList from '../../timezoneList';
 
+const VerticalScrollModalButton = ({ 
+  index,
+  label, 
+  timezoneValue, 
+  timezoneOffsetValue,
+  setTimezone,
+  setTimezoneOffset,
+  setIsModalVisible 
+}) => {
+  return (
+    <View 
+      key={label} 
+      style={{ height: RFValue(53) }}
+    >
+      {
+        index > 0 &&
+        <HeaderBottomLine />
+      }
+      <TouchableHighlight
+        
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        onPress={() => {
+          setTimezone(timezoneValue);
+          setTimezoneOffset(timezoneOffsetValue);
+          setIsModalVisible(false);
+        }}
+        underlayColor={color.grey4}
+      >
+        <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%" }}>
+          <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
+        </View>
+      </TouchableHighlight>
+    </View>
+  )
+};
+
+const VerticalScrollPicker = ({ 
+  content,
+  setTimezone,
+  setTimezoneOffset,
+  setIsModalVisible,
+  defaultLabel, 
+  defaultValue,
+  currentTimzeoneLabel,
+  currentTimezone,
+  currentTimezoneOffset,
+}) => {
+  return (
+    <ScrollView>
+      { defaultLabel &&
+        <TouchableHighlight
+          style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
+          onPress={() => {
+            setIsModalVisible(false);
+          }}
+          underlayColor={color.grey4}
+        >
+          <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%", flexDirection: 'row'}}>
+            <View style={styles.modalCloseContainer}>
+              {expoIcons.chevronBack(RFValue(27), color.black1)}
+            </View>
+            <View>
+              <Text style={{ fontSize: RFValue(17) }}>{defaultLabel}</Text>
+            </View>
+          </View>
+        </TouchableHighlight>
+      }
+      <View>
+        <TouchableHighlight
+          style={styles.currentTimezoneContainer}
+          onPress={() => {
+            setIsModalVisible(false);
+            setTimezone(currentTimezone);
+            setTimezoneOffset(currentTimezoneOffset);
+          }}
+          underlayColor={color.grey4}
+        >
+          <View style={styles.currentTimezoneTextContainer}>
+            <Text style={styles.currentTimezoneTextTop}>Current Timezone</Text>
+            <Text style={styles.currentTimezoneText}>{currentTimzeoneLabel}</Text>
+          </View>
+        </TouchableHighlight>
+        <HeaderBottomLine />
+      </View>
+      {
+        content.map((item, index) => {
+          return (
+            <VerticalScrollModalButton
+              index={index}
+              label={item.gmt}
+              timezoneValue={item.timezone}
+              timezoneOffsetValue={item.offset}
+              setTimezone={setTimezone}
+              setTimezoneOffset={setTimezoneOffset}
+              setIsModalVisible={setIsModalVisible}
+            />
+          )
+        })
+      }
+    </ScrollView>
+  )
+};
+
 const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, hours, businessDay, setHours, userType, techId }) => {
   return (
     <View style={styles.settingContainer}>
@@ -60,11 +166,11 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
           <View style={styles.onOffStatusConatiner}>
             { dayOpen === false
               ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
-              : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
+              : <Text style={[styles.onOffText, { color: color.blue1 }]}>Open</Text>
             }
           </View>
           <Switch
-            trackColor={{ false: color.grey8, true: color.red2 }}
+            trackColor={{ false: color.grey8, true: color.blue1 }}
             thumbColor={dayOpen ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor="#3e3e3e"
             onValueChange={setDayOpen}
@@ -214,38 +320,27 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
   //       }
   //     }
   //   ]
-  const [ timezone, setTimezone ] = useState(
-    userType === 'bus' && user.business_hours && user.business_hours.timezone 
-    ? user.business_hours.timezone
-    : false 
-  );
-  const [ currentTimezone, setCurrentTimezone ] = useState(
-    userType === 'bus' && user.business_hours && user.business_hours.timezone 
-    ? user.business_hours.timezone
-    : false
-  ); 
+  const [ businessHours, setBusinessHours ] = useState(
+    userType === 'bus' && user.business_hours
+    ? user.business_hours
+    : null 
+  )
 
-  const [ timezoneOffset, setTimezoneOffset ] = useState(
-    userType === 'bus' && user.business_hours && user.business_hours.timezoneOffset 
-    ? user.business_hours.timezoneOffset
-    : false 
+  const [ userTimezone, setUserTimezone ] = useState(
+    user.business_hours && user.business_hours.timezone 
+    ? user.business_hours.timezone
+    : null
   );
-  const [ currentTimezoneOffset, setCurrentTimezoneOffset ] = useState(
-    userType === 'bus' && user.business_hours && user.business_hours.timezoneOffset 
+  const [ userTimezoneOffset, setUserTimezoneOffset ] = useState(
+    user.business_hours && user.business_hours.timezoneOffset 
     ? user.business_hours.timezoneOffset
-    : false
+    : null
   );
+  const [ userGmt, setUserGmt ] = useState(null);
+
+  const [ currentTimezoneOffset, setCurrentTimezoneOffset ] = useState(null);
+  const [ currentTimezone, setCurrentTimezone ] = useState(null); 
   const [ currentGmt, setCurrentGmt ] = useState(null);
-
-  useEffect(() => {
-    const date = new Date();
-    const split = date.toString().split(" ");
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const diff = date.getTimezoneOffset();
-
-    setCurrentTimezone(tz);
-    setCurrentTimezoneOffset(diff)
-  }, []);
   
   const [ sunOpen, setSunOpen ] = useState(
     userType === 'bus' && user.business_hours && user.business_hours.sun_open 
@@ -323,6 +418,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
   // get technician business hours and set to the states
   useEffect(() => {
     let isMounted = true;
+    // only for tech
     if (userType === 'tech' && techId) {
       // get tech business hours
       const getTechBusinessHours = businessGetFire.getTechBusinessHours(user.id, techId);
@@ -331,8 +427,6 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
         // set to the states
         if (currentBusinessHours && currentBusinessHours.sun_open && isMounted) {
           setBusinessHours(currentBusinessHours);
-          setTimezone(currentBusinessHours.timezone);
-          setTimezoneOffset(currentBusinessHours.timezoneOffset);
           setSunOpen(currentBusinessHours.sun_open);
           setSunHours(currentBusinessHours.sun_hours);
           setMonOpen(currentBusinessHours.mon_open);
@@ -354,30 +448,39 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
       });
     };
 
-    const date = new Date();
-    const split = date.toString().split(" ");
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const diff = date.getTimezoneOffset();
+    // for business, get current timezone
+    if (userType === 'bus') {
+      const date = new Date();
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const diff = date.getTimezoneOffset();
 
-    console.log(tz);
+      const getGmt = timezoneList.filter((zone) => zone.timezone == tz);
 
-    const getGmt = timezoneList.filter((zone) => zone.timezone == tz);
+      const gmt = getGmt[0].gmt;
 
-    console.log(getGmt[0].gmt);
-    const gmt = getGmt[0].gmt;
-
-    setCurrentTimezone(tz);
-    setCurrentTimezoneOffset(diff)
-    setCurrentGmt(getGmt[0].gmt);
+      isMounted && setCurrentTimezone(tz);
+      isMounted && setCurrentTimezoneOffset(diff)
+      isMounted && setCurrentGmt(getGmt[0].gmt);
+    }
 
     return () => {
       isMounted = false;
-      // navigation.setParams({ 
-      //   userType: null, 
-      // });
     }
   }, []);
 
+  // timezone and timezone offset
+  useEffect(() => {
+    let isMounted = true;
+
+    const getUserGmt = timezoneList.filter((zone) => zone.timezone == userTimezone);
+    isMounted && setUserGmt(getUserGmt[0].gmt);
+
+    return () => {
+      isMounted = false;
+    }
+  }, [userTimezone]);
+
+  // new input to status and hours
   useEffect(() => {
     let isMounted = true;
     if (newHours && businessDay) {
@@ -412,12 +515,19 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
     }
   }, [newHours]);
 
-  // detect hours change and set readyToSave to true
-  // useEffect(() => {
-  //   if (businessHours === [sunHours, monHours]) {
-  //     setReadyToSave(true);
-  //   }
-  // }, [sunHours, monHours]);
+  const [ isModalVisible, setIsModalVisible ] = useState(false);
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => 
+    // [height-RFValue(95)-width-RFValue(55), height-RFValue(95)-RFValue(55)],
+    ['50%'],
+    []
+  );
+  const handleSheetChanges = useCallback((index) => {
+    if (index === -1) {
+      setIsModalVisible(false);
+    } 
+    // console.log('handleSheetChanges', index);
+  }, []);
 
   return (
     <View style={styles.mainContainer}>
@@ -434,22 +544,22 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
         rightButtonPress={() => {
           const newBusinessHours = 
           { 
-            timezone: timezone,
-            timezoneOffset: timezoneOffset,
-            sun_open: newSunOpen, 
-            mon_open: newMonOpen, 
-            tue_open: newTueOpen, 
-            wed_open: newWedOpen, 
-            thu_open: newThuOpen, 
-            fri_open: newFriOpen, 
-            sat_open: newSatOpen,
-            sun_hours: newSunHours,
-            mon_hours: newMonHours,
-            tue_hours: newTueHours,
-            wed_hours: newWedHours,
-            thu_hours: newThuHours,
-            fri_hours: newFriHours,
-            sat_hours: newSatHours
+            timezone: userTimezone,
+            timezoneOffset: userTimezoneOffset,
+            sun_open: sunOpen, 
+            mon_open: monOpen, 
+            tue_open: tueOpen, 
+            wed_open: wedOpen, 
+            thu_open: thuOpen, 
+            fri_open: friOpen, 
+            sat_open: satOpen,
+            sun_hours: sunHours,
+            mon_hours: monHours,
+            tue_hours: tueHours,
+            wed_hours: wedHours,
+            thu_hours: thuHours,
+            fri_hours: friHours,
+            sat_hours: satHours
           };
 
           let readyToSave = false;
@@ -473,8 +583,24 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
             }
             return false;
           };
+          // compare timezone and timezoneOffset
+          if (businessHours.timezone && businessHours.timezoneOffset) {
+            console.log("existing: ", businessHours.timezone, businessHours.timezoneOffset);
+            console.log("newBusinessHours: ", newBusinessHours.timezone, newBusinessHours.timezoneOffset);
+            if (
+              businessHours.timezone !== newBusinessHours.timezone ||
+              businessHours.timezoneOffset !== newBusinessHours.timezoneOffset
+            ) {
+              readyToSave = true;
+            }
+          } else {
+            if (newBusinessHours.timezone && newBusinessHours.timezoneOffset) {
+              readyToSave = true;
+            }
+          }
 
-          if (businessHours.sun_open) {
+          // compare status and hours
+          if (businessHours) {
             if ( 
               // when one of the days is changed from open to close or vice versa
               businessHours.sun_open !== newBusinessHours.sun_open ||
@@ -499,7 +625,29 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
               readyToSave = true;
             };
           } else {
-            readyToSave = true;
+            if (
+              newBusinessHours.sun_open ||
+              newBusinessHours.mon_open ||
+              newBusinessHours.tue_open ||
+              newBusinessHours.wed_open ||
+              newBusinessHours.thu_open ||
+              newBusinessHours.fri_open ||
+              newBusinessHours.sat_open
+            ) {
+              readyToSave = true;
+            };
+
+            if (
+              newBusinessHours.sun_hours ||
+              newBusinessHours.mon_hours ||
+              newBusinessHours.tue_hours ||
+              newBusinessHours.wed_hours ||
+              newBusinessHours.thu_hours ||
+              newBusinessHours.fri_hours ||
+              newBusinessHours.sat_hours
+            ) {
+              readyToSave = true;
+            };
           }
           
           if (readyToSave) {
@@ -512,16 +660,36 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
         }}
       />
       <View>
-        <ScrollView>
-          <View style={styles.timezoneSetting}>
-            <Text style={styles.timezoneLabelText}>Timezone:</Text>
-            <ScrollView 
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            > 
-              <Text style={styles.timezoneText}>{currentGmt}</Text> 
-            </ScrollView>
-          </View>
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: RFValue(150)
+          }}
+        >
+          { 
+            userType === 'bus'
+            ?
+            <TouchableOpacity
+              onPress={() => {
+                setIsModalVisible(true);
+              }}
+            >
+              <View style={styles.timezoneSetting}>
+                <Text style={styles.timezoneLabelText}>Timezone:</Text>
+                <Text style={styles.timezoneText}>{userGmt}</Text> 
+              </View>
+            </TouchableOpacity>
+            :
+            <TouchableOpacity
+              onPress={() => {
+                
+              }}
+            >
+              <View style={styles.timezoneSetting}>
+                <Text style={styles.timezoneLabelText}>Timezone:</Text>
+                <Text style={styles.timezoneText}>{userGmt}</Text> 
+              </View>
+            </TouchableOpacity>
+          }
 
           <SettingHoursDayContainer
             navigation={navigation} 
@@ -621,8 +789,8 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
               console.log(techId);
               const newBusinessHours =
               { 
-                timezone: timezone,
-                timezoneOffset: timezoneOffset,
+                timezone: userTimezone,
+                timezoneOffset: userTimezoneOffset,
                 sun_open: sunOpen, 
                 mon_open: monOpen, 
                 tue_open: tueOpen, 
@@ -674,6 +842,48 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
           />
         }
       </View>
+      {
+        isModalVisible &&
+        <View style={{ position: 'absolute', width: "100%", height: "100%" }}>
+          <Pressable
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+            ]}
+            onPress={() => setIsModalVisible(false)}
+          >
+          </Pressable>
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={0}
+            snapPoints={snapPoints}
+            onChange={handleSheetChanges}
+            enablePanDownToClose={true}
+            handleComponent={() => {
+              return (
+                <BottomSheetHeader 
+                  headerText={"Timezones"}
+                  closeButtonOnPress={() => {
+                    setIsModalVisible(false);
+                  }}
+                />
+              )
+            }}
+          >
+            {
+              <VerticalScrollPicker
+                content={timezoneList}
+                setTimezone={setUserTimezone}
+                setTimezoneOffset={setUserTimezoneOffset}
+                setIsModalVisible={setIsModalVisible}
+                currentTimzeoneLabel={currentGmt}
+                currentTimezone={currentTimezone}
+                currentTimezoneOffset={currentTimezoneOffset}
+              />
+            }
+          </BottomSheet>
+        </View>
+      }
     </View>
   )
 };
@@ -748,7 +958,7 @@ const styles = StyleSheet.create({
   },
   addOpenHoursText: {
     fontSize: RFValue(19),
-    color: color.red2
+    color: color.black1
   },
 
   addNewHoursContainer: {
@@ -806,11 +1016,30 @@ const styles = StyleSheet.create({
     backgroundColor: color.black1,
   },
 
+  currentTimezoneContainer: { 
+    height: RFValue(65),
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  currentTimezoneTextContainer: { 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    width: "100%" 
+  },
+  currentTimezoneText: {
+    fontSize: RFValue(17),
+  },
+  currentTimezoneTextTop: {
+    fontSize: RFValue(17),
+    fontWeight: 'bold'
+  },
+
   timezoneSetting: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    paddingLeft: RFValue(9),
-    height: RFValue(57)
+    paddingLeft: RFValue(15),
+    paddingVertical: RFValue(15),
   },
   timezoneLabelText: {
     fontSize: RFValue(19),

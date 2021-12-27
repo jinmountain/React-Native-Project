@@ -151,272 +151,272 @@ const timezones = [
   },
   { 
   	timezone: "Pacific/Galapagos",
-  	gtm: "(GMT-06:00) Galapagos",
+  	gmt: "(GMT-06:00) Galapagos",
   	offset: 360
   },
   { 
   	timezone: "America/Bogota",
-  	gtm: "(GMT-05:00) Bogota",
+  	gmt: "(GMT-05:00) Bogota",
   	offset: 300
   },
   { 
   	timezone: "America/Cancun",
-  	gtm: "(GMT-05:00) America Cancun",
+  	gmt: "(GMT-05:00) America Cancun",
   	offset: 300
   },
   { 
   	timezone: "America/Cayman",
-  	gtm: "(GMT-05:00) Cayman",
+  	gmt: "(GMT-05:00) Cayman",
   	offset: 300
   },
   { 
   	timezone: "America/Guayaquil",
-  	gtm: "(GMT-05:00) Guayaquil",
+  	gmt: "(GMT-05:00) Guayaquil",
   	offset: 300
   },
   { 
   	timezone: "America/Havana",
-  	gtm: "(GMT-05:00) Havana",
+  	gmt: "(GMT-05:00) Havana",
   	offset: 300
   },
   { 
   	timezone: "America/Iqaluit",
-  	gtm: "(GMT-05:00) Eastern Time - Iqaluit",
+  	gmt: "(GMT-05:00) Eastern Time - Iqaluit",
   	offset: 300
   },
   { 
   	timezone: "America/Jamaica",
-  	gtm: "(GMT-05:00) Jamaica",
+  	gmt: "(GMT-05:00) Jamaica",
   	offset: 300
   },
   { 
   	timezone: "America/Lima",
-  	gtm: "(GMT-05:00) Lima",
+  	gmt: "(GMT-05:00) Lima",
   	offset: 300
   },
   { 
   	timezone: "America/Nassau",
-  	gtm: "(GMT-05:00) Nassau",
+  	gmt: "(GMT-05:00) Nassau",
   	offset: 300
   },
   { 
   	timezone: "America/New_York",
-  	gtm: "(GMT-05:00) Eastern Time",
+  	gmt: "(GMT-05:00) Eastern Time",
   	offset: 300
   },
   { 
   	timezone: "America/Panama",
-  	gtm: "(GMT-05:00) Panama",
+  	gmt: "(GMT-05:00) Panama",
   	offset: 300
   },
   { 
   	timezone: "America/Port-au-Prince",
-  	gtm: "(GMT-05:00) Port-au-Prince",
+  	gmt: "(GMT-05:00) Port-au-Prince",
   	offset: 300
   },
   { 
   	timezone: "America/Rio_Branco",
-  	gtm: "(GMT-05:00) Rio Branco",
+  	gmt: "(GMT-05:00) Rio Branco",
   	offset: 300
   },
   { 
   	timezone: "America/Toronto",
-  	gtm: "(GMT-05:00) Eastern Time - Toronto",
+  	gmt: "(GMT-05:00) Eastern Time - Toronto",
   	offset: 300
   },
   { 
   	timezone: "Pacific/Easter",
-  	gtm: "(GMT-05:00) Easter Island",
+  	gmt: "(GMT-05:00) Easter Island",
   	offset: 300
   },
   { 
   	timezone: "America/Caracas",
-  	gtm: "(GMT-04:30) Caracas",
+  	gmt: "(GMT-04:30) Caracas",
   	offset: 270
   },
   { 
   	timezone: "America/Asuncion",
-  	gtm: "(GMT-03:00) Asuncion",
+  	gmt: "(GMT-03:00) Asuncion",
   	offset: 180
   },
   { 
   	timezone: "America/Barbados",
-  	gtm: "(GMT-04:00) Barbados",
+  	gmt: "(GMT-04:00) Barbados",
   	offset: 240
   },
   { 
   	timezone: "America/Boa_Vista",
-  	gtm: "(GMT-04:00) Boa Vista",
+  	gmt: "(GMT-04:00) Boa Vista",
   	offset: 240
   },
   { 
   	timezone: "America/Campo_Grande",
-  	gtm: "(GMT-03:00) Campo Grande",
+  	gmt: "(GMT-03:00) Campo Grande",
   	offset: 180
   },
   { 
   	timezone: "America/Cuiaba",
-  	gtm: "(GMT-03:00) Cuiaba",
+  	gmt: "(GMT-03:00) Cuiaba",
   	offset: 180
   },
   { 
   	timezone: "America/Curacao",
-  	gtm: "(GMT-04:00) Curacao",
+  	gmt: "(GMT-04:00) Curacao",
   	offset: 240
   },
   { 
   	timezone: "America/Grand_Turk",
-  	gtm: "(GMT-04:00) Grand Turk",
+  	gmt: "(GMT-04:00) Grand Turk",
   	offset: 240
   },
   { 
   	timezone: "America/Guyana",
-  	gtm: "(GMT-04:00) Guyana",
+  	gmt: "(GMT-04:00) Guyana",
   	offset: 240
   },
   { 
   	timezone: "America/Halifax",
-  	gtm: "(GMT-04:00) Atlantic Time - Halifax",
+  	gmt: "(GMT-04:00) Atlantic Time - Halifax",
   	offset: 240
   },
   { 
   	timezone: "America/La_Paz",
-  	gtm: "(GMT-04:00) La Paz",
+  	gmt: "(GMT-04:00) La Paz",
   	offset: 240
   },
   { 
   	timezone: "America/Manaus",
-  	gtm: "(GMT-04:00) Manaus",
+  	gmt: "(GMT-04:00) Manaus",
   	offset: 240
   },
   { 
   	timezone: "America/Martinique",
-  	gtm: "(GMT-04:00) Martinique",
+  	gmt: "(GMT-04:00) Martinique",
   	offset: 240
   },
   { 
   	timezone: "America/Port_of_Spain",
-  	gtm: "(GMT-04:00) Port of Spain",
+  	gmt: "(GMT-04:00) Port of Spain",
   	offset: 240
   },
   { 
   	timezone: "America/Porto_Velho",
-  	gtm: "(GMT-04:00) Porto Velho",
+  	gmt: "(GMT-04:00) Porto Velho",
   	offset: 240
   },
   { 
   	timezone: "America/Puerto_Rico",
-  	gtm: "(GMT-04:00) Puerto Rico",
+  	gmt: "(GMT-04:00) Puerto Rico",
   	offset: 240
   },
   { 
   	timezone: "America/Santo_Domingo",
-  	gtm: "(GMT-04:00) Santo Domingo",
+  	gmt: "(GMT-04:00) Santo Domingo",
   	offset: 240
   },
   { 
   	timezone: "America/Thule",
-  	gtm: "(GMT-04:00) Thule",
+  	gmt: "(GMT-04:00) Thule",
   	offset: 240
   },
   { 
   	timezone: "Atlantic/Bermuda",
-  	gtm: "(GMT-04:00) Bermuda",
+  	gmt: "(GMT-04:00) Bermuda",
   	offset: 240
   },
   { 
   	timezone: "America/St_Johns",
-  	gtm: "(GMT-03:30) Newfoundland Time - St. Johns",
+  	gmt: "(GMT-03:30) Newfoundland Time - St. Johns",
   	offset: 210
   },
   { 
   	timezone: "America/Araguaina",
-  	gtm: "(GMT-03:00) Araguaina",
+  	gmt: "(GMT-03:00) Araguaina",
   	offset: 180
   },
   { 
   	timezone: "America/Argentina/Buenos_Aires",
-  	gtm: "(GMT-03:00) Buenos Aires",
+  	gmt: "(GMT-03:00) Buenos Aires",
   	offset: 180
   },
   { 
   	timezone: "America/Bahia",
-  	gtm: "(GMT-03:00) Salvador",
+  	gmt: "(GMT-03:00) Salvador",
   	offset: 180
   },
   { 
   	timezone: "America/Belem",
-  	gtm: "(GMT-03:00) Belem",
+  	gmt: "(GMT-03:00) Belem",
   	offset: 180
   },
   { 
   	timezone: "America/Cayenne",
-  	gtm: "(GMT-03:00) Cayenne",
+  	gmt: "(GMT-03:00) Cayenne",
   	offset: 180
   },
   { 
   	timezone: "America/Fortaleza",
-  	gtm: "(GMT-03:00) Fortaleza",
+  	gmt: "(GMT-03:00) Fortaleza",
   	offset: 180
   },
   { 
   	timezone: "America/Godthab",
-  	gtm: "(GMT-03:00) Godthab",
+  	gmt: "(GMT-03:00) Godthab",
   	offset: 180
   },
   { 
   	timezone: "America/Maceio",
-  	gtm: "(GMT-03:00) Maceio",
+  	gmt: "(GMT-03:00) Maceio",
   	offset: 180
   },
   { 
   	timezone: "America/Miquelon",
-  	gtm: "(GMT-03:00) Miquelon",
+  	gmt: "(GMT-03:00) Miquelon",
   	offset: 180
   },
   { 
   	timezone: "America/Montevideo",
-  	gtm: "(GMT-03:00) Montevideo",
+  	gmt: "(GMT-03:00) Montevideo",
   	offset: 180
   },
   { 
   	timezone: "America/Paramaribo",
-  	gtm: "(GMT-03:00) Paramaribo",
+  	gmt: "(GMT-03:00) Paramaribo",
   	offset: 180
   },
   { 
   	timezone: "America/Recife",
-  	gtm: "(GMT-03:00) Recife",
+  	gmt: "(GMT-03:00) Recife",
   	offset: 180
   },
   { 
   	timezone: "America/Santiago",
-  	gtm: "(GMT-03:00) Santiago",
+  	gmt: "(GMT-03:00) Santiago",
   	offset: 180
   },
   { 
   	timezone: "America/Sao_Paulo",
-  	gtm: "(GMT-02:00) Sao Paulo",
+  	gmt: "(GMT-02:00) Sao Paulo",
   	offset: 120
   },
   { 
   	timezone: "Antarctica/Palmer",
-  	gtm: "(GMT-03:00) Palmer",
+  	gmt: "(GMT-03:00) Palmer",
   	offset: 180
   },
   { 
   	timezone: "Antarctica/Rothera",
-  	gtm: "(GMT-03:00) Rothera",
+  	gmt: "(GMT-03:00) Rothera",
   	offset: 180
   },
   { 
   	timezone: "Atlantic/Stanley",
-  	gtm: "(GMT-03:00) Stanley",
+  	gmt: "(GMT-03:00) Stanley",
   	offset: 180
   },
   { 
   	timezone: "America/Noronha",
-  	gtm: "(GMT-02:00) Noronha",
+  	gmt: "(GMT-02:00) Noronha",
   	offset: 120
   },
   { 

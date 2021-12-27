@@ -3,15 +3,13 @@ import {
 	View, 
 	Text, 
 	StyleSheet,
-	TouchableOpacity,
+	TouchableWithoutFeedback,
   Dimensions,
   Image,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { useNavigation } from '@react-navigation/native';
 import { Video, AVPlaybackStatus } from 'expo-av';
-
-// navigation
-import { navigate } from '../navigationRef';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -22,17 +20,27 @@ import MultiplePhotosIndicator from './MultiplePhotosIndicator';
 // Color
 import color from '../color';
 
+// hooks
+import { useOrientation } from '../hooks/useOrientation';
+
 const ThreePostsRow = ({ 
-  navigate, 
   screen,
   accountUserId, 
   posts, 
   postState,
   postFetchSwitch,
   postLast,
-  threePostsRowImageWH
 }) => {
-  const [defaultPosts, setDefaultPosts] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const navigation = useNavigation();
+  const [defaultPosts, setDefaultPosts] = useState(Array(9).fill(0));
+  const [ threePostsRowImageWH, setThreePostsRowImageWH ] = useState(Dimensions.get("window").width/3-2);
+
+  const orientation = useOrientation();
+
+  useEffect(() => {
+    console.log("posts: ", posts);
+    setThreePostsRowImageWH(Dimensions.get("window").width/3-2);
+  }, [orientation]);
 
 	return (
     <View style={[styles.container, {paddingBottom: RFValue(150)}]}>
@@ -47,7 +55,7 @@ const ThreePostsRow = ({
             index % 3 !== 0 ? { paddingLeft: 2 } : { paddingLeft: 0 }
           ]}
         >
-          <View style={{width: threePostsRowImageWH, height: threePostsRowImageWH, backgroundColor: color.gray1 }}>
+          <View style={{width: threePostsRowImageWH, height: threePostsRowImageWH, backgroundColor: color.grey1 }}>
           </View>
         </View>
       ))
@@ -55,7 +63,7 @@ const ThreePostsRow = ({
       ? 
       <View style={styles.emptyPostContainer}>
         <View style={styles.cloudContainer}>
-          <AntDesign name="cloudo" size={RFValue(57)} color={color.gray3} />
+          <AntDesign name="cloudo" size={RFValue(57)} color={color.grey3} />
         </View>
         <Text style={styles.emptyPostText}>No Posts Yet</Text>
       </View>
@@ -63,12 +71,12 @@ const ThreePostsRow = ({
       posts.map((item, index) => 
       (
         <View
-          key={index}
+          key={item.id}
           style={[styles.imageContainer, 
             index % 3 !== 0 ? { paddingLeft: 2 } : { paddingLeft: 0 }
           ]}
         >
-          <TouchableOpacity
+          <TouchableWithoutFeedback
             onPress={() => {
               // navigate('PostsSwipeStack', {
               //   screen: 'PostsSwipe',
@@ -82,7 +90,7 @@ const ThreePostsRow = ({
               //     postLast: postLast,
               //   }
               // });
-              navigate(
+              navigation.navigate(
                 'PostsSwipe',
                 { 
                   postSource: screen,
@@ -96,35 +104,37 @@ const ThreePostsRow = ({
               );
             }}
           > 
-          { 
-            item.data.files[0].type === 'video'
-            ?
-            <View style={{width: threePostsRowImageWH, height: threePostsRowImageWH}}>
-              <Video
-                // ref={video}
-                style={{backgroundColor: color.white2, borderWidth: 0, width: threePostsRowImageWH, height: threePostsRowImageWH}}
-                source={{
-                  uri: item.data.files[0].url,
-                }}
-                useNativeControls={false}
-                resizeMode="contain"
-                shouldPlay={false}
-              />
+            <View>
+              { 
+                item.data.files[0].type === 'video'
+                ?
+                <View style={{width: threePostsRowImageWH, height: threePostsRowImageWH}}>
+                  <Video
+                    // ref={video}
+                    style={{backgroundColor: color.white2, borderWidth: 0, width: threePostsRowImageWH, height: threePostsRowImageWH}}
+                    source={{
+                      uri: item.data.files[0].url,
+                    }}
+                    useNativeControls={false}
+                    resizeMode="contain"
+                    shouldPlay={false}
+                  />
+                </View>
+                : item.data.files[0].type === 'image'
+                ?
+                <Image 
+                  defaultSource={require('../../img/defaultImage.jpeg')}
+                  source={{uri: item.data.files[0].url}}
+                  style={{width: threePostsRowImageWH, height: threePostsRowImageWH}}
+                />
+                : null
+              }
+              { item.data.files.length > 1
+                ? <MultiplePhotosIndicator size={16}/>
+                : null
+              }
             </View>
-            : item.data.files[0].type === 'image'
-            ?
-            <Image 
-              defaultSource={require('../../img/defaultImage.jpeg')}
-              source={{uri: item.data.files[0].url}}
-              style={{width: threePostsRowImageWH, height: threePostsRowImageWH}}
-            />
-            : null
-          }
-          { item.data.files.length > 1
-            ? <MultiplePhotosIndicator size={16}/>
-            : null
-          }
-          </TouchableOpacity>
+          </TouchableWithoutFeedback>
         </View>
       ))
     }
@@ -151,7 +161,7 @@ const styles = StyleSheet.create({
   },
   emptyPostText: {
     fontSize: RFValue(17),
-    color: color.gray3,
+    color: color.grey3,
   },
 });
 

@@ -19,6 +19,7 @@ import HeaderBottomLine from '../components/HeaderBottomLine';
 import { HeaderForm } from '../components/HeaderForm';
 import SnailBottomSheet from '../components/SnailBottomSheet';
 import ImageBrowser from '../components/ImagePicker/ImageBrowser';
+import CollapsibleTabView from '../components/CollapsibleTabView';
 
 // Design
 
@@ -32,6 +33,8 @@ import expoIcons from '../expoIcons';
 
 const SnailScreen = ({ navigation }) => {
   const [ showBottomSheet, setShowBottomSheet ] = useState(true);
+
+  const [ mode, setMode ] = useState(null);
 
   const pan = useRef(new Animated.ValueXY()).current;
 
@@ -59,52 +62,65 @@ const SnailScreen = ({ navigation }) => {
 
   const [ files, setFiles ] = useState([]);
   const maxNumOfFiles = 4;
+
   return (
     <View style={{ flex: 1 }}>
-{/*      <Animated.View 
-        style={{ 
-          flex: 1,
-          transform: [
-            { translateX: pan.x },
-            { translateY: pan.y }
-          ] 
-        }}
-        { ...panResponder.panHandlers }
-      >
-        <View style={styles.box}>
+      {
+        !mode && 
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <TouchableHighlight
+            style={{ borderWidth: 1, alignItems: 'center' }}
+            underlayColor={color.grey4}
+            onPress={() => {
+              setMode('cTabView');
+            }}
+          >
+            <View>
+              <Text>Show C Tab View</Text>
+            </View>
+          </TouchableHighlight>
         </View>
-      </Animated.View>*/}
+      }
+      {
+        mode === 'imageBrowser' &&
+        <ImageBrowser 
+          // maximum number of photos to choose
+          max={maxNumOfFiles}
+          // Whether to load extra fields like location. Loading all of the information will reduce performance. by default false
+          loadCompleteMetadata={false}
 
-      <ImageBrowser 
-        // maximum number of photos to choose
-        max={maxNumOfFiles}
-        // Whether to load extra fields like location. Loading all of the information will reduce performance. by default false
-        loadCompleteMetadata={false}
-
-        loadCount={50}
-        emptyStayComponent={null}
-        preloaderComponent={<ActivityIndicator size='large'/>}
-        mediaType={[MediaLibrary.MediaType.photo]}
-        onChange={(num, onSubmit)  => {
-          if (num === maxNumOfFiles) {
-            console.log("selected max number of files");
-          }
-          onSubmit();
-        }}
-        callback={(callback) => {
-          console.log(callback);
-        }}
-        noCameraPermissionComponent={null}
-        renderSelectedComponent={null}
-        renderExtraComponent={null}
-      />  
-
-{/*      {
-        showBottomSheet &&
+          loadCount={50}
+          emptyStayComponent={null}
+          preloaderComponent={<ActivityIndicator size='large'/>}
+          mediaType={[MediaLibrary.MediaType.photo]}
+          onChange={(num, onSubmit)  => {
+            if (num === maxNumOfFiles) {
+              console.log("selected max number of files");
+            }
+            onSubmit();
+          }}
+          callback={(callback) => {
+            console.log(callback);
+          }}
+          noCameraPermissionComponent={null}
+          renderSelectedComponent={null}
+          renderExtraComponent={null}
+        /> 
+      }
+       
+      {
+        mode === ' bottomSheet' && showBottomSheet
+        ?
         <SnailBottomSheet
           setShowBottomSheet={setShowBottomSheet}
         />
-      }*/}
+        : null
+      }
+
+      {
+        mode === 'cTabView' &&
+        <CollapsibleTabView/>
+      }
     </View>
   )
 };

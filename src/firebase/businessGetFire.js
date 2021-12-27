@@ -14,7 +14,7 @@ const getTechnicians = (
 	techLast,
 ) => {
 	return new Promise (async (res, rej) => {
-		const LIMIT = 13
+		const LIMIT = 12
 
 		let techniciansRef;
 		if (techLast) {
@@ -45,11 +45,9 @@ const getTechnicians = (
 		    	const docData = doc.data();
 
 		    	const tech = {
-		    		techBusData: {
-		    			techId: docData.techId,
-		    			countRating: docData.countRating,
-		    			totalRating: docData.totalRating
-		    		}
+	    			techId: docData.techId,
+	    			countRating: docData.countRating,
+	    			totalRating: docData.totalRating
 		    	}
 
 					return tech;

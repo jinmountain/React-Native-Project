@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { 
-	View, 
+	View,
+	SafeAreaView,
 	StyleSheet,
 	RefreshControl,
 	Image, 
@@ -12,44 +13,42 @@ import {
 	ScrollView, } from 'react-native';
 
 // NPMs
-import { SafeAreaView, } from 'react-native-safe-area-context';
+// import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { Video, AVPlaybackStatus } from 'expo-av';
 
 // Components
-import Spacer from '../../components/Spacer';
-import { NavigationBar } from '../../components/NavigationBar';
-import ThreePostsRow from '../../components/ThreePostsRow';
-import ButtonA from '../../components/ButtonA';
-import ProfileCardUpper from '../../components/profilePage/ProfileCardUpper';
-import ProfileCardBottom from '../../components/profilePage/ProfileCardBottom';
-import MainTemplate from '../../components/MainTemplate';
-import MultiplePhotosIndicator from '../../components/MultiplePhotosIndicator';
-import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
-import UserAccountHeaderForm from '../../components/profilePage/UserAccountHeaderForm';
-import TwoButtonAlert from '../../components/TwoButtonAlert';
+import Spacer from '../components/Spacer';
+import { NavigationBar } from '../components/NavigationBar';
+import ThreePostsRow from '../components/ThreePostsRow';
+import ButtonA from '../components/ButtonA';
+import ProfileCardUpper from '../components/profilePage/ProfileCardUpper';
+import ProfileCardBottom from '../components/profilePage/ProfileCardBottom';
+import MainTemplate from '../components/MainTemplate';
+import MultiplePhotosIndicator from '../components/MultiplePhotosIndicator';
+import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
+import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderForm';
+import TwoButtonAlert from '../components/TwoButtonAlert';
 // Display Post
-import DisplayPostImage from '../../components/displayPost/DisplayPostImage';
-import DisplayPostInfo from '../../components/displayPost/DisplayPostInfo';
-import DisplayPostLoading from '../../components/displayPost/DisplayPostLoading';
+import DisplayPostImage from '../components/displayPost/DisplayPostImage';
+import DisplayPostInfo from '../components/displayPost/DisplayPostInfo';
+import DisplayPostLoading from '../components/displayPost/DisplayPostLoading';
 // Loading Containers
-import GetPostLoading from '../../components/GetPostLoading';
+import GetPostLoading from '../components/GetPostLoading';
 // horizontal line
-import HeaderBottomLine from '../../components/HeaderBottomLine';
+import HeaderBottomLine from '../components/HeaderBottomLine';
 
 // Last Page Sign
-import PostEndSign from '../../components/PostEndSign';
-import DisplayPostEndSign from '../../components/DisplayPostEndSign';
+import PostEndSign from '../components/PostEndSign';
+import DisplayPostEndSign from '../components/DisplayPostEndSign';
 
 // Context
-import { Context as SocialContext } from '../../context/SocialContext';
-import { Context as AuthContext } from '../../context/AuthContext';
-import { Context as PostContext } from '../../context/PostContext';
+import { Context as AuthContext } from '../context/AuthContext';
 
 // Firebase
-import busTechPostFire from '../../firebase/busTechPostFire';
-import busTechGetFire from '../../firebase/busTechGetFire';
-import contentGetFire from '../../firebase/contentGetFire';
-import usersGetFire from '../../firebase/usersGetFire';
+import busTechPostFire from '../firebase/busTechPostFire';
+import contentGetFire from '../firebase/contentGetFire';
+import usersGetFire from '../firebase/usersGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -57,16 +56,16 @@ import { Feather } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 
 // Color
-import color from '../../color';
+import color from '../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import expoIcons from '../expoIcons';
 
 // Hooks
-import count from '../../hooks/count';
-import { wait } from '../../hooks/wait';
-import { isCloseToBottom } from '../../hooks/isCloseToBottom';
-import { useOrientation } from '../../hooks/useOrientation';
+import count from '../hooks/count';
+import { wait } from '../hooks/wait';
+import { isCloseToBottom } from '../hooks/isCloseToBottom';
+import { useOrientation } from '../hooks/useOrientation';
 
 const UserAccountScreen = ({ route, navigation }) => {
 	const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
