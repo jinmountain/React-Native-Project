@@ -1,5 +1,4 @@
-import Firebase from '../firebase/config'
-import { navigate } from '../navigationRef';
+import Firebase from '../../firebase/config'
 import firebase from 'firebase/app';
 
 const deletePostFire = (postId, postData) => {

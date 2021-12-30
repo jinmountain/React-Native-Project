@@ -577,7 +577,7 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 	});
 };
 
-const postBusSpecialDate = (busId, timezoneOffset, dateInMs, dateStatus) => {
+const postBusSpecialDate = (busId, timezoneOffset, dateInMs, yearMonthDate, dateStatus) => {
 	return new Promise (async (res, rej) => {
 		const newDocId = await usersRef.doc(busId).collection("special_hours").doc().id;
 
@@ -585,6 +585,7 @@ const postBusSpecialDate = (busId, timezoneOffset, dateInMs, dateStatus) => {
 			id: newDocId,
 			timezoneOffset: timezoneOffset,
 			date_in_ms: dateInMs,
+			date: yearMonthDate,
 			status: dateStatus,
 			hours: []
 		}
@@ -605,7 +606,7 @@ const postBusSpecialDate = (busId, timezoneOffset, dateInMs, dateStatus) => {
 	});
 }
 
-const postTechSpecialDate = (busId, techId, timezoneOffset, dateInMs, dateStatus) => {
+const postTechSpecialDate = (busId, techId, timezoneOffset, dateInMs, yearMonthDate, dateStatus) => {
 	return new Promise (async (res, rej) => {
 		const newDocId = await usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc().id;
 
@@ -613,6 +614,7 @@ const postTechSpecialDate = (busId, techId, timezoneOffset, dateInMs, dateStatus
 			id: newDocId,
 			timezoneOffset: timezoneOffset,
 			date_in_ms: dateInMs,
+			date: yearMonthDate,
 			status: dateStatus,
 			hours: []
 		}
@@ -633,9 +635,8 @@ const postTechSpecialDate = (busId, techId, timezoneOffset, dateInMs, dateStatus
 	});
 };
 
-const postBusSpecialHours = (busId, docId, newHours, currentHours) => {
+const postBusSpecialHours = (busId, docId, mergedHours) => {
 	return new Promise (async (res, rej) => {
-		const mergedHours = [...currentHours, newHours];
 		const busSpecialHoursRef = usersRef.doc(busId).collection("special_hours").doc(docId);
 		busSpecialHoursRef
 		.set(
@@ -653,9 +654,8 @@ const postBusSpecialHours = (busId, docId, newHours, currentHours) => {
 	});
 };
 
-const postTechSpecialHours = (busId, techId, docId, newHours, currentHours) => {
+const postTechSpecialHours = (busId, techId, docId, mergedHours) => {
 	return new Promise (async (res, rej) => {
-		const mergedHours = [...currentHours, newHours];
 		const busSpecialHoursRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc(docId);
 		busSpecialHoursRef
 		.set(

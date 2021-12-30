@@ -47,7 +47,7 @@ import { Context as AuthContext } from '../context/AuthContext';
 
 // Firebase
 import busTechPostFire from '../firebase/busTechPostFire';
-import contentGetFire from '../firebase/contentGetFire';
+import postGetFire from '../firebase/post/postGetFire';
 import usersGetFire from '../firebase/usersGetFire';
 
 // Designs

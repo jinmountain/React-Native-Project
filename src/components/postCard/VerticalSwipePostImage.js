@@ -103,7 +103,7 @@ const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displa
               onPress={() => navigation.navigate(
                 "ImageZoomin", 
                 {
-                  file: files[currentFileIndex]
+                  file: files[index]
                 }
               )}
             >

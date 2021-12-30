@@ -1,5 +1,7 @@
 const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// days 0, 1, 2, ... 5, 6
+// months 0, 1, 2, ... 11, 12
 
 const convertToDateInMs = (timestamp) => {
 	// timestampe: number
@@ -198,6 +200,53 @@ const convertToMonthInMs = (timestamp) => {
 	return monthTimestamp;
 };
 
+// get time info from month, year, and date
+const getTimeYearMonthDate = (yearInput, monthIndexInput, dateInput) => {
+	// timestampe: number
+	// return object
+	var getTime = new Date(yearInput, monthIndexInput, dateInput);
+	var timestamp = getTime.getTime();
+	var year = getTime.getFullYear();
+	var monthIndex = getTime.getMonth();
+	var month = months[getTime.getMonth()];
+	var date = getTime.getDate();
+	var dayIndex = getTime.getDay();
+	var day = days[getTime.getDay()];
+	var hour = getTime.getHours();
+  var min = getTime.getMinutes();
+
+  var pmOrAm;
+  var normalHour;
+	if (hour > 12) {
+  	pmOrAm = 'PM';
+  	normalHour = hour - 12;
+  } else {
+  	pmOrAm = 'AM';
+  	normalHour = hour;
+  }
+
+	return {
+		timestamp: timestamp,
+		year: year,
+		monthIndex: monthIndex,
+		month: month,
+		date: date,
+		dayIndex: dayIndex,
+		day: day,
+		hour: hour,
+		normalHour: normalHour,
+		pmOrAm: pmOrAm,
+		min: min,
+		normalMin: min < 10 ? `0${min}` : min
+	};
+};
+
+// get day month date year from putting year month date
+const getDayMonthDateYearFromDate = (year, monthIndex, date) => {
+	var month = months[monthIndex];
+	return month + " " + date + ", " + year
+};
+
 const moveMonthInMs = (timestamp, steps) => {
 	// timestamp: number
 	// return number
@@ -259,6 +308,7 @@ const getMonthMovesBtwDateNowAndThis = (dateNow, ThisDate) => {
 	return totalMonths;
 }
 
+// get number of days of the month and year
 var getDaysInMonth = (month, year) => {
   // Day 0 is the last day in the previous month
  	return new Date(year, month+1, 0).getDate();
@@ -278,6 +328,8 @@ export default {
 	convertEtcToHourMin, 
 	convertToWeekInMs, 
 	convertToMonthInMs,
+	getTimeYearMonthDate,
+	getDayMonthDateYearFromDate,
 	moveMonthInMs, 
 	convertToYearInMs, 
 	convertToMonthly,

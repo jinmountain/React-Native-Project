@@ -7,10 +7,17 @@ import {
 	TouchableOpacity,
 	Dimensions,
 	Linking, 
-	ScrollView, 
+	ScrollView,
+	Animated,
 } from 'react-native';
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+
+// components
+import AnimHighlight from '../buttons/AnimHighlight';
+
+// hooks
+import useConvertTime from '../../hooks/useConvertTime';
 
 // Designs
 import { Feather } from '@expo/vector-icons';
@@ -19,7 +26,70 @@ import { AntDesign } from '@expo/vector-icons';
 // Color
 import color from '../../color';
 
-const ProfileCardBottom = ({ locationType, address, googleMapUrl, sign, websiteAddress, }) => {
+const ProfileCardBottom = ({ locationType, address, googleMapUrl, sign, websiteAddress, businessHours }) => {
+	const renderBusHourItem = ({ item, index }) => {
+		return (
+			<View style={{ height: RFValue(30), flexDirection: 'row' }}>
+				<View style={{ backgroundColor: color.white2 }}>
+					<Text>{useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}</Text>
+				</View>
+				<Text> to </Text>
+				<Text>{useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}</Text>
+			</View>
+		)
+	};
+
+	const DayHours = ({ dayText, hours, status }) => {
+		return (
+			<View style={{ flexDirection: 'row' }}>
+				<View>
+					<Text>
+						{dayText}
+					</Text>
+				</View>
+				<View>
+					{
+						hours.length > 0 && status
+						?
+						<FlatList
+							data={hours}
+							renderItem={renderBusHourItem}
+							keyExtractor={(item, index) => index.toString()}
+						/>
+						:
+						<Text>ClOSED</Text>
+					}
+				</View>
+			</View>
+		)
+	};
+
+	const RenderBusHours = () => {
+		return (
+			<View style={{ backgroundColor: color.red3 }}>
+				<AnimHighlight
+					content={
+						<View style={{ backgroundColor color.red3 }}>
+							<Text style={{ color: color.white2 }}>Show Business Hours</Text>
+						</View>
+					}
+				/>
+				<View>
+					<DayHours
+						dayText={"Mon."}
+						hours={mon_hours}
+						status={mon_open}
+					/>
+					<DayHours
+						dayText={"Mon."}
+						hours={mon_hours}
+						status={mon_open}
+					/>
+				</View>
+			</View>
+		)
+	} 
+
 	return (
 		<View style={styles.profileCardBottomContainer}>
 			{
@@ -31,21 +101,15 @@ const ProfileCardBottom = ({ locationType, address, googleMapUrl, sign, websiteA
 						Linking.openURL(googleMapUrl);
 					}}
 				>
-					<View style={styles.locationIcon}>
-						<Feather name="map-pin" size={RFValue(17)} color={color.black1} />
-					</View>
 					<View style={styles.textContainer}>
-						<Text style={styles.locationText}>{address}</Text>
+						<Text style={styles.locationText}><Feather name="map-pin" size={RFValue(13)} color={color.black1} /> {address}</Text>
 					</View>
 				</TouchableOpacity>
 				: locationType === "mobile"
 				?
 				<View style={styles.locationContainer}>
-					<View style={styles.locationIcon}>
-						<AntDesign name="rocket1" size={RFValue(15)} color={color.black1} />
-					</View>
 					<View style={styles.textContainer}>
-						<Text style={styles.locationText}>Mobile Business</Text>
+						<Text style={styles.locationText}><AntDesign name="rocket1" size={RFValue(13)} color={color.black1} /> Mobile Business</Text>
 					</View>
 				</View>
 				: null
@@ -75,6 +139,10 @@ const ProfileCardBottom = ({ locationType, address, googleMapUrl, sign, websiteA
 				</View>
 				: null
 			}
+			{
+				businessHours &&
+
+			}
 		</View>
 	)
 };
@@ -82,11 +150,12 @@ const ProfileCardBottom = ({ locationType, address, googleMapUrl, sign, websiteA
 const styles = StyleSheet.create({
   profileCardBottomContainer: {
   	backgroundColor: '#fff',
-  	paddingVertical: RFValue(3),
+  	paddingVertical: RFValue(5),
   	paddingHorizontal: RFValue(20),
   },
   locationContainer: {
-  	flexDirection: 'row',
+  	justifyContent: 'center',
+  	paddingVertical: RFValue(3),
   },
   locationIcon: {
   	paddingRight: RFValue(3),

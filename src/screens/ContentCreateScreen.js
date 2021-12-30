@@ -56,7 +56,7 @@ import { EvilIcons } from '@expo/vector-icons';
 
 // Firebase
 import usersGetFire from '../firebase/usersGetFire';
-import contentPostFire from '../firebase/contentPostFire';
+import postPostFire from '../firebase/post/postPostFire';
 import authFire from '../firebase/authFire';
 
 // Color
@@ -204,7 +204,7 @@ const AddPost = (
         const fileURLs = []
         let fileIndex = 0;
         for (fileIndex; fileIndex < files.length; fileIndex++) {
-          const URL = await contentPostFire.uploadFileAsyncFire(
+          const URL = await postPostFire.uploadFileAsyncFire(
             userId, 
             files[fileIndex].id,
             files[fileIndex].type,
@@ -261,17 +261,20 @@ const AddPost = (
           newPost = { 
             ...newPost, 
             ...{ 
-              tid: chosenUser.id,
+              ratedbusId: chosenUser.id,
               ratedPostId: chosenDisplayPost.id,
               ratedTechId: chosenTech.techData.id,
-              rating: rating
+              rating: rating,
+              isRated: true
             }
           }
+        } else {
+          newPost ={ ...newPost, ...{ isRated: false }}
         }
         
         // Firestore | posts | post.id | newPost
         // await until the post is made.
-        const addPost = contentPostFire.addPostFire(newPost);
+        const addPost = postPostFire.addPostFire(newPost);
         addPost
         .then((post) => {
           if (post) {
@@ -335,9 +338,10 @@ const ContentCreateScreen = ({ route, navigation }) => {
     setSelectedTechs([]);
     setIsModalVisible(false);
   }
-  const [ chosenTech, setChosenTech ] = useState(null);
+  
   const [ rating, setRating ] = useState(null);
   const [ chosenUser, setChosenUser ] = useState(null);
+  const [ chosenTech, setChosenTech ] = useState(null);
   const [ chosenDisplayPost, setChosenDisplayPost ] = useState(null);
   const [ searchUserUsername, setSearchUserUsername ] = useState(null);
   const [ usersFound, setUsersFound ] = useState(null);

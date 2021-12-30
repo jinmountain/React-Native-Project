@@ -13,10 +13,10 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height
+// color
+import color from '../../color';
 
-const ProfileCardUpper = ({photoURL, postCount, followerCount, followingCount}) => {
+const ProfileCardUpper = ({photoURL, postCount, displayPostCount, followerCount, followingCount}) => {
 	return (
 		<View style={styles.profileCardContainer}>
 			<View style={styles.profilePictureContainer}>
@@ -28,9 +28,22 @@ const ProfileCardUpper = ({photoURL, postCount, followerCount, followingCount}) 
 				</TouchableOpacity>
 			</View>
 			<View style={styles.profileInfoContainer}>
-				<View style={styles.numOfPostContainer}>
-					<Text numberOfLines={1}>Posts</Text>
-					<Text style={styles.value}>
+				{
+					displayPostCount &&
+					<View style={styles.infoItemContainer}>
+						<Text style={styles.labelText} numberOfLines={1}>Piece</Text>
+						<Text style={styles.infoText}>
+							{ 
+								displayPostCount
+								? displayPostCount
+								: 0
+							}
+						</Text>
+					</View>
+				}
+				<View style={styles.infoItemContainer}>
+					<Text style={styles.labelText} numberOfLines={1}>Post</Text>
+					<Text style={styles.infoText}>
 						{ 
 							postCount
 							? postCount
@@ -38,13 +51,13 @@ const ProfileCardUpper = ({photoURL, postCount, followerCount, followingCount}) 
 						}
 					</Text>
 				</View>
-				<View style={styles.numOfPostContainer}>
-					<Text numberOfLines={1}>Followers</Text>
-					<Text style={styles.value}>36</Text>
+				<View style={styles.infoItemContainer}>
+					<Text style={styles.labelText} numberOfLines={1}>Follower</Text>
+					<Text style={styles.infoText}>36</Text>
 				</View>
-				<View style={styles.numOfPostContainer}>
-					<Text numberOfLines={1}>Following</Text>
-					<Text style={styles.value}>36</Text>
+				<View style={styles.infoItemContainer}>
+					<Text style={styles.labelText} numberOfLines={1}>Following</Text>
+					<Text style={styles.infoText}>36</Text>
 				</View>
 			</View>
 		</View>
@@ -53,10 +66,11 @@ const ProfileCardUpper = ({photoURL, postCount, followerCount, followingCount}) 
 
 const styles = StyleSheet.create({
   profileCardContainer: {
-  	height: windowHeight*0.15,
   	flexDirection: 'row',
-  	paddingHorizontal: RFValue(10),
-  	backgroundColor: '#fff',
+  	justifyContent: 'center',
+  	alignItems: 'center',
+  	backgroundColor: color.white2,
+  	paddingVertical: RFValue(5),
   },
   profilePictureContainer: {
   	flex: 1,
@@ -72,7 +86,7 @@ const styles = StyleSheet.create({
   	borderColor: '#5A646A',
   	borderRadius: RFValue(100),
   },
-  numOfPostContainer: {
+  infoItemContainer: {
   	flex: 1,
   	flexDirection: 'column',
   	alignItems: 'center',
@@ -83,7 +97,12 @@ const styles = StyleSheet.create({
   	flex: 3,
   	justifyContent: 'space-around',
   },
-  value: {
+  labelText: {
+  	color: color.grey3,
+  	fontWeight: 'bold',
+  	fontSize: RFValue(11)
+  },
+  infoText: {
   	fontWeight: 'bold',
   	fontSize: RFValue(19),
   },

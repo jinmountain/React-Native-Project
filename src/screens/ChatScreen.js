@@ -43,7 +43,7 @@ import { Context as PostContext } from '../context/PostContext';
 // Firebase
 import chatGetFire from '../firebase/chat/chatGetFire';
 import chatPostFire from '../firebase/chat/chatPostFire';
-import contentGetFire from '../firebase/contentGetFire';
+import postGetFire from '../firebase/post/postGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';

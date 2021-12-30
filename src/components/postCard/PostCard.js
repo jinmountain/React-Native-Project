@@ -138,6 +138,7 @@ const PostCard = ({
         expandInfoBox={expandInfoBox}
         setExpandInfoBox={setExpandInfoBox}
         cardIndex={cardIndex}
+        postFiles={post.data.files}
         // setShowCommentPostIndex={setShowCommentPostIndex}
       />
     </View>

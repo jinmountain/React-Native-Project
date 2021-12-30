@@ -36,12 +36,13 @@ const forSlide = ({ current, next, inverted, layouts: { screen } }) => {
       extrapolate: 'clamp',
     }),
     next
-      ? next.progress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1],
-          extrapolate: 'clamp',
-        })
-      : 0
+    ? 
+    next.progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    })
+    : 0
   );
 
   return {
@@ -71,7 +72,6 @@ const AccountStack = () => {
     <Stack.Navigator
       screenOptions={{ 
         headerShown: false,
-        animationEnabled: false 
       }}
     >
       <Stack.Screen 
@@ -104,14 +104,12 @@ const AccountStack = () => {
           businessUserId: null,
         }}
         options={{ 
+          headerShown: false,
           cardStyle: {
             backgroundColor: 'transparent',
           },
           animationEnabled: true,
-          presentation: 'transparentModal',
-          gestureEnabled: true,
-          gestureDirection: "horizontal",
-          cardStyleInterpolator: forSlide
+          presentation: 'transparentModal'
         }}
       />
       <Stack.Screen 

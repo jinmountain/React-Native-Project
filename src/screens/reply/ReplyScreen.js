@@ -146,6 +146,7 @@ const ReplyScreen = ({ navigation, route }) => {
         <Pressable 
           style={[
             StyleSheet.absoluteFill,
+            { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
           ]}
           onPress={() => { navigation.goBack() }}
         >

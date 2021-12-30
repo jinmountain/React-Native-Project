@@ -111,7 +111,9 @@ const NavigationBar = () => {
 		  <TouchableOpacity 
 		  	style={styles.navBarElement} 
 		  	onPress={() => {
-		  		navigation.navigate("Account");
+		  		navigation.navigate("AccountTab", {
+		  			screen: "Account"
+		  		});
 		  		tabAccount();
 		  	}}
 		  >

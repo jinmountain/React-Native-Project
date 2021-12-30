@@ -20,7 +20,7 @@ import { Context as AuthContext } from '../../context/AuthContext';
 import { Context as SocialContext } from '../../context/SocialContext';
 
 // Hooks
-import contentGetFire from '../../firebase/contentGetFire';
+import postGetFire from '../../firebase/post/postGetFire';
 
 // Designs
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -74,7 +74,7 @@ const HomeScreen = ({ navigation }) => {
 		let isMounted = true;
 		if( hotPostFetchSwitch && !hotPostState) {
 			isMounted && setHotPostState(true);
-			const getHotPosts = contentGetFire.getHotPostsFire(null, user.id);
+			const getHotPosts = postGetFire.getHotPostsFire(null, user.id);
 			getHotPosts
 			.then((posts) => {
 				isMounted && setHotPosts(posts.fetchedPosts);

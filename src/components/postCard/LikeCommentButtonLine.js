@@ -44,6 +44,7 @@ const LikeCommentButtonLine = ({
   expandInfoBox,
   setExpandInfoBox,
   cardIndex,
+  postFiles,
   // setShowCommentPostIndex
 }) => {
   const [ commentCountState, setCommentCountState ] = useState(commentCount);
@@ -128,7 +129,8 @@ const LikeCommentButtonLine = ({
               navigation.navigate('Comment', {
                 postId: postId,
                 commentCount: commentCountState,
-                setCommentCountState: setCommentCountState
+                setCommentCountState: setCommentCountState,
+                postFiles: postFiles
               });
             }}
           >

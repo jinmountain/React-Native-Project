@@ -1,6 +1,5 @@
-import Firebase from '../firebase/config';
+import Firebase from '../../firebase/config';
 import firebase from 'firebase/app';
-import { navigate } from '../navigationRef';
 
 const uid = () => {
   return (Firebase.auth().currentUser || {}).uid

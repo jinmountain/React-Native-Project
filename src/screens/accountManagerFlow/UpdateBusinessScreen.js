@@ -4,7 +4,8 @@ import {
 	StyleSheet, 
 	View,
 	Switch,
-	TouchableOpacity, 
+	TouchableOpacity,
+	SafeAreaView,
 	TextInput,
 	FlatList,
 	ScrollView } from 'react-native';
@@ -37,21 +38,23 @@ const UpdateBusinessScreen = ({ navigation }) => {
   const toggleSwitch = () => setbusinessOpen(previousState => !previousState);
 	return (
 		<View style={styles.updateBusinessScreenContainer}>
-			<HeaderForm 
-				addPaddingTop={true}
-        leftButtonTitle={null}
-        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
-        headerTitle={"Update Business"} 
-        rightButtonTitle={null} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          {
-            null
-          }
-        }}
-      />
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView/>
+				<HeaderForm 
+	        leftButtonTitle={null}
+	        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+	        headerTitle={"Update Business"} 
+	        rightButtonTitle={null} 
+	        leftButtonPress={() => {
+	          navigation.goBack();
+	        }}
+	        rightButtonPress={() => {
+	          {
+	            null
+	          }
+	        }}
+	      />
+			</View>
 			<View style={styles.businessManagerContainer}>
 				{/*<View style={styles.businessOpenStatusContainer}>
 					<View style={styles.statusTextContainer}>
@@ -123,6 +126,20 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#FFF"
 	},
+	headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 	businessManagerContainer: {
 	},
 	businessOpenStatusContainer: {

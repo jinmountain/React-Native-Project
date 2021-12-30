@@ -7,6 +7,7 @@ import {
   TouchableHighlight,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
+  SafeAreaView,
   Keyboard,
   Dimensions,
   Pressable,
@@ -17,6 +18,7 @@ import {
   Button,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { Video, AVPlaybackStatus } from 'expo-av';
 
 // npms
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
@@ -40,6 +42,7 @@ import { Context as AuthContext } from '../../context/AuthContext';
 // Hooks
 import count from '../../hooks/count';
 import useIsKeyboardVisible from '../../hooks/useIsKeyboardVisible';
+import { useOrientation } from '../../hooks/useOrientation';
 
 // color
 import color from '../../color';
@@ -50,13 +53,20 @@ import sizes from '../../sizes';
 // icon
 import expoIcons from '../../expoIcons';
 
-const { width, height } = Dimensions.get("window");
-
 const CommentScreen = ({ navigation, route }) => {
-  const bottomSheetRef = useRef(null);
-  const [ bottomSheetHeight, setBottomSheetHeight ] = useState(height - RFValue(95));
-  const [ windowWidth, setWindowWidth ] = useState(width);
-  const [ windowHeight, setWindowHeight ] = useState(width);
+  /**
+  * orientation responsive width and height
+  */
+  const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
+  const [ windowHeight, setWindowHeight ] = useState(Dimensions.get("window").height);
+  const [ imageWidth, setImageWidth ] = useState(Dimensions.get("window").width / 3);
+
+  const orientation = useOrientation();
+
+  useEffect(() => {
+    setWindowWidth(Dimensions.get("window").width);
+    setWindowHeight(Dimensions.get("window").height);
+  }, [orientation]);
 
   const [ newComment, setNewComment ] = useState(null);
   const [ postCommentState, setPostCommentState ] = useState(false);
@@ -68,7 +78,7 @@ const CommentScreen = ({ navigation, route }) => {
 
   const [ isKeyboardVisible ] = useIsKeyboardVisible();
 
-  const { postId, commentCount, setCommentCountState } = route.params;
+  const { postId, postFiles, commentCount, setCommentCountState } = route.params;
 
   const incrementCommentCount = () => {
     setCommentCountState(commentCount + 1);
@@ -119,12 +129,13 @@ const CommentScreen = ({ navigation, route }) => {
     };
   }, []);
 
+  // bottom sheet parts
+  const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => 
     // [height-RFValue(95)-width-RFValue(55), height-RFValue(95)-RFValue(55)],
     ['75%'],
     []
   );
-
   const handleSheetChanges = useCallback((index) => {
     if (index === -1) {
       navigation.goBack();
@@ -143,10 +154,78 @@ const CommentScreen = ({ navigation, route }) => {
         <Pressable 
           style={[
             StyleSheet.absoluteFill,
-            // { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+            { backgroundColor: 'rgba(0, 0, 0, 0.5)', },
           ]}
           onPress={() => { navigation.goBack() }}
         >
+          <SafeAreaView />
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <FlatList
+              horizontal
+              pagingEnabled={true}
+              snapToInterval={windowWidth}
+              showsHorizontalScrollIndicator={false}
+              data={postFiles}
+              keyExtractor={(file, index) => index.toString()}
+              getItemLayout = {(data, index) => (
+                {
+                  length: imageWidth,
+                  offset: imageWidth * index,
+                  index
+                }
+              )}
+              renderItem={({ item, index }) => {
+                return (
+                  <TouchableWithoutFeedback 
+                    onPress={() => navigation.navigate(
+                      "ImageZoomin", 
+                      {
+                        file: postFiles[index]
+                      }
+                    )}
+                  >
+                    <View 
+                      style={{width: imageWidth, height: imageWidth}}
+                    >
+                      { 
+                        item.type === 'video'
+                        ?
+                        <View style={styles.cardVideoContainer}>
+                          <Video
+                            ref={video}
+                            style={{ width: imageWidth, height: imageWidth }}
+                            source={{
+                              uri: item.url,
+                            }}
+                            useNativeControls={true}
+                            resizeMode="contain"
+                            // paused={!onFocus}
+                            // onLoad={() => {
+                            //   onFocus && currentFileIndex === index 
+                            //   ? video.current.playAsync()
+                            //   : video.current.pauseAsync()
+                            // }}
+                            // isLooping={true}
+                            shouldPlay={onFocus && focusedCardIndex === index }
+                            onPlaybackStatusUpdate={status => setStatus(() => status)}
+                          />
+                        </View>
+                        : item.type === 'image'
+                        ?
+                        <Image 
+                          source={{uri: item.url}}
+                          style={{ width: imageWidth, height: imageWidth }}
+                          resizeMethod="auto"
+                          resizeMode="contain"
+                        />
+                        : null
+                      }
+                    </View>
+                  </TouchableWithoutFeedback>
+                )
+              }}
+            />
+          </View>
         </Pressable>
         <BottomSheet
           ref={bottomSheetRef}

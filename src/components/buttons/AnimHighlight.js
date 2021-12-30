@@ -13,7 +13,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 import color from '../../color';
 
-const AliveHighlight = ({ content, customStyles, onPressOutAction }) => {
+const AnimHighlight = ({ content, customStyles, onPressOutAction }) => {
 
   const backgroundColorAnim = useRef(new Animated.Value(0)).current;
 
@@ -81,4 +81,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default AliveHighlight;
+export default AnimHighlight;

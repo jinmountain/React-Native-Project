@@ -14,7 +14,6 @@ const SetSpecialHoursStack = () => {
     <Stack.Navigator
       screenOptions={{ 
         headerShown: false,
-        animationEnabled: false 
       }}
     >
       <Stack.Screen 

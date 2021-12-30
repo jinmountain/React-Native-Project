@@ -14,6 +14,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import MainTemplate from '../components/MainTemplate';
 import HeaderBottomLine from '../components/HeaderBottomLine';
 import { HeaderForm } from '../components/HeaderForm';
+import HeaderScrollExpandAnim from '../components/HeaderScrollExpandAnim';
 
 // Design
 
@@ -25,34 +26,44 @@ import color from '../color';
 // icon
 import expoIcons from '../expoIcons';
 
-const InnerScroll = () => {
-  return (
-    <View style={{ flex: 1, width: 300, height: 100 }}>
-      <ScrollView
-        horizontal
-      >
-        <View style={{ width: 300, height: 100, backgroundColor: 'red' }}/>
-        <View style={{ width: 300, height: 100, backgroundColor: 'green' }}/>
-        <View style={{ width: 300, height: 100, backgroundColor: 'red' }}/>
-        <View style={{ width: 300, height: 100, backgroundColor: 'green' }}/>
-      </ScrollView>
-    </View>
-  )
-}
 
 const UserLikeScreen = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
-        horizontal
+        style={{ flex: 1, backgroundColor: 'white', zIndex: 7 }}
+        contentContainerStyle={{
+          paddingBottom: RFValue(77),
+        }}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: offset } } }],
+          { useNativeDriver: false }
+        )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        stickyHeaderIndices={[0]}
       >
-        <InnerScroll/>
-        <View style={{ width: 300, height: 100, backgroundColor: 'blue' }}/>
-        <View style={{ width: 300, height: 100, backgroundColor: 'blue' }}/>
-        <View style={{ width: 300, height: 100, backgroundColor: 'blue' }}/>
-
+        <HeaderScrollExpandAnim 
+          animValue={offset}
+          headerTitle={"Reservations"}
+          maxHeaderHeight={RFValue(190)}
+          minHeaderHeight={RFValue(50)}
+          maxHeaderTitleSize={RFValue(45)}
+          minHeaderTitleSize={RFValue(17)}
+          backgroundColor={color.white2}
+        />
       </ScrollView>
+      {
+        showAlertBoxTop &&
+        <AlertBoxTop 
+          setAlert={setShowAlertBoxTop}
+          alertText={alertBoxTopText}
+        />
+      }
     </View>
   )
 };

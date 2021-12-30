@@ -187,7 +187,8 @@ const CommentBar = ({
                   commentUser: commentUser,
                   currentUserId: currentUserId,
                   textInputAutoFocus: false,
-                  setReplyCountState: setReplyCountState
+                  incrementReplyCount: incrementReplyCount,
+                  decrementReplyCount: decrementReplyCount
                 });
               }}
             >

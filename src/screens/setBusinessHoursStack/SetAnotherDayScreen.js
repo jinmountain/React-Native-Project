@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View,
-  ScrollView, 
+  ScrollView,
+  SafeAreaView,
   Text, 
   TouchableOpacity,
   TouchableHighlight,
@@ -44,7 +45,6 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
     busId,
   } = route.params;
 
-  console.log(userType);
   // calendar 
   const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
   const [ calendarMove, setCalendarMove ] = useState(0);
@@ -84,64 +84,89 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.mainContainer}>
-      <HeaderForm 
-        addPaddingTop={userType === 'tech' ? false : true}
-        leftButtonTitle={null}
-        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
-        headerTitle={"Speical Date"} 
-        rightButtonIcon={"Save"} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          if (specialDate) {
-            if (userType === 'bus') {
-              // save on firestore and get doc id
-              setShowLoadingAlert(true);
-              const postBusSpecialDate = businessPostFire.postBusSpecialDate(busId, timezoneOffset, specialDate, specialDateStatus);
-              postBusSpecialDate
-              .then((posted) => {
-                setShowLoadingAlert(false);
-                // and then navigate back
-                navigation.navigate("SetSpecialHours", {
-                  newSpecialDateId: posted.id,
-                  newSpecialDate: posted.date_in_ms,
-                  newSpecialDateStatus: posted.status,
-                  userType: userType,
-                  busId: busId
-                });
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-            }
+      <View style={styles.headerBarContainer}>
+        <SafeAreaView/>
+        <HeaderForm 
+          leftButtonTitle={null}
+          leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+          headerTitle={"Speical Date"} 
+          rightButtonIcon={"Save"} 
+          leftButtonPress={() => {
+            navigation.goBack();
+          }}
+          rightButtonPress={() => {
+            if (specialDate) {
+              const specialDateTime = useConvertTime.convertToTime(specialDate);
+              const specialDateYearMonthDate = {
+                year: specialDateTime.year,
+                monthIndex: specialDateTime.monthIndex,
+                date: specialDateTime.date
+              };
+              if (userType === 'bus') {
+                // save on firestore and get doc id
+                setShowLoadingAlert(true);
 
-            if (userType === 'tech') {
-              setShowLoadingAlert(true);
-              const postTechSpecialDate = businessPostFire.postTechSpecialDate(busId, techId, timezoneOffset, specialDate, specialDateStatus);
-              postTechSpecialDate
-              .then((posted) => {
-                setShowLoadingAlert(false);
-                // and then navigate back
-                navigation.navigate("SetSpecialHours", {
-                  newSpecialDateId: posted.id,
-                  newSpecialDate: posted.date_in_ms,
-                  newSpecialDateStatus: posted.status,
-                  userType: userType,
-                  busId: busId,
-                  techId: techId
+                const postBusSpecialDate = businessPostFire.postBusSpecialDate(
+                  busId, 
+                  timezoneOffset,
+                  specialDate,
+                  specialDateYearMonthDate, 
+                  specialDateStatus
+                );
+
+                postBusSpecialDate
+                .then((posted) => {
+                  setShowLoadingAlert(false);
+                  // and then navigate back
+                  navigation.navigate("SetSpecialHours", {
+                    newSpecialDateId: posted.id,
+                    newSpecialDate: posted.date,
+                    newSpecialDateInMs: posted.date_in_ms,
+                    newSpecialDateStatus: posted.status,
+                    userType: userType,
+                    busId: busId
+                  });
+                })
+                .catch((error) => {
+                  console.log(error);
                 });
-              })
-              .catch((error) => {
-                console.log(error);
-              });
+              }
+
+              if (userType === 'tech') {
+                setShowLoadingAlert(true);
+
+                const postTechSpecialDate = businessPostFire.postTechSpecialDate(
+                  busId, 
+                  techId, 
+                  timezoneOffset,
+                  specialDate, 
+                  specialDateYearMonthDate, 
+                  specialDateStatus
+                );
+
+                postTechSpecialDate
+                .then((posted) => {
+                  setShowLoadingAlert(false);
+                  // and then navigate back
+                  navigation.navigate("SetSpecialHours", {
+                    newSpecialDateId: posted.id,
+                    newSpecialDate: posted.date,
+                    newSpecialDateInMs: posted.date_in_ms,
+                    newSpecialDateStatus: posted.status,
+                    userType: userType,
+                    busId: busId,
+                    techId: techId
+                  });
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+              }
             }
-          }
-          
-          console.log("newSpeicalDate: ", specialDate, "newSpecialDateStatus: ", specialDateStatus);
-        }}
-      />
-      <ScrollView style={styles.screenScrollView}>
+          }}
+        />
+      </View>
+      <View style={styles.calendarContainer}>
         <View style={styles.labelContainer}>
           <Text style={styles. labelText}> Select Date and Status</Text>
         </View>
@@ -239,7 +264,7 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
         />
         <View style={{height: RFValue(30)}}>
         </View>
-      </ScrollView>
+      </View>
       {
         showLoadingAlert &&
         <LoadingAlert />
@@ -253,7 +278,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: color.white2
   },
-  screenScrollView: {
+
+  headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
+  calendarContainer: {
     flex: 1,
     backgroundColor: color.white2
   },

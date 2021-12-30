@@ -35,7 +35,7 @@ import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderFo
 
 // Firebase
 import businessGetFire from '../firebase/businessGetFire';
-import contentGetFire from '../firebase/contentGetFire';
+import postGetFire from '../firebase/post/postGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';

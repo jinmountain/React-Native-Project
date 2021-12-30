@@ -22,7 +22,7 @@ import expoIcons from '../../expoIcons';
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-const DisplayPostInfo = ({ containerWidth, title, taggedCount, likeCount, etc, price }) => {
+const DisplayPostInfo = ({ containerWidth, title, taggedCount, rating, likeCount, etc, price }) => {
 	return (
 		<View style={{ ...styles.displayPostInfoContainer, ...{ width: containerWidth } }}>
 			<View style={styles.infoTop}>
@@ -49,9 +49,9 @@ const DisplayPostInfo = ({ containerWidth, title, taggedCount, likeCount, etc, p
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
-					<AntDesign name="staro" size={RFValue(11)} color={color.black1} />
+					<AntDesign name="staro" size={RFValue(11)} color={color.yellow2} />
 					<Text style={styles.infoText} numberOfLines={1}>
-						{taggedCount}
+						{rating}
 			  	</Text>
 				</View>
 			</View>

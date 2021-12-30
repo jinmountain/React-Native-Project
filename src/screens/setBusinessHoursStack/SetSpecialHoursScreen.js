@@ -12,9 +12,11 @@ import {
   Switch,
   FlatList,
   TouchableOpacity,
+  SafeAreaView,
   TouchableHighlight,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -45,204 +47,6 @@ import color from '../../color';
 // icon
 import expoIcons from '../../expoIcons';
 
-const SpecialHoursContainer = ({ navigation, index, specialDates, date, setDates, userType, techId, busId }) => {
-  return (
-    <View style={styles.settingContainer}>
-      {
-        index > 0 &&
-        <HeaderBottomLine />
-      }
-      <View style={styles.settingTopContainer}>
-        <View style={styles.dayContainer}>
-          <View style={styles.specialDayIconContainer}>
-            {expoIcons.fontAwesomeCalendarO(RFValue(23), color.black1)}
-          </View>
-          <View style={styles.specialDateTextContainer}>
-            <Text style={styles.specialDateText}>{useConvertTime.getDayMonthDateYear(date.date_in_ms)}</Text>
-          </View>
-        </View>
-        <View style={styles.statusContainer}>
-          <View style={styles.statusTextContainer}>
-            { date.status === false
-              ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
-              : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
-            }
-          </View>
-        </View>
-        <TouchableHighlight
-          style={styles.deleteHoursButton}
-          onPress={() => {
-            console.log('delete');
-
-            console.log("userType: ", userType, "busId: ", busId, "docId: ", date.id);
-            let deleteSpecialHours;
-            if (userType === 'bus') {
-
-              deleteSpecialHours = businessDeleteFire.deleteBusSpecialHoursDoc(busId, date.id);
-            };
-
-            if (userType === 'tech') {
-              deleteSpecialHours = businessDeleteFire.deleteTechSpecialHoursDoc(busId, techId, date.id);
-            };
-
-            deleteSpecialHours
-            .then(() => {
-              const specialDatesLen = specialDates.length;
-              const newSpecialDates = specialDates.filter((item) => item !== date );
-              /// only one
-              if (specialDatesLen === 1) {
-                setDates(newSpecialDates);
-              };
-              // more than one
-              if (specialDatesLen > 1) {
-                setDates([
-                  ...specialDates.slice(0, index),
-                  ...specialDates.slice(index + 1, specialDatesLen)
-                ]);
-              };
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-          }}
-          underlayColor={color.grey4}
-        >
-          <View style={styles.addButtonTextContainer}>
-            <Text style={styles.addButtonText}>
-              <FontAwesome name="calendar-minus-o" size={RFValue(23)} color={color.black1} />
-            </Text>
-          </View>
-        </TouchableHighlight>
-      </View>
-      {
-        date.status &&
-        <View style={styles.settingBottomContainer}>
-          {
-            // newHours: {
-            //  opens: {
-            //    hour: militaryStartHour,
-            //    min: startMin
-            //  },
-            //  closes: {
-            //    hour: militaryEndHour,
-            //    min:  endMin
-            //  }
-            // }
-            date.hours.map(( item, hourIndex ) => {
-              return (
-                <View 
-                  key={hourIndex}
-                  style={styles.addNewHoursContainer}
-                >
-                  <View style={styles.startContainer}>
-                    <View style={styles.timeLabelContainer}>
-                      <Text style={styles.timelabelText}>
-                        Opens
-                      </Text>
-                    </View>
-                    <View style={styles.timeContainer}>
-                      <Text style={styles.timeText}>
-                        {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.crossContainer}>
-                    <View 
-                      style={[styles.cross, { transform: [{ rotate: "-25deg" }], marginTop: RFValue(1.5) }]} 
-                    />
-                    <View
-                      style={[styles.cross, { transform: [{ rotate: "25deg" }], marginTop: RFValue(26.5) }]}
-                    />
-                  </View>
-                  <View style={styles.endContainer}>
-                    <View style={styles.timeLabelContainer}>
-                      <Text style={styles.timelabelText}>
-                        Closes
-                      </Text>
-                    </View>
-                    <View style={styles.timeContainer}>
-                      <Text style={styles.timeText}>
-                        {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
-                      </Text>
-                    </View>
-                  </View>
-                  <TouchableHighlight
-                    style={styles.deleteHoursButton}
-                    onPress={() => {
-                      const specialDatesLen = specialDates.length;
-                      console.log('delete');
-
-                      const newHours = date.hours.filter((hour) => hour !== item);
-
-                      // named "update" not "delete" because it updates doc's "hours" attribute to "newHours"
-                      let updateSpecialHoursDocHours;
-                      if (userType === "bus") {
-                        updateSpecialHoursDocHours = businessUpdateFire.updateBusSpecialHoursDocHours(busId, date.id, newHours);
-                      };
-                      if (userType === "tech") {
-                        updateSpecialHoursDocHours = businessUpdateFire.updateTechSpecialHoursDocHours(busId, techId, date.id, newHours);
-                      };
-
-                      // make the change to firestore doc 
-                      updateSpecialHoursDocHours
-                      .then(() => {
-                        // and then change the hours
-                        let newSpecialDate = date 
-                        newSpecialDate.hours = newHours;
-
-                        console.log("newSpecialDate: ", newSpecialDate);
-
-                        // only one
-                        if (specialDatesLen === 1) {
-                          setDates([newSpecialDate]);
-                        };
-                        // more than one
-                        if (specialDatesLen > 1) {
-                          setDates([
-                            ...specialDates.slice(0, index),
-                            newSpecialDate,
-                            ...specialDates.slice(index + 1, specialDatesLen)
-                          ]);
-                        };
-                      });
-                    }}
-                    underlayColor={color.grey4}
-                  >
-                    <View style={styles.addButtonTextContainer}>
-                      <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
-                    </View>
-                  </TouchableHighlight>
-                </View>
-              )
-            })
-          }
-          <TouchableHighlight
-            style={styles.addOpenHoursButtonContainer}
-            onPress={() => {
-              navigation.navigate("SetHours", {
-                hoursType: 'special',
-                specialDateIndex: index,
-                userType: userType,
-                techId: techId,
-                busId: busId,
-                docId: date.id,
-                currentHours: date.hours
-              })
-            }}
-            underlayColor={color.grey4}
-          >
-            <View style={styles.addOpenHoursTextContainer}>
-              <Text style={styles.addOpenHoursText}>
-                {expoIcons.featherPlus(RFValue(19), color.red2)} Add open hours
-              </Text>
-            </View>
-          </TouchableHighlight>
-        </View>
-      }
-    </View>
-  )
-}
-
 const SetSpecialHoursScreen = ({ route, navigation }) => {
   const { 
     state: {
@@ -254,6 +58,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
     userType,
     // from SetAnotherDayScreen
     newSpecialDateId,
+    newSpecialDateInMs,
     newSpecialDate,
     newSpecialDateStatus,
     // from SetHoursScreen
@@ -272,6 +77,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
   //   {
   //      id: string,
   //      date_in_ms: number,
+  //      date: json,
   //      status: boolean,
   //      hours: array
   //   } 
@@ -303,8 +109,6 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
 
   // if userType is tech
   useEffect(() => {
-    console.log("userType: ", userType, "busId: ", user.id, "techId: ", techId);
-
     let isMounted = true;
     let getSpecialHours;
 
@@ -348,18 +152,20 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
       isMounted && setSpecialDates([ 
         ...specialDates, 
         { 
-          id: newSpecialDateId, 
-          date_in_ms: newSpecialDate, 
+          id: newSpecialDateId,
+          date_in_ms: newSpecialDateInMs, 
+          date: newSpecialDate, 
           status: newSpecialDateStatus, 
           hours: [] 
         } 
       ]);
-      navigation.setParams({
-        newSpecialDateId: null, 
-        newSpecialDate: null, 
-        newSpecialDateStatus: null, 
-      });
-    }
+      // navigation.setParams({
+      //   newSpecialDateId: null,
+      //   newSpecialDateInMs: null, 
+      //   newSpecialDate: null, 
+      //   newSpecialDateStatus: null, 
+      // });
+    };
 
     if (newHours) {
       let newSpecialDate = specialDates[specialDateIndex];
@@ -394,39 +200,216 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
     }
   }, [ newSpecialDate, newHours ]);
 
+  const RenderSpecialDayItem = ({ item, index }) => {
+    const [ sp, setSp ] = useState(item);
+    const [ spHours, setSpHours ] = useState(item.hours);
+
+    return (
+      sp && sp.date
+      ?
+      <View style={styles.settingContainer}>
+        {
+          index > 1 &&
+          <HeaderBottomLine />
+        }
+        <View style={styles.settingTopContainer}>
+          <View style={styles.dayContainer}>
+            <View style={styles.specialDayIconContainer}>
+              {expoIcons.fontAwesomeCalendarO(RFValue(23), color.black1)}
+            </View>
+            <View style={styles.specialDateTextContainer}>
+              <Text style={styles.specialDateText}>{useConvertTime.getDayMonthDateYearFromDate(sp.date.year, sp.date.monthIndex, sp.date.date)}</Text>
+            </View>
+          </View>
+          <View style={styles.statusContainer}>
+            <View style={styles.statusTextContainer}>
+              { sp.status === false
+                ? <Text style={[styles.onOffText, { color: color.grey8 }]}>Closed</Text>
+                : <Text style={[styles.onOffText, { color: color.red2 }]}>Open</Text>
+              }
+            </View>
+          </View>
+          <TouchableHighlight
+            style={styles.deleteHoursButton}
+            onPress={() => {
+              console.log('delete');
+              let deleteSpecialHours;
+              if (userType === 'bus') {
+                deleteSpecialHours = businessDeleteFire.deleteBusSpecialHoursDoc(user.id, sp.id);
+              };
+
+              if (userType === 'tech') {
+                deleteSpecialHours = businessDeleteFire.deleteTechSpecialHoursDoc(user.id, techId, sp.id);
+              };
+
+              setSp(null);
+            }}
+            underlayColor={color.grey4}
+          >
+            <View style={styles.addButtonTextContainer}>
+              <Text style={styles.addButtonText}>
+                <FontAwesome name="calendar-minus-o" size={RFValue(23)} color={color.black1} />
+              </Text>
+            </View>
+          </TouchableHighlight>
+        </View>
+        {
+          spHours
+          ?
+          <View style={styles.settingBottomContainer}>
+            <FlatList
+              data={spHours}
+              renderItem={({item, index}) => {
+                return (
+                  <View 
+                    style={styles.addNewHoursContainer}
+                  >
+                    <View style={styles.startContainer}>
+                      <View style={styles.timeLabelContainer}>
+                        <Text style={styles.timelabelText}>
+                          Opens
+                        </Text>
+                      </View>
+                      <View style={styles.timeContainer}>
+                        <Text style={styles.timeText}>
+                          {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.crossContainer}>
+                      <View 
+                        style={[styles.cross, { transform: [{ rotate: "-25deg" }], marginTop: RFValue(1.5) }]} 
+                      />
+                      <View
+                        style={[styles.cross, { transform: [{ rotate: "25deg" }], marginTop: RFValue(26.5) }]}
+                      />
+                    </View>
+                    <View style={styles.endContainer}>
+                      <View style={styles.timeLabelContainer}>
+                        <Text style={styles.timelabelText}>
+                          Closes
+                        </Text>
+                      </View>
+                      <View style={styles.timeContainer}>
+                        <Text style={styles.timeText}>
+                          {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
+                        </Text>
+                      </View>
+                    </View>
+                    <TouchableHighlight
+                      style={styles.deleteHoursButton}
+                      onPress={() => {
+                        const specialDatesLen = specialDates.length;
+                        console.log('delete');
+
+                        const newHours = spHours.filter((hour) => hour !== item);
+
+                        // named "update" not "delete" because it updates doc's "hours" attribute to "newHours"
+                        let updateSpecialHoursDocHours;
+                        if (userType === "bus") {
+                          updateSpecialHoursDocHours = businessUpdateFire.updateBusSpecialHoursDocHours(user.id, sp.id, newHours);
+                        };
+                        if (userType === "tech") {
+                          updateSpecialHoursDocHours = businessUpdateFire.updateTechSpecialHoursDocHours(user.id, techId, sp.id, newHours);
+                        };
+
+                        // make the change to firestore doc 
+                        updateSpecialHoursDocHours
+                        .then(() => {
+                          console.log("done");
+                          // and then change the hours
+                          // let newSpecialDate = sp 
+                          // newSpecialDate.hours = newHours;
+                          // console.log(newSpecialDate);
+                          setSpHours(newHours);
+
+                          // console.log("newSpecialDate: ", newSpecialDate);
+
+                          // // only one
+                          // if (specialDatesLen === 1) {
+                          //   setDates([newSpecialDate]);
+                          // };
+                          // // more than one
+                          // if (specialDatesLen > 1) {
+                          //   setDates([
+                          //     ...specialDates.slice(0, index),
+                          //     newSpecialDate,
+                          //     ...specialDates.slice(index + 1, specialDatesLen)
+                          //   ]);
+                          // };
+                        });
+                      }}
+                      underlayColor={color.grey4}
+                    >
+                      <View style={styles.addButtonTextContainer}>
+                        <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
+                      </View>
+                    </TouchableHighlight>
+                  </View>
+                )
+              }}
+              keyExtractor={(item, index) => index.toString()}
+            />
+            <TouchableHighlight
+              style={styles.addOpenHoursButtonContainer}
+              onPress={() => {
+                navigation.navigate("SetHours", {
+                  hoursType: 'special',
+                  specialDateIndex: index,
+                  userType: userType,
+                  techId: techId,
+                  busId: user.id,
+                  docId: sp.id,
+                  currentHours: spHours
+                })
+              }}
+              underlayColor={color.grey4}
+            >
+              <View style={styles.addOpenHoursTextContainer}>
+                <Text style={styles.addOpenHoursText}>
+                  {expoIcons.featherPlus(RFValue(19), color.red2)} Add open hours
+                </Text>
+              </View>
+            </TouchableHighlight>
+          </View>
+          : null
+        }
+      </View>
+      : null
+    )
+  };
+
   return (
     <View style={styles.mainContainer}>
-      <HeaderForm 
-        addPaddingTop={userType === 'tech' ? false : true}
-        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
-        headerTitle={"Special Hours"} 
-        rightButtonIcon={"Done"} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          navigation.goBack();
-        }}
-      />
+      <View style={styles.headerBarContainer}>
+        <SafeAreaView/>
+        <HeaderForm 
+          leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+          headerTitle={"Special Hours"} 
+          rightButtonIcon={"Done"} 
+          leftButtonPress={() => {
+            navigation.goBack();
+          }}
+          rightButtonPress={() => {
+            navigation.goBack();
+          }}
+        />
+      </View>
 
       <View style={styles.specialDayHoursContainer}>
-        <ScrollView
-          onScroll={({nativeEvent}) => {
-            let isMounted = true;
-            if (isCloseToBottom(nativeEvent) && specialHoursFetchSwitch && !getSpecialHoursState && isMounted) {
-              isMounted && setGetSpecialHoursState(true);
-
+        {/*existing and new special dates*/}
+        <FlatList
+          onEndReached={() => {
+            if (specialHoursFetchSwitch && !getSpecialHoursState) {
+              setGetSpecialHoursState(true);
               let getSpecialHours;
-
               if (userType === 'bus' && user.id) {
                 getSpecialHours = businessGetFire.getBusUpcomingSpecialHours(user.id, lastSpecialHour);
               };
-              
               if (userType === 'tech' && techId && user.id) {
                 // get tech business hours
                 getSpecialHours = businessGetFire.getTechUpcomingSpecialHours(user.id, techId, lastSpecialHour);
               };
-
               getSpecialHours
               .then((result) => {
                 // result
@@ -440,35 +423,23 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
                 console.log("error: ", error);
               });
             }
-
-            return () => {
-              isMounted = false;
-            }
           }}
-        >
-          {/*existing or new special dates*/}
-          {
-            specialDates.map((item, index) => {
-              return (
-                <SpecialHoursContainer 
-                  key={index}
-                  navigation={navigation}
-                  index={index}
-                  specialDates={specialDates}
-                  date={item}
-                  setDates={setSpecialDates}
-                  userType={userType}
-                  techId={techId}
-                  busId={user.id}
-                />
-              )
-            })
+          data={specialDates}
+          renderItem={({item, index}) => 
+            <RenderSpecialDayItem 
+              item={item}
+              index={index}
+            />
           }
-          {/*upcoming holidays*/}
-          { getSpecialHoursState &&
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(item, index) => item.id}
+        />
+        {/*upcoming holidays*/}
+        { getSpecialHoursState &&
+          <View style={styles.loadingContainer}>
             <SpinnerFromActivityIndicator containerCustomStyle={{ height: RFValue(57) }}/>
-          }
-        </ScrollView>
+          </View>
+        }
       </View>
       <View style={styles.addAnotherDayContainer}>
         <HeaderBottomLine />
@@ -536,6 +507,21 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: color.white2
+  },
+
+  headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
 
   settingContainer: {
@@ -652,7 +638,7 @@ const styles = StyleSheet.create({
   },
 
   specialDayHoursContainer: {
-    flex: 1
+    flex: 1,
   },
 
   addAnotherDayContainer: {
@@ -674,7 +660,13 @@ const styles = StyleSheet.create({
   },
   addAnotherDayText: {
     fontSize: RFValue(19)
-  }
+  },
+
+  loadingContainer: {
+    position: 'absolute',
+    alignSelf: 'center',
+    paddingTop: 100
+  },
 });
 
 export default SetSpecialHoursScreen;

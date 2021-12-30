@@ -166,6 +166,10 @@ const antdesignStaro = (size, color) => {
 	return <AntDesign name="staro" size={size} color={color} />
 };
 
+const antdesignStar = (size, color) => {
+	return <AntDesign name="star" size={size} color={color} />
+}
+
 const antdesignPicture = (size, color) => {
 	return <AntDesign name="picture" size={size} color={color} />
 };
@@ -215,6 +219,7 @@ export default {
 	evilIconsChevronDown,
 	evilIconsChevronUp,
 	antdesignStaro,
+	antdesignStar,
 	antdesignPicture,
 	matStarBoxMultipleOutline
 };

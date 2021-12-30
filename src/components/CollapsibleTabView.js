@@ -438,7 +438,6 @@ const CollapsibleTabView = ({
     return (
       <Animated.FlatList
         scrollToOverflowEnabled={true}
-
         {...listPanResponder.panHandlers}
         numColumns={numCols}
         ref={(ref) => {

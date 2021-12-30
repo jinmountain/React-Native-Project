@@ -48,6 +48,7 @@ const PostInfoBox = ({
   setExpandInfoBox,
 
   cardIndex,
+  postFiles,
   // setShowCommentPostIndex
 }) => {
   const navigation = useNavigation();
@@ -75,6 +76,7 @@ const PostInfoBox = ({
             expandInfoBox={expandInfoBox}
             setExpandInfoBox={setExpandInfoBox}
             cardIndex={cardIndex}
+            postFiles={postFiles}
             // setShowCommentPostIndex={setShowCommentPostIndex}
           />
           {

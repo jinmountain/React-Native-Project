@@ -13,7 +13,6 @@ const SetBusinessHoursStack = () => {
     <Stack.Navigator
       screenOptions={{ 
         headerShown: false,
-        animationEnabled: false 
       }}
     >
       <Stack.Screen 
@@ -35,6 +34,13 @@ const SetBusinessHoursStack = () => {
           specialDateIndex: null,
           userType: null,
           techId: null,
+        }}
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal',
         }}
       />
     </Stack.Navigator>

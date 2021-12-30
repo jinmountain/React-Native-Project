@@ -6,6 +6,7 @@ import {
   Text,
   Switch,
   TouchableOpacity,
+  SafeAreaView,
   TouchableHighlight,
   Vibration
 } from 'react-native';
@@ -167,19 +168,21 @@ const UBSetHoursScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.mainContainer}>
-      <HeaderForm 
-        addPaddingTop={userType === 'tech' ? false : true}
-        leftButtonTitle={null}
-        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
-        headerTitle={"Hours"} 
-        rightButtonIcon={"Save"} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          console.log("save");
-        }}
-      />
+      <View style={styles.headerBarContainer}>
+        <SafeAreaView/>
+        <HeaderForm 
+          leftButtonTitle={null}
+          leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+          headerTitle={"Hours"} 
+          rightButtonIcon={"Save"} 
+          leftButtonPress={() => {
+            navigation.goBack();
+          }}
+          rightButtonPress={() => {
+            console.log("save");
+          }}
+        />
+      </View>
       <HeaderBottomLine />
       <View style={styles.timeContainer}>
         <View style={styles.labelContainer}>
@@ -589,7 +592,8 @@ const UBSetHoursScreen = ({ navigation, route }) => {
                 min:  endMin
               }
             }
-            console.log(militaryEndHour);
+
+            const mergedHours = [ ...currentHours, newHours ];
             if (hoursType === 'business') {
               navigation.navigate('SetBusinessHours', {
                 userType: userType,
@@ -603,10 +607,10 @@ const UBSetHoursScreen = ({ navigation, route }) => {
               let postSpecialHours;
 
               if (userType === "bus") {
-                postSpecialHours = businessPostFire.postBusSpecialHours(busId, docId, newHours, currentHours);
+                postSpecialHours = businessPostFire.postBusSpecialHours(busId, docId, mergedHours);
               };
               if (userType === "tech") {
-                postSpecialHours = businessPostFire.postTechSpecialHours(busId, techId, docId, newHours, currentHours);
+                postSpecialHours = businessPostFire.postTechSpecialHours(busId, techId, docId, mergedHours);
               };
 
               // add to firestore
@@ -648,6 +652,21 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: color.white2
+  },
+
+  headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
 
   timeContainer: {

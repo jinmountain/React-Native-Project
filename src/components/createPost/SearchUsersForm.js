@@ -31,12 +31,11 @@ import DisplayPostInfo from '../../components/displayPost/DisplayPostInfo';
 import DisplayPostLoading from '../../components/displayPost/DisplayPostLoading';
 
 // Hooks
-import businessGetFire from '../../firebase/businessGetFire';
-// import { navigate } from '../../navigationRef';
 import count from '../../hooks/count';
 
 // firebase
-import contentGetFire from '../../firebase/contentGetFire';
+import postGetFire from '../../firebase/post/postGetFire';
+import businessGetFire from '../../firebase/businessGetFire';
 
 // Designs
 import { Ionicons } from '@expo/vector-icons';
@@ -101,7 +100,7 @@ const SearchUsersForm = ({
       chosenUserDisplayPostFetchSwitch && 
       !chosenUserDisplayPostState
     ) {
-      const getChosenUserDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, chosenUser, null);
+      const getChosenUserDisplayPosts = postGetFire.getBusinessDisplayPostsFire(null, chosenUser.id);
       getChosenUserDisplayPosts
       .then((posts) => {
         mounted && setChosenUserDisplayPosts([ ...posts.fetchedPosts ]);
@@ -233,7 +232,7 @@ const SearchUsersForm = ({
                 <FlatList
                   onEndReached={() => {
                     if (chosenUserDisplayPostFetchSwitch && !chosenUserDisplayPostState) {
-                      const getChosenUserDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chosenUserDisplayPostLast, chosenUser, null);
+                      const getChosenUserDisplayPosts = postGetFire.getBusinessDisplayPostsFire(chosenUserDisplayPostLast, chosenUser.id);
                       getChosenUserDisplayPosts
                       .then((posts) => {
                         setChosenUserDisplayPosts([ ...chosenUserDisplayPosts, ...posts.fetchedPosts ]);

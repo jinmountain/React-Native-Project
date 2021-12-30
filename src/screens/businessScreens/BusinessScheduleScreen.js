@@ -33,7 +33,7 @@ import { getCalendarDates } from '../../hooks/getCalendarDates';
 // Firebase
 import businessGetFire from '../../firebase/businessGetFire';
 import businessPostFire from '../../firebase/businessPostFire';
-import contentGetFire from '../../firebase/contentGetFire';
+import postGetFire from '../../firebase/post/postGetFire';
 
 // Components
 import AlertBoxTop from '../../components/AlertBoxTop'; 

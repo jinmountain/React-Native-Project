@@ -1,5 +1,4 @@
-import Firebase from '../firebase/config'
-import { navigate } from '../navigationRef';
+import Firebase from '../../firebase/config'
 
 const currentUserFire = () => {
 	return Firebase.auth().currentUser || {}
@@ -11,11 +10,13 @@ const postsRef = Firebase.firestore().collection("posts");
 // accept user as a parameter then use user data to merge in userPost
 const getUserPostsFire = (lastPost, accountUserId) => {
 	return new Promise ((res, rej) => {
+		const LIMIT = 15;
 		let postRef;
 		if (lastPost) {
 			postRef = postsRef
 			.where("uid", "==", accountUserId)
 			.where("display", "==", false)
+			.where("isRated", "==", false)
 			.orderBy("createdAt", "desc")
 			.startAfter(lastPost)
 			console.log("Start from the last post.");
@@ -23,14 +24,15 @@ const getUserPostsFire = (lastPost, accountUserId) => {
 			postRef = postsRef
 			.where("uid", "==", accountUserId)
 			.where("display", "==", false)
+			.where("isRated", "==", false)
 			.orderBy("createdAt", "desc")
 		};
 		postRef
-		.limit(15)
+		.limit(LIMIT)
 		.get()
 		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			const lastVisible = querySnapshot.docs[LIMIT - 1];
 			if (docLength > 0) {
 				const postDocs = querySnapshot.docs.map((doc) => {
 					const docId = doc.id;
@@ -59,6 +61,7 @@ const getUserPostsFire = (lastPost, accountUserId) => {
 
 const getBusinessDisplayPostsFire = (lastPost, businessUserId) => {
 	return new Promise ((res, rej) => {
+		const LIMIT = 10;
 		let postRef;
 		if (lastPost) {
 			postRef = postsRef
@@ -74,11 +77,11 @@ const getBusinessDisplayPostsFire = (lastPost, businessUserId) => {
 			.orderBy("createdAt", "desc")
 		};
 		postRef
-		.limit(6)
+		.limit(LIMIT)
 		.get()
 		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			var lastVisible = querySnapshot.docs[docLength - 1];
+			var lastVisible = querySnapshot.docs[LIMIT - 1];
 			if (docLength > 0) {
 	      const postDocs = querySnapshot.docs.map((doc) => {
 					const docId = doc.id;
@@ -105,27 +108,32 @@ const getBusinessDisplayPostsFire = (lastPost, businessUserId) => {
 };
 
 // posts that rated the business user 
-const getTaggedPostsFire = (lastPost, businessUserId) => {
+const getBusRatedPostsFire = (lastPost, businessUserId) => {
 	return new Promise (async (res, rej) => {
+		const LIMIT = 15;
 		let ratedPostsRef;
 		if (lastPost) {
 			ratedPostsRef = postsRef
-			.where("tid", "==", businessUserId)
+			.where("ratedBusId", "==", businessUserId)
+			.where("display", "==", false)
+			.where("isRated", "==", true)
 			.orderBy("createdAt", "desc")
 			.startAfter(lastPost)
-			console.log("Start from the last post.");
+			console.log("-- start from the last post.");
 		} else {
 			ratedPostsRef = postsRef
-			.where("tid", "==", businessUserId)
+			.where("ratedBusId", "==", businessUserId)
+			.where("display", "==", false)
+			.where("isRated", "==", true)
 			.orderBy("createdAt", "desc")
 		};
 
 		ratedPostsRef
-		.limit(15)
+		.limit(LIMIT)
 		.get()
 		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			let lastVisible = querySnapshot.docs[docLength - 1];
+			let lastVisible = querySnapshot.docs[LIMIT - 1];
 			
 			if (docLength > 0) {
 				const postDocs = querySnapshot.docs.map((doc) => {
@@ -140,9 +148,9 @@ const getTaggedPostsFire = (lastPost, businessUserId) => {
 		  		return businessPost
 				});
 
-				const businessPosts = await Promise.all(postDocs);
+				const ratedPosts = await Promise.all(postDocs);
 
-				res({ fetchedPosts: businessPosts, lastPost: lastVisible });
+				res({ fetchedPosts: ratedPosts, lastPost: lastVisible });
 			} else {
 				res({ fetchedPosts: [], lastPost: lastVisible });
 			}
@@ -155,6 +163,7 @@ const getTaggedPostsFire = (lastPost, businessUserId) => {
 
 const getHotPostsFire = (lastPost) => {
 	return new Promise ((res, rej) => {
+		const LIMIT = 6;
 		let postRef;
 		if (lastPost) {
 			postRef = postsRef
@@ -170,7 +179,7 @@ const getHotPostsFire = (lastPost) => {
 		.get()
 		.then(async (querySnapshot) => {
 			const docLength = querySnapshot.docs.length;
-			const lastVisible = querySnapshot.docs[docLength - 1];
+			const lastVisible = querySnapshot.docs[LIMIT - 1];
 			
 			if (docLength > 0) {
 				const postDocs = querySnapshot.docs.map((doc) => {
@@ -225,7 +234,7 @@ const getPostFire = (postId) => {
 export default { 
 	getUserPostsFire, 
 	getBusinessDisplayPostsFire, 
-	getTaggedPostsFire, 
+	getBusRatedPostsFire, 
 	getHotPostsFire,
 	getPostFire
 };

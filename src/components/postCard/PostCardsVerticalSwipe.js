@@ -73,25 +73,6 @@ const PostCardsVerticalSwipe = ({
 	  }
 	});
 
-	// // move flatlist to the card with showCommentPostIndex
-	// const [ showCommentPostIndex, setShowCommentPostIndex ] = useState(null); 
-	// const scrollToIndex = (index) => {
- //    _cardListView.current.scrollToIndex({ animated: true, index: index })
- //  }
- //  // setTimeout prevents out of range error of scrollToIndex
-	// useEffect(() => {
-	// 	if (showCommentPostIndex) {
-	// 		const scrollToIndexPromise = new Promise ((res, rej) => {
-	// 			setTimeout(() => scrollToIndex(showCommentPostIndex), 500);
-	// 			res();
-	// 		})
-	// 		scrollToIndexPromise
-	// 		.then(() => {
-	// 			setShowCommentPostIndex(null);
-	// 		});
-	// 	}
-	// }, [showCommentPostIndex]);
-
 	return (
 		<FlatList
 	    ref={_cardListView}
