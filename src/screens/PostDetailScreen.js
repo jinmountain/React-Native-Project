@@ -31,7 +31,7 @@ import PostInfoBox from '../components/postCard/PostInfoBox';
 import { Context as AuthContext } from '../context/AuthContext';
 
 // Header
-import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderForm';
+import UserAccountHeaderForm from '../components/accountScreen/UserAccountHeaderForm';
 
 // Firebase
 import businessGetFire from '../firebase/businessGetFire';
@@ -123,157 +123,153 @@ const PostDetailScreen = ({ route, navigation }) => {
 	}, [])
 
 	return (
-		<PanX 
-      panXAction={() => navigation.goBack()}
-      content={
-				<View style={styles.mainContainer}>
-					<HeaderForm 
-						addPaddingTop={true}
-		        leftButtonTitle={null}
-		        leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
-		        headerTitle={null} 
-		        rightButtonTitle={null} 
-		        leftButtonPress={() => {
-		          navigation.goBack();
-		        }}
-		        rightButtonPress={() => {
-		          null
-		        }}
-		      />
-					{ 
-						screenReady
-						?
-						<ScrollView style={styles.scrollView}>
-							<PostUserInfoContainer
-			      		postId={ post.id }
-			      		postData={ post.data }
-			      		currentUserId={ user.id }
-			      	/>
-							{
-								post.data.display
-								?
-								<View style={styles.displayPostInfoContainer}>
-									<View style={styles.labelContainer}>
-										<Text style={styles.labelText}>Technicians</Text>
-									</View>
-									{
-										screenReady && displayPostTechs.length > 0
-										?
-										<FlatList
-						          horizontal
-						          showsHorizontalScrollIndicator={false}
-						          data={displayPostTechs}
-						          keyExtractor={(tech, index) => index.toString()}
-						          renderItem={({ item }) => {
-						            return (
-						              <TouchableOpacity style={styles.techContainer}>
-						                <View style={styles.techInnerContainer}>
-						                  { 
-						                    item.techData.photoURL
-						                    ?
-						                    <Image style={styles.techImage} source={{ uri: item.techData.photoURL }}/>
-						                    : 
-						                    <DefaultUserPhoto 
-						                      customSizeBorder={RFValue(57)}
-						                      cutomSizeUserIcon={RFValue(37)}
-						                    />
-						                  }
-						                  <View style={styles.techInfoContainer}>
-						                    <Text style={styles.techUsernameText}>
-						                      {item.techData.username}
-						                    </Text>
-						                    <View style={styles.techRatingContainer}>
-						                    	{ 
-						                    		// tech rating in the business
-						                    		item.techRatingBus.totalRating && item.techRatingBus.countRating
-						                    		?
-						                    		<View style={styles.techInfoInner}>
-						                    			<Text stlye={styles.techInfoText}>
-						                    			mean
-						                    			</Text>
-						                    			<View style={styles.techInfoIcon}>
-							                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
-							                    		</View>
-							                    		<Text stlye={styles.techInfoText}>{(Math.round(item.techRatingBus.totalRating/item.techRatingBus.countRating * 10) / 10).toFixed(1)}</Text>
-							                    	</View>
-						                    		:
-						                    		<View style={styles.techInfoInner}>
-						                    			<Text stlye={styles.techInfoText}>
-						                    			mean
-						                    			</Text>
-						                    			<View style={styles.techInfoIcon}>
-							                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
-							                    		</View>
-							                    		<Text stlye={styles.techInfoText}>-</Text>
-							                    	</View>
-						                    	}
 
-						                    	{
-						                    		// tech rating in the business of the post
-						                    		item.techRatingPost && item.techRatingPost.totalRating && item.techRatingPost.countRating
-						                    		?
-						                    		<View style={styles.techInfoInner}>
-						                    			<View style={styles.techInfoIcon}>
-							                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
-							                    		</View>
-							                    		<Text stlye={styles.techInfoText}>{(Math.round(item.techRatingPost.totalRating/item.techRatingPost.countRating * 10) / 10).toFixed(1)}</Text>
-							                    	</View>
-						                    		:
-						                    		<View style={styles.techInfoInner}>
-						                    			<View style={styles.techInfoIcon}>
-							                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
-							                    		</View>
-							                    		<Text stlye={styles.techInfoText}>-</Text>
-							                    	</View>
-						                    	}
-						                    	
-						                    </View>
-						                  </View>
-						                </View>
-						              </TouchableOpacity>
-						            )
-						          }}
-						        />
-										:
-										<TouchableOpacity style={styles.techDefaultContainer}>
-			                <View style={styles.techInnerContainer}>
-			                	<AntDesign name="rest" size={24} color="black" /><Text>Something went wrong</Text>
-			                </View>
-			              </TouchableOpacity>
-									}
-								</View>
-								: null
-							}
-							<VerticalSwipePostImage
-				        files={post.data.files}
-				        onFocus={true}
-				      />
-				      <PostInfoBox
-				        tags={post.data.tags}
-				        totalRating={post.data.totalRating}
-				        countRating={post.data.countRating}
-				        caption={post.data.caption}
-				        defaultCaptionNumLines={1}
-				        postId={post.id}
-				        postUserId={post.data.uid}
-				        likeCount={post.data.likeCount}
-				        commentCount={post.data.comment_count}
-				        postTimestamp={post.data.createdAt}
-				        currentUserPhotoURL={user.photoURL}
-		        		currentUserId={user.id}
-		        		postDetail={true}
-				      />
-							<View>
+		<View style={styles.mainContainer}>
+			<HeaderForm 
+				addPaddingTop={true}
+        leftButtonTitle={null}
+        leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
+        headerTitle={null} 
+        rightButtonTitle={null} 
+        leftButtonPress={() => {
+          navigation.goBack();
+        }}
+        rightButtonPress={() => {
+          null
+        }}
+      />
+			{ 
+				screenReady
+				?
+				<ScrollView style={styles.scrollView}>
+					<PostUserInfoContainer
+	      		postId={ post.id }
+	      		postData={ post.data }
+	      		currentUserId={ user.id }
+	      	/>
+					{
+						post.data.display
+						?
+						<View style={styles.displayPostInfoContainer}>
+							<View style={styles.labelContainer}>
+								<Text style={styles.labelText}>Technicians</Text>
 							</View>
-						</ScrollView>
-						:
-						<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-							<SpinnerFromActivityIndicator/>
+							{
+								screenReady && displayPostTechs.length > 0
+								?
+								<FlatList
+				          horizontal
+				          showsHorizontalScrollIndicator={false}
+				          data={displayPostTechs}
+				          keyExtractor={(tech, index) => index.toString()}
+				          renderItem={({ item }) => {
+				            return (
+				              <TouchableOpacity style={styles.techContainer}>
+				                <View style={styles.techInnerContainer}>
+				                  { 
+				                    item.techData.photoURL
+				                    ?
+				                    <Image style={styles.techImage} source={{ uri: item.techData.photoURL }}/>
+				                    : 
+				                    <DefaultUserPhoto 
+				                      customSizeBorder={RFValue(57)}
+				                      cutomSizeUserIcon={RFValue(37)}
+				                    />
+				                  }
+				                  <View style={styles.techInfoContainer}>
+				                    <Text style={styles.techUsernameText}>
+				                      {item.techData.username}
+				                    </Text>
+				                    <View style={styles.techRatingContainer}>
+				                    	{ 
+				                    		// tech rating in the business
+				                    		item.techRatingBus.totalRating && item.techRatingBus.countRating
+				                    		?
+				                    		<View style={styles.techInfoInner}>
+				                    			<Text stlye={styles.techInfoText}>
+				                    			mean
+				                    			</Text>
+				                    			<View style={styles.techInfoIcon}>
+					                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
+					                    		</View>
+					                    		<Text stlye={styles.techInfoText}>{(Math.round(item.techRatingBus.totalRating/item.techRatingBus.countRating * 10) / 10).toFixed(1)}</Text>
+					                    	</View>
+				                    		:
+				                    		<View style={styles.techInfoInner}>
+				                    			<Text stlye={styles.techInfoText}>
+				                    			mean
+				                    			</Text>
+				                    			<View style={styles.techInfoIcon}>
+					                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
+					                    		</View>
+					                    		<Text stlye={styles.techInfoText}>-</Text>
+					                    	</View>
+				                    	}
+
+				                    	{
+				                    		// tech rating in the business of the post
+				                    		item.techRatingPost && item.techRatingPost.totalRating && item.techRatingPost.countRating
+				                    		?
+				                    		<View style={styles.techInfoInner}>
+				                    			<View style={styles.techInfoIcon}>
+					                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
+					                    		</View>
+					                    		<Text stlye={styles.techInfoText}>{(Math.round(item.techRatingPost.totalRating/item.techRatingPost.countRating * 10) / 10).toFixed(1)}</Text>
+					                    	</View>
+				                    		:
+				                    		<View style={styles.techInfoInner}>
+				                    			<View style={styles.techInfoIcon}>
+					                    			<AntDesign name="staro" size={RFValue(13)} color={color.black1} />
+					                    		</View>
+					                    		<Text stlye={styles.techInfoText}>-</Text>
+					                    	</View>
+				                    	}
+				                    	
+				                    </View>
+				                  </View>
+				                </View>
+				              </TouchableOpacity>
+				            )
+				          }}
+				        />
+								:
+								<TouchableOpacity style={styles.techDefaultContainer}>
+	                <View style={styles.techInnerContainer}>
+	                	<AntDesign name="rest" size={24} color="black" /><Text>Something went wrong</Text>
+	                </View>
+	              </TouchableOpacity>
+							}
 						</View>
+						: null
 					}
+					<VerticalSwipePostImage
+		        files={post.data.files}
+		        onFocus={true}
+		      />
+		      <PostInfoBox
+		        tags={post.data.tags}
+		        totalRating={post.data.totalRating}
+		        countRating={post.data.countRating}
+		        caption={post.data.caption}
+		        defaultCaptionNumLines={1}
+		        postId={post.id}
+		        postUserId={post.data.uid}
+		        likeCount={post.data.likeCount}
+		        commentCount={post.data.comment_count}
+		        postTimestamp={post.data.createdAt}
+		        currentUserPhotoURL={user.photoURL}
+        		currentUserId={user.id}
+        		postDetail={true}
+		      />
+					<View>
+					</View>
+				</ScrollView>
+				:
+				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+					<SpinnerFromActivityIndicator/>
 				</View>
 			}
-		/>
+		</View>
 	);
 };
 

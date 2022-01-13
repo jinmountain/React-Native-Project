@@ -24,29 +24,32 @@ import color from '../color';
 // expo icons
 import expoIcons from '../expoIcons';
 
-const VerticalScrollModalButton = ({ label, value, setValue, setIsModalVisible }) => {
-  return (
-    <TouchableHighlight
-      style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
-      onPress={() => {
-        setValue(value);
-        setIsModalVisible(false);
-      }}
-      underlayColor={color.grey4}
-    >
-      <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%" }}>
-        <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
-      </View>
-    </TouchableHighlight>
-  )
-};
-
 const VerticalScrollPicker = ({ content, setValue, setIsModalVisible, defaultLabel, defaultValue }) => {
+  const VerticalScrollModalButton = ({ label, value, setValue, setIsModalVisible }) => {
+    return (
+      <TouchableHighlight
+        style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
+        onPress={() => {
+          setValue(value);
+          setIsModalVisible(false);
+        }}
+        underlayColor={color.grey4}
+      >
+        <View 
+          style={{ justifyContent: 'center', alignItems: 'center', width: "100%" }}
+        >
+          <Text style={{ fontSize: RFValue(17) }}>{label}</Text>
+        </View>
+      </TouchableHighlight>
+    )
+  };
+
   return (
     <ScrollView>
       {
         defaultValue &&
         <TouchableHighlight
+          key={"default"}
           style={{ height: RFValue(53), justifyContent: 'center', alignItems: 'center' }}
           onPress={() => {
             setValue(defaultValue);
@@ -67,6 +70,7 @@ const VerticalScrollPicker = ({ content, setValue, setIsModalVisible, defaultLab
       {
         content.map((item, index) => (
           <VerticalScrollModalButton
+            key={index}
             label={item.label}
             value={item.value}
             setValue={setValue}

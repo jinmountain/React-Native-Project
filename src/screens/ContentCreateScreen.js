@@ -6,6 +6,8 @@ import {
   View, 
   Platform,
   TouchableOpacity,
+  ActivityIndicator,
+  SafeAreaView,
   Pressable,
   FlatList,
   Text,
@@ -14,10 +16,11 @@ import {
 } from 'react-native';
 
 // npms
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from '@gorhom/bottom-sheet';
+import * as MediaLibrary from 'expo-media-library'
+import { Video, AVPlaybackStatus } from 'expo-av';
 
 // Components
 import CancelButton from '../components/CancelButton';
@@ -37,6 +40,7 @@ import DisplayPostInfoInputForm from '../components/createPost/DisplayPostInfoIn
 import HeaderBottomLine from '../components/HeaderBottomLine';
 import Picker from '../components/Picker';
 import BottomSheetHeader from '../components/BottomSheetHeader';
+import ImageBrowser from '../components/ImagePicker/ImageBrowser';
 
 // Contexts
 import { Context as LocationContext } from '../context/LocationContext';
@@ -63,7 +67,7 @@ import authFire from '../firebase/authFire';
 import color from '../color';
 
 // expo icons
-import expoIcons from '../expoIcons';
+import { } from '../expoIcons';
 
 // business' services
 const services = [
@@ -177,7 +181,7 @@ const times = [
   },
 ];
 
-const AddPost = (  
+const addPost = (  
   files, 
   tags, 
   caption,
@@ -208,15 +212,18 @@ const AddPost = (
             userId, 
             files[fileIndex].id,
             files[fileIndex].type,
-            files[fileIndex].uri, 
-            changeProgress
+            files[fileIndex].uri
           );
           if (files[fileIndex].type === 'video') {
             fileURLs.push({ type: 'video', url: URL });
           }
+          else if (files[fileIndex].type === 'photo') {
+            fileURLs.push({ type: 'image', url: URL });
+          } 
           else if (files[fileIndex].type === 'image') {
             fileURLs.push({ type: 'image', url: URL });
-          } else {
+          }
+          else {
             return
           }
         };
@@ -226,6 +233,7 @@ const AddPost = (
       // After we get the photo URLs...
       getFileURL
       .then((fileURLs) => {
+        changeProgress(0.5);
         console.log("File URLs: ", fileURLs);
         let newPost;
 
@@ -261,7 +269,7 @@ const AddPost = (
           newPost = { 
             ...newPost, 
             ...{ 
-              ratedbusId: chosenUser.id,
+              ratedBusId: chosenUser.id,
               ratedPostId: chosenDisplayPost.id,
               ratedTechId: chosenTech.techData.id,
               rating: rating,
@@ -269,15 +277,16 @@ const AddPost = (
             }
           }
         } else {
-          newPost ={ ...newPost, ...{ isRated: false }}
+          newPost = { ...newPost, ...{ isRated: false }}
         }
         
         // Firestore | posts | post.id | newPost
         // await until the post is made.
-        const addPost = postPostFire.addPostFire(newPost);
-        addPost
+        const addPostFire = postPostFire.addPostFire(newPost);
+        addPostFire
         .then((post) => {
           if (post) {
+            changeProgress(1);
             res(post);
             console.log("added new post: ", post.id);
           }
@@ -297,11 +306,23 @@ const AddPost = (
   });
 };
 
-const ContentCreateScreen = ({ route, navigation }) => {
+const ContentCreateScreen = ({ navigation }) => {
+  // existing isVisible options
+  // contentCreate
+  // imageBrowser
+  const [ isVisible, setIsVisible ] = useState(null);
+  useEffect(() => {
+    if (files.length === 0) {
+      setIsVisible("imageBrowser");
+    }
+    console.log("files: ", files);
+  }, [files]);
+
   const [ pickImage ] = useImage();
   
   const [ alertBoxStatus, setAlertBoxStatus ] = useState(false);
   const [ alertBoxText, setAlertBoxText ] = useState(null);
+
   // Bottom Sheet  and Picker
   const [ isModalVisible, setIsModalVisible ] = useState(false);
   const [ pickerType, setPickerType ] = useState(null);
@@ -443,248 +464,40 @@ const ContentCreateScreen = ({ route, navigation }) => {
   }, [postPrice]);
   // get the list of techs when display is true
 
-  return (
-    <View style={styles.screenContainer}>
-      { progress
-        ? <LoadingAlert progress={progress}/>
-        : null
-      }
-      
-      <HeaderForm 
-        leftButtonTitle={null}
-        // leftButtonIcon={null}
-        leftButtonIcon={<EvilIcons name="close" size={RFValue(27)} color={color.black1}/>}
-        headerTitle={"Create Post"}
-        rightButtonTitle={null}
-        rightButtonIcon={"Done"}
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          {
-            files.length < 1
-            ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
-            : chosenUser && !chosenDisplayPost 
-            ? (setAlertBoxStatus(true), setAlertBoxText(`Select the nail design you got at ${chosenUser.username}`))
-            : chosenUser && !chosenTech
-            ? (setAlertBoxStatus(true), setAlertBoxText(`Choose your technician at ${chosenUser.username}`))
-            : chosenUser && !rating
-            ? (setAlertBoxStatus(true), setAlertBoxText(`Rate your experience at ${chosenUser.username}`))
-
-            : display && ! postService
-            ? (setAlertBoxStatus(true), setAlertBoxText("Choose the service type of your post"))
-            : display && !postTitle
-            ? (setAlertBoxStatus(true), setAlertBoxText("Fill in the title of your post"))
-            : display && !postPrice
-            ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
-            : display && !postETC
-            ? (setAlertBoxStatus(true), setAlertBoxText("Choose the time of your post"))
-            : display && !selectedTechs.length > 0
-            ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
-            :
-            AddPost(
-              files, 
-              tags, 
-              caption,
-
-              chosenUser,
-              chosenDisplayPost,
-              chosenTech,
-              rating,
-              
-              display,
-              postService,
-              postTitle,
-              postPrice,
-              postETC,
-              selectedTechs,
-
-              changeProgress,
-              setPostState
-            )
-          }
-        }}
-        addPaddingTop={true}
-        // paddingTopCustomStyle={{backgroundColor: color.red2}}
-      />
-      { usersFound
-        ? 
-        <UsersFoundListForm
-          usersFound={usersFound}
-          setUsersFound={setUsersFound}
-          setSearchUserUsername={setSearchUserUsername}
-          setChosenUser={setChosenUser}
-        />
-        :
-        <KeyboardAwareScrollView>
-          { 
-            display === true
-            ? null
-            :
-            <SearchUsersForm 
-              userId={user.id}
-              usersFound={usersFound ? true : false }
-              setUsersFound={setUsersFound}
-              rating={rating}
-              setRating={setRating}
-              chosenUser={chosenUser}
-              setChosenUser={setChosenUser}
-              searchUserUsername={searchUserUsername}
-              setSearchUserUsername={setSearchUserUsername}
-              chosenDisplayPost={chosenDisplayPost}
-              setChosenDisplayPost={setChosenDisplayPost}
-              chosenTech={chosenTech}
-              setChosenTech={setChosenTech}
-
-              displayPostTechs={displayPostTechs}
-              setDisplayPostTechs={setDisplayPostTechs}
-              displayPostTechsState={displayPostTechsState}
-              setDisplayPostTechsState={setDisplayPostTechsState}
-
-              chosenUserDisplayPosts={chosenUserDisplayPosts}
-              setChosenUserDisplayPosts={setChosenUserDisplayPosts}
-              chosenUserDisplayPostLast={chosenUserDisplayPostLast}
-              setChosenUserDisplayPostLast={setChosenUserDisplayPostLast}
-              chosenUserDisplayPostFetchSwitch={chosenUserDisplayPostFetchSwitch}
-              setChosenUserDisplayPostFetchSwtich={setChosenUserDisplayPostFetchSwtich}
-              chosenUserDisplayPostState={chosenUserDisplayPostState}
-              setChosenUserDisplayPostState={setChosenUserDisplayPostState}
-            />
-          }
-          {
-            user.type === "business" && chosenUser === null
-            ?
-            <View style={styles.optionContainer}>
+  const renderContentCreate = () => {
+    return (
+      <View style={styles.screenContainer}>
+        { progress
+          ? <LoadingAlert progress={progress}/>
+          : null
+        }
+        <View style={styles.headerBarContainer}>
+          <SafeAreaView />
+          <HeaderForm 
+            leftButtonTitle={null}
+            // leftButtonIcon={null}
+            leftButtonIcon={<EvilIcons name="close" size={RFValue(27)} color={color.black1}/>}
+            headerTitle={"Create Post"}
+            rightButtonTitle={null}
+            rightButtonIcon={"Done"}
+            leftButtonPress={() => {
+              navigation.goBack();
+            }}
+            rightButtonPress={() => {
               {
-                postTitle && postPrice && postETC && selectedTechs.length > 0
-                ? <AntDesign name="checkcircleo" size={RFValue(19)} color={color.blue1} />
-                : <AntDesign name="checkcircleo" size={RFValue(19)} color={color.black1} />
-              }
-              <Text style={styles.optionText}>
-                Is this a display post?
-              </Text>
-              <THButtonWithBorder
-                onPress={() => {
-                  setDisplay(true);
-                }}
-                text={"Yes"}
-                value={display === true}
-                valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
-                valueEffectText={{ color: color.blue1 }}
-              />
-              <THButtonWithBorder
-                onPress={() => {
-                  setDisplay(false);
-                  resetDisplayPostInfo();
-                }}
-                text={"No"}
-                value={display === false}
-                valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
-                valueEffectText={{ color: color.blue1 }}
-              />
-            </View>
-            :
-            null
-          }
-          {
-            display &&
-            <DisplayPostInfoInputForm
-              currentUserId={user.id}
-              postPrice={postPrice}
-              setPostPrice={setPostPrice}
-              postETC={postETC}
-              setPostETC={setPostETC}
-              selectedTechs={selectedTechs}
-              setSelectedTechs={setSelectedTechs}
-              postTitle={postTitle}
-              setPostTitle={setPostTitle}
-              postService={postService}
-              setPostService={setPostService}
-              setIsModalVisible={setIsModalVisible}
-              setPickerType={setPickerType}
-            />
-          }
-          <InputFormBottomLine customStyles={{backgroundColor: color.black1, marginBottom: RFValue(15),}}/>
-          
-          {/*content upload box*/}
-          <View style={styles.pickImageContainer}>
-            {files && 
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={files}
-                keyExtractor={(image) => image.id}
-                renderItem={({ item }) => {
-                  return (
-                    <TouchableOpacity 
-                      onPress={() => {
-                        navigation.navigate('ImageZoomin', 
-                          {
-                            file: {
-                              type: item.type,
-                              url: item.uri
-                            }
-                          }
-                        );
-                        // setModalImage([{uri: item.uri, type: item.type}]);
-                        // setImageZoomModalVisible(true);
-                      }}
-                      style={styles.imageContainer}
-                    >
-                      <CancelButton 
-                        onPressFunction={() => 
-                          setFiles([ ...files.filter((file) => file.id !== item.id) ])
-                        }
-                      />
-                      <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
-                    </TouchableOpacity>
-                  )
-                }}
-              />
-            }
-            { files.length <= 4 && 
-              <TouchableHighlight 
-                style={styles.pickImageButton} 
-                onPress={() => {
-                  const getFile = pickImage();
-                  getFile
-                  .then((file) => {
-                    setFiles([ ...files, {id: file.id, type: file.type, uri: file.uri}])
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                  });
-                }}
-                underlayColor={color.grey1}
-              >
-                <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
-              </TouchableHighlight>
-            }
-          </View>
-          { files.length >= 5 &&
-            <View style={styles.limitWarningContainer}>
-              <Text style={{fontSize: 15,}}>The limit is {files.length} of pictures or videos.</Text>
-            </View>
-          }
-          <InputFormBottomLine customStyles={{marginTop: RFValue(15), backgroundColor: color.black1}}/>
-          <View style={styles.tagCaptionInputContainer}>
-            <TagInputForm 
-              tags={tags}
-              setTags={setTags}
-            />
-            <CaptionInputForm caption={caption} changeCaption={setCaption} />
-          </View>
-          <View style={[ styles.buttonContainer, { paddingTop: RFValue(30) }]}>
-            <TouchableOpacity
-              onPress={() => {
                 files.length < 1
                 ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
                 : chosenUser && !chosenDisplayPost 
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Choose a post of ${chosenUser.username}`))
+                ? (setAlertBoxStatus(true), setAlertBoxText(`Select the nail design you got at ${chosenUser.username}`))
+                : chosenUser && !chosenTech
+                ? (setAlertBoxStatus(true), setAlertBoxText(`Choose your technician at ${chosenUser.username}`))
                 : chosenUser && !rating
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Rate the post of ${chosenUser.username}`))
+                ? (setAlertBoxStatus(true), setAlertBoxText(`Rate your experience at ${chosenUser.username}`))
+
+                : display && ! postService
+                ? (setAlertBoxStatus(true), setAlertBoxText("Choose the service type of your post"))
                 : display && !postTitle
-                ? (setAlertBoxStatus(true), setAlertBoxText("Write the title of your post"))
+                ? (setAlertBoxStatus(true), setAlertBoxText("Fill in the title of your post"))
                 : display && !postPrice
                 ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
                 : display && !postETC
@@ -692,7 +505,7 @@ const ContentCreateScreen = ({ route, navigation }) => {
                 : display && !selectedTechs.length > 0
                 ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
                 :
-                AddPost(
+                addPost(
                   files, 
                   tags, 
                   caption,
@@ -708,113 +521,385 @@ const ContentCreateScreen = ({ route, navigation }) => {
                   postPrice,
                   postETC,
                   selectedTechs,
-                  
+
                   changeProgress,
                   setPostState
                 )
-              }}
-            >
-              <View style={styles.button}>
-                <Text style={styles.buttonText}>Send</Text>
+                .then((post) => {
+                  navigation.navigate("Account", {
+                    newPost: post
+                  });
+                })
+              }
+            }}
+          />
+        </View>
+        { usersFound
+          ? 
+          <UsersFoundListForm
+            usersFound={usersFound}
+            setUsersFound={setUsersFound}
+            setSearchUserUsername={setSearchUserUsername}
+            setChosenUser={setChosenUser}
+          />
+          :
+          <KeyboardAwareScrollView>
+            { 
+              display === true
+              ? null
+              :
+              <SearchUsersForm 
+                userId={user.id}
+                usersFound={usersFound ? true : false }
+                setUsersFound={setUsersFound}
+                rating={rating}
+                setRating={setRating}
+                chosenUser={chosenUser}
+                setChosenUser={setChosenUser}
+                searchUserUsername={searchUserUsername}
+                setSearchUserUsername={setSearchUserUsername}
+                chosenDisplayPost={chosenDisplayPost}
+                setChosenDisplayPost={setChosenDisplayPost}
+                chosenTech={chosenTech}
+                setChosenTech={setChosenTech}
+
+                displayPostTechs={displayPostTechs}
+                setDisplayPostTechs={setDisplayPostTechs}
+                displayPostTechsState={displayPostTechsState}
+                setDisplayPostTechsState={setDisplayPostTechsState}
+
+                chosenUserDisplayPosts={chosenUserDisplayPosts}
+                setChosenUserDisplayPosts={setChosenUserDisplayPosts}
+                chosenUserDisplayPostLast={chosenUserDisplayPostLast}
+                setChosenUserDisplayPostLast={setChosenUserDisplayPostLast}
+                chosenUserDisplayPostFetchSwitch={chosenUserDisplayPostFetchSwitch}
+                setChosenUserDisplayPostFetchSwtich={setChosenUserDisplayPostFetchSwtich}
+                chosenUserDisplayPostState={chosenUserDisplayPostState}
+                setChosenUserDisplayPostState={setChosenUserDisplayPostState}
+              />
+            }
+            {
+              user.type === "business" && chosenUser === null
+              ?
+              <View style={styles.optionContainer}>
+                {
+                  postTitle && postPrice && postETC && selectedTechs.length > 0
+                  ? <AntDesign name="checkcircleo" size={RFValue(19)} color={color.blue1} />
+                  : <AntDesign name="checkcircleo" size={RFValue(19)} color={color.black1} />
+                }
+                <Text style={styles.optionText}>
+                  Is this a display post?
+                </Text>
+                <THButtonWithBorder
+                  onPress={() => {
+                    setDisplay(true);
+                  }}
+                  text={"Yes"}
+                  value={display === true}
+                  valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
+                  valueEffectText={{ color: color.blue1 }}
+                />
+                <THButtonWithBorder
+                  onPress={() => {
+                    setDisplay(false);
+                    resetDisplayPostInfo();
+                  }}
+                  text={"No"}
+                  value={display === false}
+                  valueEffect={{ borderWidth: RFValue(2), borderColor: color.blue1 }}
+                  valueEffectText={{ color: color.blue1 }}
+                />
               </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                setTbaStatus(true);
-              }}
-            >
-              <View style={styles.button}>
-                <Text style={styles.buttonText}>Reset</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={{ height: RFValue(50) }}/>
-        </KeyboardAwareScrollView>
-      }
-      { 
-        // put this at the last so it can be on the top of others
-        alertBoxStatus
-        ?
-        <AlertBoxTop 
-          setAlert={setAlertBoxStatus}
-          alertText={alertBoxText}
-        />
-        : null
-      }
-      { 
-        tbaStatus
-        && 
-        <TwoButtonAlert 
-          title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
-          message={"Reset the posting process?"}
-          buttonOneText={"Yes"}
-          buttonTwoText={"No"}
-          buttonOneAction={() => { 
-            Reset();
-            setTbaStatus(false); 
-          }}
-          buttonTwoAction={() => { setTbaStatus(false)}}
-        />
-      }
-      {
-        isModalVisible &&
-        <View style={{ position: 'absolute', width: "100%", height: "100%" }}>
-          <Pressable
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-            ]}
-            onPress={() => setIsModalVisible(false)}
-          >
-          </Pressable>
-          <BottomSheet
-            ref={bottomSheetRef}
-            index={0}
-            snapPoints={snapPoints}
-            onChange={handleSheetChanges}
-            enablePanDownToClose={true}
-            handleComponent={() => {
-              return (
-                <BottomSheetHeader 
-                  headerText={
-                    pickerType === "time"
-                    ?
-                    "Time"
-                    : pickerType === "service"
-                    ?
-                    "Services"
-                    : null
-                  }
-                  closeButtonOnPress={() => {
-                    setIsModalVisible(false);
+              :
+              null
+            }
+            {
+              display &&
+              <DisplayPostInfoInputForm
+                currentUserId={user.id}
+                postPrice={postPrice}
+                setPostPrice={setPostPrice}
+                postETC={postETC}
+                setPostETC={setPostETC}
+                selectedTechs={selectedTechs}
+                setSelectedTechs={setSelectedTechs}
+                postTitle={postTitle}
+                setPostTitle={setPostTitle}
+                postService={postService}
+                setPostService={setPostService}
+                setIsModalVisible={setIsModalVisible}
+                setPickerType={setPickerType}
+              />
+            }
+            <InputFormBottomLine customStyles={{backgroundColor: color.black1, marginBottom: RFValue(15),}}/>
+            
+            {/*content upload box*/}
+            <View style={styles.pickImageContainer}>
+              {files && 
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={files}
+                  keyExtractor={(file, index) => index.toString()}
+                  renderItem={({ item }) => {
+                    return (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          navigation.navigate('ImageZoomin', 
+                            {
+                              file: {
+                                type: item.type,
+                                url: item.uri
+                              }
+                            }
+                          );
+                          // setModalImage([{uri: item.uri, type: item.type}]);
+                          // setImageZoomModalVisible(true);
+                        }}
+                        style={styles.imageContainer}
+                      >
+                        <CancelButton 
+                          onPressFunction={() => 
+                            setFiles([ ...files.filter((file) => file.id !== item.id) ])
+                          }
+                        />
+                        {
+                          item.type === 'video'
+                          ?
+                          <View style={styles.chosenImage}>
+                            <Video
+                              style={styles.chosenImage}
+                              source={{
+                                uri: item.uri,
+                              }}
+                              useNativeControls={false}
+                              resizeMode="contain"
+                              shouldPlay={false}
+                            />
+                          </View>
+                          : item.type === 'image'
+                          ? <Image style={styles.chosenImage} source={{ uri: item.uri }}/>
+                          : null
+                        }
+                      </TouchableOpacity>
+                    )
                   }}
                 />
-              )
-            }}
-          >
-            {
-              pickerType === 'time'
-              ?
-              <Picker 
-                content={times}
-                setValue={setPostETC}
-                setIsModalVisible={setIsModalVisible}
-              />
-              : pickerType === 'service'
-              ?
-              <Picker 
-                content={services}
-                setValue={setPostService}
-                setIsModalVisible={setIsModalVisible}
-              />
-              : null
+              }
+              { files.length <= 4 && 
+                <TouchableHighlight 
+                  style={styles.pickImageButton} 
+                  onPress={() => {
+                    // const getFile = pickImage();
+                    // getFile
+                    // .then((file) => {
+                    //   console.log("file: ", file);
+                    //   setFiles([ ...files, {id: file.id, type: file.type, uri: file.uri}])
+                    // })
+                    // .catch((error) => {
+                    //   console.log(error);
+                    // });
+                    setIsVisible('imageBrowser');
+                  }}
+                  underlayColor={color.grey1}
+                >
+                  <AntDesign name="plus" size={RFValue(38)} color={color.grey2} />
+                </TouchableHighlight>
+              }
+            </View>
+            { files.length >= 5 &&
+              <View style={styles.limitWarningContainer}>
+                <Text style={{fontSize: 15,}}>The limit is {files.length} of pictures or videos.</Text>
+              </View>
             }
-          </BottomSheet>
-        </View>
-      }
-    </View>
+            <InputFormBottomLine customStyles={{marginTop: RFValue(15), backgroundColor: color.black1}}/>
+            <View style={styles.tagCaptionInputContainer}>
+              <TagInputForm 
+                tags={tags}
+                setTags={setTags}
+              />
+              <CaptionInputForm caption={caption} changeCaption={setCaption} />
+            </View>
+            <View style={[ styles.buttonContainer, { paddingTop: RFValue(30) }]}>
+              <TouchableOpacity
+                onPress={() => {
+                  files.length < 1
+                  ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
+                  : chosenUser && !chosenDisplayPost 
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Choose a post of ${chosenUser.username}`))
+                  : chosenUser && !rating
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Rate the post of ${chosenUser.username}`))
+                  : display && !postTitle
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Write the title of your post"))
+                  : display && !postPrice
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
+                  : display && !postETC
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose the time of your post"))
+                  : display && !selectedTechs.length > 0
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
+                  :
+                  addPost(
+                    files, 
+                    tags, 
+                    caption,
+
+                    chosenUser,
+                    chosenDisplayPost,
+                    chosenTech,
+                    rating,
+                    
+                    display,
+                    postService,
+                    postTitle,
+                    postPrice,
+                    postETC,
+                    selectedTechs,
+                    
+                    changeProgress,
+                    setPostState
+                  )
+                  .then((post) => {
+                    navigation.navigate("Account", {
+                      newPost: post
+                    });
+                  })
+                }}
+              >
+                <View style={styles.button}>
+                  <Text style={styles.buttonText}>Send</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  setTbaStatus(true);
+                }}
+              >
+                <View style={styles.button}>
+                  <Text style={styles.buttonText}>Reset</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={{ height: RFValue(50) }}/>
+          </KeyboardAwareScrollView>
+        }
+        { 
+          // put this at the last so it can be on the top of others
+          alertBoxStatus
+          ?
+          <AlertBoxTop 
+            setAlert={setAlertBoxStatus}
+            alertText={alertBoxText}
+          />
+          : null
+        }
+        { 
+          tbaStatus
+          && 
+          <TwoButtonAlert 
+            title={<Ionicons name="alert-circle-outline" size={RFValue(27)} color={color.black1} />}
+            message={"Reset the posting process?"}
+            buttonOneText={"Yes"}
+            buttonTwoText={"No"}
+            buttonOneAction={() => { 
+              Reset();
+              setTbaStatus(false); 
+            }}
+            buttonTwoAction={() => { setTbaStatus(false)}}
+          />
+        }
+        {
+          isModalVisible &&
+          <View style={{ position: 'absolute', width: "100%", height: "100%", zIndex: 6 }}>
+            <Pressable
+              style={[
+                StyleSheet.absoluteFill,
+                { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+              ]}
+              onPress={() => setIsModalVisible(false)}
+            >
+            </Pressable>
+            <BottomSheet
+              ref={bottomSheetRef}
+              index={0}
+              snapPoints={snapPoints}
+              onChange={handleSheetChanges}
+              enablePanDownToClose={true}
+              handleComponent={() => {
+                return (
+                  <BottomSheetHeader 
+                    headerText={
+                      pickerType === "time"
+                      ?
+                      "Time"
+                      : pickerType === "service"
+                      ?
+                      "Services"
+                      : null
+                    }
+                    closeButtonOnPress={() => {
+                      setIsModalVisible(false);
+                    }}
+                  />
+                )
+              }}
+            >
+              {
+                pickerType === 'time'
+                ?
+                <Picker 
+                  content={times}
+                  setValue={setPostETC}
+                  setIsModalVisible={setIsModalVisible}
+                />
+                : pickerType === 'service'
+                ?
+                <Picker 
+                  content={services}
+                  setValue={setPostService}
+                  setIsModalVisible={setIsModalVisible}
+                />
+                : null
+              }
+            </BottomSheet>
+          </View>
+        }
+      </View>
+    )
+  };
+  const renderImageBrowser = () => {
+    return (
+      <ImageBrowser 
+        // existing selected files
+        existingSelectedFiles={files}
+        // maximum number of photos to choose
+        max={10}
+        // Whether to load extra fields like location. Loading all of the information will reduce performance. by default false
+        loadCompleteMetadata={false}
+
+        loadCount={50}
+        emptyStayComponent={null}
+        preloaderComponent={<ActivityIndicator size='large'/>}
+        mediaType={[MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video]}
+        onFinish={(files) => {
+          setFiles(files);
+        }}
+        goBack={() => {
+          setIsVisible("contentCreate");
+        }}
+        noCameraPermissionComponent={null}
+        renderExtraComponent={null}
+      /> 
+    )
+  }
+
+  return (
+    isVisible === "contentCreate"
+    ? renderContentCreate()
+    : isVisible === "imageBrowser"
+    ? renderImageBrowser()
+    : null
   );
 };
 
@@ -822,6 +907,20 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: color.white2,
+  },
+  headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
   contentCreateScreenHeaderContainer: {
     flexDirection: "row",

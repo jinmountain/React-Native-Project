@@ -20,7 +20,7 @@ import { colorByRating } from '../hooks/colorByRating';
 import color from '../color';
 
 // icons
-import expoIcons from '../expoIcons';
+import {snailShell} from '../expoIcons';
 
 const TagLine = ({ tags }) => {
   return (
@@ -40,7 +40,7 @@ const TagLine = ({ tags }) => {
             >
               <View style={styles.unitContainer}>
                 <View style={styles.tagsContainer}>
-                  {expoIcons.snailShell(RFValue(15), color.red2)}
+                  {snailShell(RFValue(15), color.red2)}
                   <Text style={styles.tagText}>
                     {item}
                   </Text>
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   // Tags
   tagBoxContainer: {
     height: RFValue(50),
-    paddingHorizontal: RFValue(9)
+    paddingHorizontal: RFValue(9),
   },
   unitContainer: {
     borderWidth: 0.5,

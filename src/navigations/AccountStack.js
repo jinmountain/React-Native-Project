@@ -7,7 +7,7 @@ import AccountScreen from '../screens/AccountScreen';
 
 import PostsSwipeScreen from '../screens/PostsSwipeScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
-import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
+import PostDeleteConfirmationScreen from '../screens/PostDeleteConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 
 import CommentScreen from '../screens/comment/CommentScreen';
@@ -76,7 +76,10 @@ const AccountStack = () => {
     >
       <Stack.Screen 
         name="Account" 
-        component={AccountScreen} 
+        component={AccountScreen}
+        initialParams={{
+          newPost: null,
+        }}
       />
 
       <Stack.Screen 
@@ -110,6 +113,31 @@ const AccountStack = () => {
           },
           animationEnabled: true,
           presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="PostManager" 
+        component={PostManagerScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="PostDeleteConfirmation" 
+        component={PostDeleteConfirmationScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+        initialParams={{
+
         }}
       />
       <Stack.Screen 
@@ -183,17 +211,6 @@ const AccountStack = () => {
         name="ReplyEdit" 
         component={ReplyEditScreen} 
         options={{ 
-          cardStyle: {
-            backgroundColor: 'transparent',
-          },
-          animationEnabled: true,
-          presentation: 'transparentModal'
-        }}
-      />
-      <Stack.Screen 
-        name="PostManager" 
-        component={PostManagerScreen} 
-        options={{
           cardStyle: {
             backgroundColor: 'transparent',
           },

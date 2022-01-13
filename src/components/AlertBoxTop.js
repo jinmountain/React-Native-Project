@@ -5,9 +5,9 @@ import {
 	StyleSheet,
 	TouchableHighlight,
 	TouchableOpacity,
+	SafeAreaView,
 	Animated,
 } from 'react-native';
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 import { useTheme } from '@react-navigation/native';
@@ -24,18 +24,18 @@ import { wait } from '../hooks/wait';
 import color from '../color';
 
 // icon
-import expoIcons from '../expoIcons';
+import {evilIconsClose} from '../expoIcons';
 
 const AlertBoxTop = ({ setAlert, alertText }) => {
 	const { current } = useCardAnimation();
 
-	const topToBotAnim = useRef(new Animated.Value(RFValue(70))).current;
+	const moveY = useRef(new Animated.Value(0)).current;
 	const fadeAnim = useRef(new Animated.Value(1)).current;
 
 	const pullUp = () => {
 		return new Promise((res, rej) => {
-	    Animated.timing(topToBotAnim, {
-	      toValue: 0,
+	    Animated.timing(moveY, {
+	      toValue: -50,
 	      duration: 300,
 	      useNativeDriver: false
 	    }).start();
@@ -45,8 +45,8 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
 
   const drop = () => {
   	return new Promise((res, rej) => {
-  		Animated.timing(topToBotAnim, {
-	  		toValue: RFValue(70),
+  		Animated.timing(moveY, {
+	  		toValue: 30,
 	  		duration: 100,
 	  		useNativeDriver: false
 	  	}).start();
@@ -66,7 +66,7 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
   };
 
   const resetAnimValues = () => {
-  	topToBotAnim.setValue(RFValue(70));
+  	moveY.setValue(0);
   	fadeAnim.setValue(1);
   };
 
@@ -88,30 +88,39 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
   }, []);
 
 	return (
-		<Animated.View style={[styles.screenContainer, { height: topToBotAnim, opacity: fadeAnim }]}>
-			<TouchableOpacity 
-				style={styles.warningContainer}
-				onPress={() => {
-					setAlert(false);
-					resetAnimValues();
-				}}
-				// underlayColor={color.grey4}
+		<SafeAreaView style={styles.screenContainer}>
+			<Animated.View 
+				style={
+					{ opacity: fadeAnim },
+					{ transform: [{ translateY: moveY }] }
+				}
 			>
-				<View style={styles.warningInnerContainer}>
-	    		<Text style={styles.text}>
-	    			{alertText}
-	    		</Text>
-	    	</View>
-	    	<View style={styles.signContainer}>
-    			{expoIcons.evilIconsClose(RFValue(27), color.white2)}
-    		</View>
-    	</TouchableOpacity>
-    </Animated.View>
+				<TouchableOpacity 
+					style={styles.warningContainer}
+					onPress={() => {
+						setAlert(false);
+						resetAnimValues();
+					}}
+					// underlayColor={color.grey4}
+				>
+					<View style={styles.warningInnerContainer}>
+		    		<Text style={styles.text}>
+		    			{alertText}
+		    		</Text>
+		    	</View>
+		    	<View style={styles.signContainer}>
+	    			{evilIconsClose(RFValue(27), color.white2)}
+	    		</View>
+	    	</TouchableOpacity>
+	    </Animated.View>
+	  </SafeAreaView>
 	)
 }
 
 const styles = StyleSheet.create({
   screenContainer: {
+  	flex: 1,
+  	zIndex: 6,
   	position: 'absolute',
   	width: '100%',
   	backgroundColor: 'transparent',
@@ -119,7 +128,7 @@ const styles = StyleSheet.create({
   	alignItems:'center',
   },
   warningContainer: {
-  	zIndex: 0,
+  	zIndex: 6,
   	alignItems: 'center',
   	justifyContent: 'center',
     backgroundColor: color.red2,

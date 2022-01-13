@@ -27,12 +27,22 @@ import PhotosPageIndicator from './PhotosPageIndicator';
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import {
+  featherShoppingBack,
+  antdesignClockCircleO
+} from '../../expoIcons';
 
 const { width, height } = Dimensions.get("window");
 
 let currentFileIndex = 0;
-const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displayEtc}) => {
+const VerticalSwipePostImage = ({
+  files, 
+  onFocus, 
+  isDisplay, 
+  displayPrice, 
+  displayEtc,
+  cardWidth
+}) => {
   // files
   // {
   //  type: string
@@ -113,10 +123,10 @@ const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displa
                 { 
                   item.type === 'video'
                   ?
-                  <View style={styles.cardVideoContainer}>
+                  <View style={{ width: cardWidth, height: cardWidth}}>
                     <Video
                       ref={video}
-                      style={styles.cardVideo}
+                      style={{ width: cardWidth, height: cardWidth}}
                       source={{
                         uri: item.url,
                       }}
@@ -138,7 +148,7 @@ const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displa
                   <Image 
                     source={{uri: item.url}}
                     defaultSource={require('../../../img/defaultImage.jpeg')}
-                    style={styles.cardImage}
+                    style={{ width: cardWidth, height: cardWidth}}
                     resizeMethod="auto"
                     resizeMode="contain"
                   />
@@ -171,7 +181,7 @@ const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displa
             underlayColor={color.grey4}
           >
             <View style={styles.shopButtonInner}>
-              {expoIcons.featherShoppingBack(RFValue(17), color.red2)}
+              {featherShoppingBack(RFValue(17), color.red2)}
               <View style={styles.displayPostInfoInner}>
                 <View style={styles.displayPostInfoElement}>
                   <Text style={styles.displayPostInfoText}>$</Text>
@@ -185,7 +195,7 @@ const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displa
               <View style={styles.displayPostInfoInner}>
                 <View style={styles.displayPostInfoElement}>
                   { 
-                    expoIcons.antdesignClockCircleO(RFValue(13), color.black1)
+                    antdesignClockCircleO(RFValue(13), color.black1)
                   }
                 </View>
                 <View style={styles.displayPostInfoElement}>
@@ -205,20 +215,6 @@ const VerticalSwipePostImage = ({files, onFocus, isDisplay, displayPrice, displa
 const styles = StyleSheet.create({
   imageContainer: {
     backgroundColor: "#FFF",
-  },
-  cardImage: {
-    backgroundColor: color.white1,
-    width: width,
-    height: width,
-  },
-  cardVideoContainer: {
-    width: width,
-    height: width,
-  },
-  cardVideo: {
-    backgroundColor: color.white2,
-    width: width,
-    height: width,
   },
 
   displayPostShopButtonContainer: {

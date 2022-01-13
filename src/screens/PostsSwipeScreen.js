@@ -36,7 +36,7 @@ import PanXY from '../components/PanXY';
 import color from '../color';
 
 // expo icons
-import expoIcons from '../expoIcons';
+import { chevronBack } from '../expoIcons';
 
 // const { width, height } = Dimensions.get("window");
 
@@ -96,7 +96,7 @@ const PostsSwipeScreen = ({ route, navigation }) => {
     mounted && setSwipePostSource(postSource);
 
     mounted && setSwipePosts(posts);
-    // mounted && setSwipePostLast(postLast);
+    mounted && setSwipePostLast(postLast);
     mounted && setSwipePostFetchSwtich(postFetchSwitch);
     mounted && setSwipePostState(postState);
 
@@ -125,67 +125,60 @@ const PostsSwipeScreen = ({ route, navigation }) => {
   } = useContext(AuthContext);
 
   return (
-    <PanXY
-      content={
-        <SafeAreaView style={{ flex: 1, backgroundColor: color.white2, borderRadius: 30 }}>
-          <View style={styles.mainContainer}>
-            <HeaderForm 
-              leftButtonTitle={null}
-              leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
-              headerTitle={null} 
-              rightButtonTitle={null} 
-              leftButtonPress={() => {
-                navigation.goBack();
-              }}
-              rightButtonPress={() => {
-                null
-              }}
-            />
-            <View style={{flex: 1}}>
-              <PostCardsVerticalSwipe
-                postSource={postSource}
-                cardIndex={cardIndex}
+    <SafeAreaView style={{ flex: 1, backgroundColor: color.white2, borderRadius: 30 }}>
+      <View style={styles.mainContainer}>
+        <HeaderForm 
+          leftButtonTitle={null}
+          leftButtonIcon={chevronBack(RFValue(27), color.black1)}
+          headerTitle={null} 
+          rightButtonTitle={null} 
+          leftButtonPress={() => {
+            navigation.goBack();
+          }}
+          rightButtonPress={() => {
+            null
+          }}
+        />
+        <View style={{flex: 1}}>
+          <PostCardsVerticalSwipe
+            postSource={postSource}
+            cardIndex={cardIndex}
 
-                getPosts={
-                  screenSelector(
-                    postSource, 
-                    [], 
-                    // hot posts
-                    postGetFire.getHotPostsFire,
-                    // account posts
-                    postGetFire.getUserPostsFire,
-                    // account display posts 
-                    postGetFire.getBusinessDisplayPostsFire,
-                    // business tagged posts (ex. search screen reviews)
-                    postGetFire.getTaggedPostsFire,
-                  )
-                }
+            getPosts={
+              screenSelector(
+                postSource, 
+                [], 
+                // hot posts
+                postGetFire.getHotPostsFire,
+                // account posts
+                postGetFire.getUserPostsFire,
+                // account display posts 
+                postGetFire.getBusinessDisplayPostsFire,
+                // business tagged posts (ex. search screen reviews)
+                postGetFire.getTaggedPostsFire,
+              )
+            }
 
-                swipePosts={swipePosts}
-                swipePostFetchSwitch={swipePostFetchSwitch}
-                swipePostLast={swipePostLast}
-                swipePostState={swipePostState}
+            swipePosts={swipePosts}
+            swipePostFetchSwitch={swipePostFetchSwitch}
+            swipePostLast={swipePostLast}
+            swipePostState={swipePostState}
 
-                setSwipePosts={setSwipePosts}
-                setSwipePostLast={setSwipePostLast}
-                setSwipePostFetchSwtich={setSwipePostFetchSwtich}
-                setSwipePostState={setSwipePostState}
+            setSwipePosts={setSwipePosts}
+            setSwipePostLast={setSwipePostLast}
+            setSwipePostFetchSwtich={setSwipePostFetchSwtich}
+            setSwipePostState={setSwipePostState}
 
-                currentUser={{ id: user.id, photoURL: user.photoURL }}
-                // search screen
-                businessUserId={swipeScreenBusinessUserId}
-                // need for UserAccountScreen
-                accountUserId={swipeScreenAccountUserId}
-              />
-            </View>
-            {swipePostState && <GetPostLoading />}
-          </View>
-        </SafeAreaView>
-      }
-      panXYAction={() => {
-        navigation.goBack();
-      }}
-    />
+            currentUser={{ id: user.id, photoURL: user.photoURL }}
+            // search screen
+            businessUserId={swipeScreenBusinessUserId}
+            // need for UserAccountScreen
+            accountUserId={swipeScreenAccountUserId}
+          />
+        </View>
+        {swipePostState && <GetPostLoading />}
+      </View>
+    </SafeAreaView>
   )
 };
 

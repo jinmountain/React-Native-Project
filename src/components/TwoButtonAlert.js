@@ -40,10 +40,10 @@ const TwoButtonAlert = ({
 					<TouchableHighlight
 						style={{ ...styles.buttonContainer, ...{borderBottomLeftRadius: RFValue(7), backgroundColor: color.red2} }}
 						onPress={buttonOneAction}
-						underlayColor={color.grey4}
+						underlayColor={color.red3}
 					>
 						<View style={styles.buttonInner}>
-							<Text style={[ styles.buttonText, { color: color.black1 } ]}>
+							<Text style={[ styles.buttonText, { color: color.white2 } ]}>
 								{buttonOneText}
 							</Text>
 						</View>
@@ -67,6 +67,7 @@ const TwoButtonAlert = ({
 
 const styles = StyleSheet.create({ 
 	container: {
+		zIndex: 6,
 		height: '100%',
 		width: '100%',
 		position: 'absolute',
@@ -77,8 +78,7 @@ const styles = StyleSheet.create({
 		height: '100%',
 		width: '100%',
 		position: 'absolute',
-		backgroundColor: color.grey4,
-		opacity: 0.7
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 	},
 	alertContainer: {
 		borderRadius: RFValue(7),

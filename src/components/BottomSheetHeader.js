@@ -17,7 +17,7 @@ import HeaderBottomLine from './HeaderBottomLine';
 import color from '../color';
 
 // icon
-import expoIcons from '../expoIcons';
+import {antClose} from '../expoIcons';
 
 const BottomSheetHeader = ({ headerText, closeButtonOnPress }) => {
   return (
@@ -41,7 +41,7 @@ const BottomSheetHeader = ({ headerText, closeButtonOnPress }) => {
             underlayColor={color.grey4}
             onPress={closeButtonOnPress}
           >
-            {expoIcons.antClose(RFValue(19), color.black1)}
+            {antClose(RFValue(19), color.black1)}
           </TouchableHighlight>
         </View>
       </View>

@@ -19,7 +19,7 @@ const AnimHighlight = ({ content, customStyles, onPressOutAction }) => {
 
   const dimBackground = Animated.timing(backgroundColorAnim, {
     toValue: 100,
-    duration: 100,
+    duration: 150,
     useNativeDriver: false,
   });
 
@@ -33,7 +33,7 @@ const AnimHighlight = ({ content, customStyles, onPressOutAction }) => {
 
   const dimBorderColor = Animated.timing(borderColorAnim, {
     toValue: 100,
-    duration: 100,
+    duration: 50,
     useNativeDriver: false,
   });
 

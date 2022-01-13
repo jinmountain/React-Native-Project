@@ -21,7 +21,10 @@ import MainTemplate from '../../components/MainTemplate';
 import { Context as AuthContext } from '../../context/AuthContext';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+	ioniconsMdArrowBack,
+	evilIconsLocation
+} from '../../expoIcons';
 
 // color
 import color from '../../color';
@@ -42,7 +45,7 @@ const UpdateBusinessScreen = ({ navigation }) => {
 				<SafeAreaView/>
 				<HeaderForm 
 	        leftButtonTitle={null}
-	        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+	        leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
 	        headerTitle={"Update Business"} 
 	        rightButtonTitle={null} 
 	        leftButtonPress={() => {
@@ -106,7 +109,7 @@ const UpdateBusinessScreen = ({ navigation }) => {
 					onPress={() => {
 		    		navigation.navigate("UBLocationAddress")
 		    	}}
-					icon={expoIcons.evilIconsLocation(RFValue(27), color.black1)}
+					icon={evilIconsLocation(RFValue(27), color.black1)}
 					text={"Change Location & Address"}
 				/>
 				<KitkatButton

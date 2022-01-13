@@ -8,7 +8,7 @@ import ReservationRequestScreen from '../screens/businessScreens/ReservationRequ
 
 import PostsSwipeScreen from '../screens/PostsSwipeScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
-import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
+import PostDeleteConfirmationScreen from '../screens/PostDeleteConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 
 import CommentScreen from '../screens/comment/CommentScreen';
@@ -163,8 +163,8 @@ const HomeStack = () => {
         }}
       />
       <Stack.Screen 
-        name="DeletionConfirmationScreen" 
-        component={DeletionConfirmationScreen} 
+        name="PostDeleteConfirmationScreen" 
+        component={PostDeleteConfirmationScreen} 
         options={{
           cardStyle: {
             backgroundColor: 'transparent',

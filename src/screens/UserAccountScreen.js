@@ -22,12 +22,12 @@ import Spacer from '../components/Spacer';
 import { NavigationBar } from '../components/NavigationBar';
 import ThreePostsRow from '../components/ThreePostsRow';
 import ButtonA from '../components/ButtonA';
-import ProfileCardUpper from '../components/profilePage/ProfileCardUpper';
-import ProfileCardBottom from '../components/profilePage/ProfileCardBottom';
+import ProfileCardUpper from '../components/accountScreen/ProfileCardUpper';
+import ProfileCardBottom from '../components/accountScreen/ProfileCardBottom';
 import MainTemplate from '../components/MainTemplate';
 import MultiplePhotosIndicator from '../components/MultiplePhotosIndicator';
 import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
-import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderForm';
+import UserAccountHeaderForm from '../components/accountScreen/UserAccountHeaderForm';
 import TwoButtonAlert from '../components/TwoButtonAlert';
 // Display Post
 import DisplayPostImage from '../components/displayPost/DisplayPostImage';
@@ -88,7 +88,7 @@ const UserAccountScreen = ({ route, navigation }) => {
 	const { accountUserId } = route.params;
 	const [ refreshing, setRefreshing ] = React.useState(false);
 	const [ screenReady, setScreenReady ] = useState(false);
-	//
+
 	const [ sentTechApp, setSentTechApp ] = useState(false);
 	const [ sentTechLeave, setSentTechLeave ] = useState(false);
 

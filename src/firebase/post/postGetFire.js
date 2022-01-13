@@ -161,6 +161,60 @@ const getBusRatedPostsFire = (lastPost, businessUserId) => {
 	});
 };
 
+// get posts that user made to rate
+const getUserRatedPostsFire = (lastPost, userId) => {
+	return new Promise (async (res, rej) => {
+		const LIMIT = 15;
+		let ratedPostsRef;
+		if (lastPost) {
+			ratedPostsRef = postsRef
+			.where("uid", "==", userId)
+			.where("display", "==", false)
+			.where("isRated", "==", true)
+			.orderBy("createdAt", "desc")
+			.startAfter(lastPost)
+			console.log("-- start from the last post.");
+		} else {
+			ratedPostsRef = postsRef
+			.where("uid", "==", userId)
+			.where("display", "==", false)
+			.where("isRated", "==", true)
+			.orderBy("createdAt", "desc")
+		};
+
+		ratedPostsRef
+		.limit(LIMIT)
+		.get()
+		.then(async (querySnapshot) => {
+			const docLength = querySnapshot.docs.length;
+			let lastVisible = querySnapshot.docs[LIMIT - 1];
+			
+			if (docLength > 0) {
+				const postDocs = querySnapshot.docs.map((doc) => {
+					const docId = doc.id;
+	      	const docData = doc.data();
+
+	      	const businessPost = {
+		  			id: docId, 
+		  			data: docData, 
+		  		};
+
+		  		return businessPost
+				});
+
+				const ratedPosts = await Promise.all(postDocs);
+
+				res({ fetchedPosts: ratedPosts, lastPost: lastVisible });
+			} else {
+				res({ fetchedPosts: [], lastPost: lastVisible });
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+};
+
 const getHotPostsFire = (lastPost) => {
 	return new Promise ((res, rej) => {
 		const LIMIT = 6;
@@ -234,7 +288,8 @@ const getPostFire = (postId) => {
 export default { 
 	getUserPostsFire, 
 	getBusinessDisplayPostsFire, 
-	getBusRatedPostsFire, 
+	getBusRatedPostsFire,
+	getUserRatedPostsFire,
 	getHotPostsFire,
 	getPostFire
 };

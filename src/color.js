@@ -13,6 +13,8 @@ export default {
 	red3: '#CC0001', // noti color | subordinate red
 	red4: '#FCE4DE', // white like red | chat body background color
 
+	green1: '#188038', // open sign
+
 	grey1: '#E0E0E0', // for incomplete, guide line,
 	grey2: '#909090', // medium grey, grey buttons
 	grey3: '#626262', // light grey, information text

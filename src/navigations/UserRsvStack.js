@@ -6,7 +6,7 @@ import UserRsvScreen from '../screens/UserRsvScreen';
 import RsvDetailScreen from '../screens/RsvDetailScreen';
 import RsvDetailManagerScreen from '../screens/RsvDetailManagerScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
-import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
+import PostDeleteConfirmationScreen from '../screens/PostDeleteConfirmationScreen';
 
 // stacks
 import UserAccountStack from './UserAccountStack';
@@ -47,8 +47,8 @@ const UserRsvStack = () => {
         }}
       />
       <Stack.Screen 
-        name="DeletionConfirmationScreen" 
-        component={DeletionConfirmationScreen} 
+        name="PostDeleteConfirmationScreen" 
+        component={PostDeleteConfirmationScreen} 
         options={{
           cardStyle: {
             backgroundColor: 'transparent',

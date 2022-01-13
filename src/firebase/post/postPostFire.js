@@ -1,6 +1,10 @@
 import Firebase from '../../firebase/config';
 import firebase from 'firebase/app';
 
+// hooks
+import makeTagBridgeId from '../../hooks/makeTagBridgeId';
+import useConvertTime from '../../hooks/useConvertTime';
+
 const uid = () => {
   return (Firebase.auth().currentUser || {}).uid
 };
@@ -12,12 +16,14 @@ const timestamp = () => {
 const addPostFire = (newPost) => {
   return new Promise(async (res, rej) => {
     try {
-      console.log("newPost: ", newPost);
+      const now = Date.now();
+      // console.log("newPost: ", newPost);
       // Increment tag count
       const tagCountIncrement = firebase.firestore.FieldValue.increment(1);
       
       // Create tags
       const tagsRef = Firebase.firestore().collection("tags");
+      const tagBridgesRef = Firebase.firestore().collection("tag_bridges");
 
       const db = Firebase.firestore();
       const batch = db.batch();
@@ -25,16 +31,19 @@ const addPostFire = (newPost) => {
       // add each tag and its tid(timestamp) into tags collection
       let tagIndex; // tagIndex for the first level doc in tags
       let relatedTagIndex; // relatedTagIndex for the tags in related in tag docs
-      for (tagIndex = 0; tagIndex < newPost.tags.length; tagIndex++) {
-        const now = Date.now();
-        const checkExistingTag = await tagsRef.doc(newPost.tags[tagIndex]).get();
+      const postTags = newPost.tags;
+      const tagLength = postTags.length;
+      for (tagIndex = 0; tagIndex < tagLength; tagIndex++) {
+        const currentTag = postTags[tagIndex];
+        const smallCurrentTag = currentTag.toLowerCase()
+        const checkExistingTag = await tagsRef.doc(smallCurrentTag).get();
         console.log("checkExistingTag: ", checkExistingTag.data());
         const existingTagData = checkExistingTag.data();
         if (existingTagData === undefined) {
           batch.set(
-            tagsRef.doc(newPost.tags[tagIndex]),
+            tagsRef.doc(smallCurrentTag),
             { 
-              name: newPost.tags[tagIndex], 
+              name: postTags[tagIndex], 
               count: tagCountIncrement,  
               // array of timestamps for the tag
               createdAt: now,
@@ -43,35 +52,73 @@ const addPostFire = (newPost) => {
             { merge: true }
           );
         } else {
-          let tagCountPlusOne = existingTagData.count + 1;
+          const tagCountPlusOne = existingTagData.count + 1;
           // the first timestamp
-          let tagTimestamp = existingTagData.createdAt;
+          const tagTimestamp = existingTagData.createdAt;
           
-          let fullDay = (now - tagTimestamp) / (3600 * 1000 * 24);
-          let newHeat = Number(tagCountPlusOne/fullDay);
+          const fullDayTag = (now - tagTimestamp) / (3600 * 1000 * 24);
+          const newHeatTag = Number(tagCountPlusOne/fullDayTag);
           batch.set(
-            tagsRef.doc(newPost.tags[tagIndex]),
+            tagsRef.doc(postTags[tagIndex]),
             { 
-              name: newPost.tags[tagIndex],
+              name: postTags[tagIndex],
               count: tagCountIncrement,  
               // array of timestamps for the tag
               lastTime: now,
-              heat: newHeat
+              heat: newHeatTag
             }, 
             { merge: true }
           );
         }
         
-        for (relatedTagIndex = 0; relatedTagIndex < newPost.tags.length; relatedTagIndex++) {
-          if (tagIndex !== relatedTagIndex) {
-            batch.set(
-              tagsRef.doc(newPost.tags[tagIndex]).collection('related').doc(newPost.tags[relatedTagIndex]),
-              {
-                name: newPost.tags[relatedTagIndex],
-                count: tagCountIncrement,
-              },
-              { merge: true }
-            );
+        // -- make bridges between each tag
+        // until tag index is less than tagLength - 1
+        if (tagIndex < tagLength - 1) {
+          for (relatedTagIndex = tagIndex + 1; relatedTagIndex < tagLength; relatedTagIndex++) {
+            console.log("relatedTagIndex: ", relatedTagIndex);
+
+            const rootTag = postTags[tagIndex];
+            const nextTag = postTags[relatedTagIndex]
+
+            console.log("rootTag: ", rootTag, "nextTag: ", nextTag);
+
+            const tagBridgeId = await makeTagBridgeId(rootTag, nextTag);
+
+            console.log("tag brideg id: ", tagBridgeId);
+
+            const checkExistingTagBridge = await tagBridgesRef.doc(tagBridgeId).get();
+            const existingTagBridgeData = checkExistingTagBridge.data();
+
+            console.log("existing tag brideg: ", existingTagBridgeData);
+
+            if (existingTagBridgeData === undefined) {
+              batch.set(
+                tagBridgesRef.doc(tagBridgeId),
+                {
+                  tags: [rootTag, nextTag],
+                  count: tagCountIncrement,
+                  heat: 0,
+                  createdAt: now
+                },
+                { merge: true }
+              );
+            } else {
+              const tagBridgeCountPlusOne = existingTagBridgeData.count + 1;
+              const tagBridgeTimestamp = existingTagBridgeData.createdAt;
+            
+              const fullDayTagBridge = (now - tagBridgeTimestamp) / (3600 * 1000 * 24);
+              const newHeatTagBridge = Number(tagBridgeCountPlusOne/fullDayTagBridge);
+              batch.set(
+                tagBridgesRef.doc(tagBridgeId),
+                {
+                  tags: [rootTag, nextTag],
+                  count: tagCountIncrement,
+                  heat: newHeatTagBridge,
+                  lastTime: now
+                },
+                { merge: true }
+              );
+            }
           };
         };
       };
@@ -114,11 +161,23 @@ const addPostFire = (newPost) => {
       //  - totalRating +rating
       //  - countRating(one, two, three, four, five)
 
-      if (newPost.tid && newPost.ratedPostId && newPost.rating && newPost.ratedTechId) {
+      if (
+        newPost.isRated &&
+        newPost.ratedBusId && 
+        newPost.ratedPostId && 
+        newPost.rating && 
+        newPost.ratedTechId
+      ) {
+        const nowTime = useConvertTime.convertToTime(now);
+        const nowMonthIndex = nowTime.monthIndex;
+        const nowNormalMonth = nowTime.normalMonth;
+        const nowYear = nowTime.year;
+        const monthYearId = nowNormalMonth + nowYear;
+
         const totalRatingIncrement = firebase.firestore.FieldValue.increment(newPost.rating);
         const countRatingIncrement = firebase.firestore.FieldValue.increment(1);
 
-        const usersTaggedRef = db.collection("users").doc(newPost.tid);
+        const ratedUserRef = db.collection("users").doc(newPost.ratedBusId);
 
         let ratedPostChange = { 
           countRating: countRatingIncrement, 
@@ -152,25 +211,45 @@ const addPostFire = (newPost) => {
         // bus rating
         // update the business user doc
         batch.set(
-          usersTaggedRef,
+          ratedUserRef,
           ratedPostChange,
+          { merge: true }
+        );
+
+        const ratedPostChageMonthYear = { 
+          ...ratedPostChange,
+          monthIndex: nowMonthIndex,
+          year: nowYear
+        };
+
+        // bus month rating
+        batch.set(
+          ratedUserRef.collection("rating_counts").doc(monthYearId),
+          ratedPostChageMonthYear,
           { merge: true }
         );
 
         // tech post rating
         batch.set(
-          usersTaggedRef.collection("technicians").doc(newPost.ratedTechId).collection("post_ratings").doc(newPost.ratedPostId),
+          ratedUserRef.collection("technicians").doc(newPost.ratedTechId).collection("post_ratings").doc(newPost.ratedPostId),
           ratedPostChange,
           { merge: true }
-        )
+        );
 
         // tech bus rating
         // update the tech user doc in technicians in the business doc
         batch.set(
-          usersTaggedRef.collection("technicians").doc(newPost.ratedTechId),
+          ratedUserRef.collection("technicians").doc(newPost.ratedTechId),
           ratedPostChange,
           { merge: true }
-        )
+        );
+
+        // tech bus month rating
+        batch.set(
+          ratedUserRef.collection("technicians").doc(newPost.ratedTechId).collection("rating_counts").doc(monthYearId),
+          ratedPostChageMonthYear,
+          { merge: true }
+        );
       };
       
       // final commit
@@ -183,22 +262,24 @@ const addPostFire = (newPost) => {
   });
 };
 
-const uploadFileAsyncFire = (userId, fileId, fileType, uri, changeProgress) => {
+const uploadFileAsyncFire = (userId, fileId, fileType, uri) => {
   return new Promise(async (res, rej) => {
     let path;
 
     if (fileType === 'video') {
       path = `${userId}/post/videos/${fileId}`;
     }
+    else if (fileType === 'photo') {
+      path = `${userId}/post/images/${fileId}`;
+    } 
     else if (fileType === 'image') {
-      path = `${userId}/post/photos/${fileId}`;
-    } else {
+      path = `${userId}/post/images/${fileId}`;
+    }
+    else {
       return
     };
-
     const response = await fetch(uri);
     const file = await response.blob();
-
     let upload = Firebase
       .storage()
       .ref(path)
@@ -216,9 +297,8 @@ const uploadFileAsyncFire = (userId, fileId, fileType, uri, changeProgress) => {
             console.log('Upload is running');
             break;
         }
-        let roundedProgress = Math.round(progress * 100);
-        console.log('Upload is ' + roundedProgress + '% done');
-        changeProgress(roundedProgress);
+        // let roundedProgress = Math.round(progress * 100);
+        // console.log('Upload is ' + roundedProgress + '% done');
       },
       err => {
         switch (err.code) {
@@ -239,7 +319,6 @@ const uploadFileAsyncFire = (userId, fileId, fileType, uri, changeProgress) => {
       async () => {
         upload.snapshot.ref.getDownloadURL()
         .then((URL) => {
-          changeProgress(null);
           res(URL);
         });
       }

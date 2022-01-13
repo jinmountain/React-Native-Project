@@ -18,7 +18,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 // Components
 import MainTemplate from '../../components/MainTemplate';
 import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
-import UserAccountHeaderForm from '../../components/profilePage/UserAccountHeaderForm';
+import UserAccountHeaderForm from '../../components/accountScreen/UserAccountHeaderForm';
 import ChatListDefault from '../../components/defaults/ChatListDefault';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 

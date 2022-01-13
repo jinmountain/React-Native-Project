@@ -13,7 +13,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import { snailShell } from '../../expoIcons';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -26,10 +26,10 @@ const DisplayPostsDefault = () => {
 		<View style={styles.displayPostsContainer}>
 			<View style={styles.displayPostsDefaultContainer}>
 			  <View style={styles.cloudContainer}>
-			  	{expoIcons.snailShell(RFValue(33), color.red2)}
+			  	{snailShell(RFValue(33), color.red2)}
 			  </View>
 			  <View style={styles.cloudContainer}>
-			  	{expoIcons.snailShell(RFValue(33), color.red2)}
+			  	{snailShell(RFValue(33), color.red2)}
 			  </View>
 			</View>
 		</View>

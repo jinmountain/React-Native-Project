@@ -18,21 +18,7 @@ import sizes from '../sizes';
 
 // Components
 import HeaderBottomLine from './HeaderBottomLine';
-
-const headerIconFinder = (iconName) => {
-  if (iconName === 'Back') {
-    return <Ionicons name="md-arrow-back" size={RFValue(24)} color={color.black1} />
-  } 
-  else if (iconName === 'Cancel') {
-    return <Feather name="x" size={RFValue(24)} color={color.black1} />
-  }
-  else if (iconName === 'Confirm') {
-    return <AntDesign name="check" size={RFValue(24)} color={color.black1} />
-  }
-  else {
-    return <Text style={styles.customText}>{iconName}</Text>
-  }
-}
+import AnimHighlight from './buttons/AnimHighlight';
 
 const headerBoxHeight = sizes.headerBoxHeight;
 
@@ -40,9 +26,11 @@ const HeaderForm = (
   {
     leftButtonTitle, 
     leftButtonIcon,
+    leftCustomButtonIcon,
     headerTitle,
     rightButtonTitle,
     rightButtonIcon,
+    rightCustomButtonIcon,
     leftButtonPress,
     rightButtonPress,
     headerCustomStyle,
@@ -85,12 +73,15 @@ const HeaderForm = (
           <View style={styles.leftCompartmentContainer}>
             <View style={styles.leftCompartmentInnerContainer}>
               {
+                leftCustomButtonIcon
+                ? leftCustomButtonIcon
+                :
                 leftButtonIcon &&
-                <TouchableHighlight 
-                  style={ 
-                    styles.compartmentHighlight 
+                <AnimHighlight 
+                  customStyles={
+                    styles.compartmentHighlight
                   }
-                  onPress={leftButtonPress}
+                  onPressOutAction={leftButtonPress}
                   // deplayPressIn={500}
                   // onPressIn={() => {
                   //   console.log("HAHA");
@@ -102,11 +93,13 @@ const HeaderForm = (
                     :
                     color.grey4
                   }
+                  content={
+                    <View style={styles.compartmentIconContainer}>
+                      <Text style={styles.buttonIconText}>{leftButtonIcon}</Text>
+                    </View>
+                  }
                 >
-                  <View style={styles.compartmentIconContainer}>
-                    <Text style={styles.buttonIconText}>{leftButtonIcon}</Text>
-                  </View>
-                </TouchableHighlight>
+                </AnimHighlight>
               }
               {
                 leftButtonTitle &&
@@ -141,7 +134,11 @@ const HeaderForm = (
                   <Text style={styles.compartmentText}>{rightButtonTitle}</Text>
                 </View>
               }
-              { rightButtonIcon &&
+              { 
+                rightCustomButtonIcon
+                ? rightCustomButtonIcon
+                :
+                rightButtonIcon &&
                 <TouchableHighlight 
                   style={styles.compartmentHighlight}
                   onPress={rightButtonPress}

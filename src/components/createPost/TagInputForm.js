@@ -57,8 +57,29 @@ const TagInputForm = ({ tags, setTags }) => {
       <View style={styles.textInputLabelContainer}>
         {tags.length < 1 
           ? <Text style={styles.textInputLabel}>Tags</Text>
-          : <View style={styles.tagsContainer} >
-              <FlatList
+          : <View style={styles.tagLineContainer}>
+              {
+                tags.map((item, index) => {
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => {
+                        setTags([...tags.filter((tag) => tag !== item)]);
+                      }}
+                    >
+                      <View style={styles.unitContainer}>
+                        <View style={styles.tagsContainer}>
+                          {expoIcons.snailShell(RFValue(15), color.black1)}
+                          <Text style={styles.tagText}>
+                            {item}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  )
+                })
+              }
+              {/*<FlatList
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 data={tags}
@@ -81,7 +102,7 @@ const TagInputForm = ({ tags, setTags }) => {
                     </TouchableOpacity>
                   )
                 }}
-              />
+              />*/}
             </View>
         }
       </View>
@@ -104,7 +125,6 @@ const TagInputForm = ({ tags, setTags }) => {
 
 const styles = StyleSheet.create({
   tagFormContainer: {
-    marginHorizontal: RFValue(10),
     marginTop: RFValue(10),
   },
   textInputLabel: {
@@ -113,6 +133,7 @@ const styles = StyleSheet.create({
     color: color.black1
   },
   textInputLabelContainer: {
+    flexWrap: 'wrap',
     minHeight: RFValue(25),
     paddingVertical: RFValue(11),
   },
@@ -129,6 +150,13 @@ const styles = StyleSheet.create({
     marginRight: RFValue(5),
     paddingVertical: RFValue(5),
     paddingHorizontal: RFValue(5),
+    marginTop: RFValue(5)
+  },
+  tagLineContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: "row",
+    flexWrap: 'wrap'
   },
   tagsContainer: {
     justifyContent: 'center',

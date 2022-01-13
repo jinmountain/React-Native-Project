@@ -29,9 +29,12 @@ import CollapsibleTabView from '../components/CollapsibleTabView';
 import color from '../color';
 
 // icon
-import expoIcons from '../expoIcons';
+// import expoIcons from '../expoIcons';
 
 const SnailScreen = ({ navigation }) => {
+  // image browser callback and selected photos
+  const [ selectedFiles, setSelectedFiles ] = useState([]);
+
   const [ showBottomSheet, setShowBottomSheet ] = useState(true);
 
   const [ mode, setMode ] = useState(null);
@@ -61,7 +64,7 @@ const SnailScreen = ({ navigation }) => {
   });
 
   const [ files, setFiles ] = useState([]);
-  const maxNumOfFiles = 4;
+  const maxNumOfFiles = 10;
 
   return (
     <View style={{ flex: 1 }}>
@@ -79,6 +82,17 @@ const SnailScreen = ({ navigation }) => {
               <Text>Show C Tab View</Text>
             </View>
           </TouchableHighlight>
+          <TouchableHighlight
+            style={{ borderWidth: 1, alignItems: 'center' }}
+            underlayColor={color.grey4}
+            onPress={() => {
+              setMode('imageBrowser');
+            }}
+          >
+            <View>
+              <Text>Show ImageBrowser</Text>
+            </View>
+          </TouchableHighlight>
         </View>
       }
       {
@@ -92,7 +106,7 @@ const SnailScreen = ({ navigation }) => {
           loadCount={50}
           emptyStayComponent={null}
           preloaderComponent={<ActivityIndicator size='large'/>}
-          mediaType={[MediaLibrary.MediaType.photo]}
+          mediaType={[MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video]}
           onChange={(num, onSubmit)  => {
             if (num === maxNumOfFiles) {
               console.log("selected max number of files");
@@ -101,9 +115,15 @@ const SnailScreen = ({ navigation }) => {
           }}
           callback={(callback) => {
             console.log(callback);
+            setSelectedFiles(callback);
+          }}
+          onFinish={(files) => {
+            setSelectedFiles(files);
+          }}
+          goBack={() => {
+            setMode(null);
           }}
           noCameraPermissionComponent={null}
-          renderSelectedComponent={null}
           renderExtraComponent={null}
         /> 
       }

@@ -266,17 +266,17 @@ const App = () => {
       };
     }
 
-    return () => {
-      // must unsubscribe when not in effect
-      if (notificationListener) {
-        console.log("App: unsubscribe: notificationListener");
-        notificationListener();
-      };
-      if (userDataListener) {
-        console.log("App: unsubscribe: userDataListener");
-        userDataListener();
-      };
-    };
+    // return () => {
+    //   // must unsubscribe when not in effect
+    //   if (notificationListener) {
+    //     console.log("App: unsubscribe: notificationListener");
+    //     notificationListener();
+    //   };
+    //   if (userDataListener) {
+    //     console.log("App: unsubscribe: userDataListener");
+    //     userDataListener();
+    //   };
+    // };
   }, [userRealtimeListenerSwitch]);
 
   return (

@@ -23,15 +23,6 @@ import PostEndSign from '../PostEndSign';
 // Hooks
 import { wait } from '../../hooks/wait';
 
-const { width, height } = Dimensions.get("window");
-
-// post user info box + image height + like comment button line + tag line
-const CARD_HEIGHT = RFValue(55) + width + RFValue(40) + RFValue(50);
-const CARD_WIDTH = width;
-const CARD_MARGIN = height * 0.03;
-const POST_INFO_BOX_HEIGHT = CARD_HEIGHT * 0.9 - CARD_WIDTH;
-const USER_INFO_HEADER_HEIGHT = CARD_HEIGHT * 0.1;
-
 const PostCardsVerticalSwipe = ({ 
 	postSource,
 	cardIndex,
@@ -51,6 +42,53 @@ const PostCardsVerticalSwipe = ({
 	accountUserId,
 	businessUserId
 }) => {
+
+	// -- screen orientation and reponsive state change
+		const { width, height } = Dimensions.get("window");
+		// post user info box + image height + like comment button line + tag line
+		const CARD_HEIGHT = RFValue(55) + width + RFValue(40) + RFValue(50);
+		const CARD_WIDTH = width;
+		const CARD_MARGIN = height * 0.03;
+		const POST_INFO_BOX_HEIGHT = CARD_HEIGHT * 0.9 - CARD_WIDTH;
+		const USER_INFO_HEADER_HEIGHT = CARD_HEIGHT * 0.1;
+		//	-- states
+		const [ cardHeight, setCardHeight ] = useState(CARD_HEIGHT);
+		const [ cardWidth, setCardWidth ] = useState(CARD_WIDTH);
+		const [ cardMargin, setCardMargin ] = useState(CARD_MARGIN);
+		const [ postInfoBoxHeight, setPostInfoBoxHeight ] = useState(POST_INFO_BOX_HEIGHT);
+		const [ userInfoHeaderHeight, setUserInfoHeaderHeight ] = useState(USER_INFO_HEADER_HEIGHT);
+		// -- screen orientation and reponsive state change
+		const orientation = useOrientation();
+	  useEffect(() => {
+	  	console.log("orientation: ", orientation);
+	    // if (orientation === 'LANDSCAPE') {
+	    // 	const newCardHeight = RFValue(55) + height + RFValue(40) + RFValue(50);
+	    // 	setCardHeight(newCardHeight);
+	    // 	const newCardWidth = height;
+	    // 	setCardWidth(newCardWidth);
+	    // 	console.log("newCardWidth: ", newCardWidth);
+	    // 	const newCardMargin = width * 0.03
+	    // 	setCardMargin(newCardMargin);
+	    // 	const newPostInfoBoxHeight = newCardHeight * 0.9 - newCardWidth;
+	    // 	setPostInfoBoxHeight(newPostInfoBoxHeight);
+	    // 	const newUserInfoHeaderHeight = newCardHeight * 0.1;
+	    // 	setUserInfoHeaderHeight(newUserInfoHeaderHeight);
+	    // }
+	    // if (orientation === 'PORTRAIT') {
+	    	const newCardHeight = RFValue(55) + width + RFValue(40) + RFValue(50);
+	    	setCardHeight(newCardHeight);
+	    	const newCardWidth = width;
+	    	setCardWidth(newCardWidth);
+	    	console.log("newCardWidth: ", newCardWidth);
+	    	const newCardMargin = height * 0.03
+	    	setCardMargin(newCardMargin);
+	    	const newPostInfoBoxHeight = newCardHeight * 0.9 - newCardWidth;
+	    	setPostInfoBoxHeight(newPostInfoBoxHeight);
+	    	const newUserInfoHeaderHeight = newCardHeight * 0.1;
+	    	setUserInfoHeaderHeight(newUserInfoHeaderHeight);
+	    // }
+	  }, [orientation]);
+
 	const isFocused = useIsFocused();
 	const _cardListView = useRef(null);
 
@@ -122,34 +160,25 @@ const PostCardsVerticalSwipe = ({
 	    showsVerticalScrollIndicator={false}
 	    data={swipePosts}
 	    keyExtractor={(post, index) => index.toString()}
-	    getItemLayout = {(data, index) => (
-	      {
-	        length: CARD_HEIGHT + CARD_MARGIN,
-	        offset: ( CARD_HEIGHT + CARD_MARGIN ) * index,
-	        index
-	      }
-	    )}
+	    getItemLayout = {
+	    	(data, index) => (
+		      {
+		        length: cardHeight + cardMargin,
+		        offset: ( cardHeight + cardMargin ) * index,
+		        index
+		      }
+		    )
+	    }
 	    renderItem={({ item: post, index }) => {
 				return (
 					<PostCard 
 						post={post}
-						postId={ post.id }
-						postData={ post.data }
-						currentUserId={ currentUser.id }
-						files={post.data.files}
-						tags={post.data.tags}
-						totalRating={post.data.totalRating}
-						countRating={post.data.countRating}
-						caption={post.data.caption}
-						defaultCaptionNumLines={1}
-						postUserId={post.data.uid}
-						likeCount={post.data.likeCount}
-						postTimestamp={post.data.createdAt}
+						currentUserId={currentUser.id}
 						currentUserPhotoURL={currentUser.photoURL}
 						isCardFocused={focusedCardIndex === index}
-						CARD_HEIGHT={CARD_HEIGHT}
-						CARD_WIDTH={CARD_WIDTH}
-						CARD_MARGIN={CARD_MARGIN}
+						cardHeight={cardHeight}
+						cardWidth={cardWidth}
+						cardMargin={cardMargin}
 						cardIndex={index}
 						// setShowCommentPostIndex={setShowCommentPostIndex}
 					/>

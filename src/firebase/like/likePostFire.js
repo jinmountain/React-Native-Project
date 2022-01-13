@@ -11,7 +11,6 @@ const likePostFire = (postId, uid) => {
 	return new Promise ((res, rej) => {
     const postsUserLikesRef = postsRef.doc(postId).collection("whoLike");
     const likeCountIncrement = firebase.firestore.FieldValue.increment(1);
-
     const getLike = postsUserLikesRef.doc(uid).get();
     getLike
     .then((doc) => {
@@ -29,12 +28,16 @@ const likePostFire = (postId, uid) => {
           const timePassedInSec = (Date.now() - postData.createdAt) / 1000;
           const newHeat = Number((postData.likeCount + 1) / timePassedInSec);
           // console.log("likeFire: " + postId + " like + 1 " + " new heat: ", newHeat);
-          // make a new doc in linkes
-          postsUserLikesRef.doc(uid).set({
-            uid: uid,
-            postId: postId,
-            createdAt: Date.now()
-          });
+          // make a new doc in likes
+          postsUserLikesRef
+          .doc(uid)
+          .set(
+            {
+              uid: uid,
+              postId: postId,
+              createdAt: Date.now()
+            }
+          );
           // Posts Ref
           postsRef
           .doc(postId)

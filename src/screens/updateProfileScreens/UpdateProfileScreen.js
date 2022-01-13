@@ -20,7 +20,7 @@ import { InputFormBottomLine } from '../../components/InputFormBottomLine';
 import ButtonA from '../../components/ButtonA';
 import { HeaderForm } from '../../components/HeaderForm';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
-import UserDataEditButtonForm from '../../components/profilePage/UserDataEditButtonForm';
+import UserDataEditButtonForm from '../../components/accountScreen/UserDataEditButtonForm';
 
 // firebase
 import { profileUpdateFire } from '../../firebase/profileUpdateFire';

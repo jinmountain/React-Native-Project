@@ -26,7 +26,7 @@ import MainTemplate from '../components/MainTemplate';
 import { HeaderForm } from '../components/HeaderForm';
 import ChatBox from '../components/chat/ChatBox';
 import CancelButton from '../components/CancelButton';
-import UserAccountHeaderForm from '../components/profilePage/UserAccountHeaderForm';
+import UserAccountHeaderForm from '../components/accountScreen/UserAccountHeaderForm';
 import MultiplePhotosIndicator from '../components/MultiplePhotosIndicator';
 import ChatScreenDefault from '../components/defaults/ChatScreenDefault';
 import DisplayPostsDefault from '../components/defaults/DisplayPostsDefault';

@@ -28,9 +28,12 @@ import { Feather } from '@expo/vector-icons';
 import color from '../color';
 
 // icon
-import expoIcons from '../expoIcons';
+import {
+  featherMoreHorizontal,
+  evilIconsClose
+} from '../expoIcons';
 
-const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId, currentUserId }) => {
+const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId, currentUserId, deletePostState }) => {
   return (
     <View
       style={{
@@ -50,7 +53,7 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
           alignItems: 'center',
         }}>
           <View style={{ flex: 1, paddingLeft: RFValue(27) }}>
-            <Text>{expoIcons.featherMoreHorizontal(RFValue(27), color.black1)}</Text>
+            <Text>{featherMoreHorizontal(RFValue(27), color.black1)}</Text>
           </View>
           <TouchableHighlight
             style={{ 
@@ -66,7 +69,7 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
             underlayColor={color.grey4}
           >
             <View>
-              {expoIcons.evilIconsClose(RFValue(27), color.black1)}
+              {evilIconsClose(RFValue(27), color.black1)}
             </View>
           </TouchableHighlight>
         </View>
@@ -143,11 +146,13 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
 							goBackFirst
 							.then(() => {
 								navigation.navigate(
-									"DeletionConfirmationScreen",
+									"PostDeleteConfirmation",
 									{ 
-										requestType: 'post',
-		                postId: postId,
-		                postData: postData
+										headerText: "Delete Post?", 
+                    messageText: "This can’t be undone and it will be removed from your account and Snail search results.", 
+                    postId: postId, 
+                    postData: postData,
+                    deletePostState: deletePostState
 		              }
 								);
 							});
@@ -171,7 +176,7 @@ const RenderContent = ({ navigation, contentHeight, postId, postData, postUserId
 };
 
 const PostManagerScreen = ({ route, navigation }) => {
-	const { postId, postData, postUserId, currentUserId } = route.params;
+	const { postId, postData, postUserId, currentUserId, deletePostState } = route.params;
 
 	const sheetRef = useRef(null);
   const [ bottomSheetHeight, setBottomSheetHeight ] = useState(RFValue(300));
@@ -203,6 +208,7 @@ const PostManagerScreen = ({ route, navigation }) => {
               postData={postData}
               postUserId={postUserId}
               currentUserId={currentUserId}
+              deletePostState={deletePostState}
             />
           )
         }}

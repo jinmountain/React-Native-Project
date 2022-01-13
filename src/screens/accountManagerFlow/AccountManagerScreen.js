@@ -34,7 +34,10 @@ import HeaderBottomLine from '../../components/HeaderBottomLine';
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import {
+	ioniconsMdArrowBack,
+	phoneIcon,
+} from '../../expoIcons';
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width/3 - 8; // borderWidth + marginHorizontal * 2 = 8
@@ -51,7 +54,7 @@ const AccountManagerScreen = ({ navigation }) => {
 			<HeaderForm 
 				addPaddingTop={true}
         leftButtonTitle={user.username}
-        leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+        leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
         // headerTitle={"Account Manager"} 
         rightButtonTitle={null} 
         leftButtonPress={() => {
@@ -84,7 +87,7 @@ const AccountManagerScreen = ({ navigation }) => {
 							onPress={() => {
 								navigation.navigate("SetPhoneNumber");
 							}}
-							icon={expoIcons.phoneIcon(RFValue(27), color.black1)}
+							icon={phoneIcon(RFValue(27), color.black1)}
 							text={"Phone number"}
 						/>
 						<HeaderBottomLine />

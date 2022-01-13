@@ -41,6 +41,7 @@ const convertToTime = (timestamp) => {
 	var year = getTime.getFullYear();
 	var monthIndex = getTime.getMonth();
 	var month = months[getTime.getMonth()];
+	var normalMonth = monthIndex < 10 ? `0${monthIndex}` : monthIndex;
 	var date = getTime.getDate();
 	var dayIndex = getTime.getDay();
 	var day = days[getTime.getDay()];
@@ -62,6 +63,7 @@ const convertToTime = (timestamp) => {
 		year: year,
 		monthIndex: monthIndex,
 		month: month,
+		normalMonth: normalMonth,
 		date: date,
 		dayIndex: dayIndex,
 		day: day,

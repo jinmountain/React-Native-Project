@@ -6,7 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   TouchableHighlight,
-  Dimensions
+  Dimensions,
+  Animated,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -38,16 +39,16 @@ const UserLikeScreen = ({ navigation }) => {
         }}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: offset } } }],
-          { useNativeDriver: false }
-        )}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        // onScroll={Animated.event(
+        //   [{ nativeEvent: { contentOffset: { y: offset } } }],
+        //   { useNativeDriver: false }
+        // )}
+        // refreshControl={
+        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        // }
         stickyHeaderIndices={[0]}
       >
-        <HeaderScrollExpandAnim 
+{/*        <HeaderScrollExpandAnim 
           animValue={offset}
           headerTitle={"Reservations"}
           maxHeaderHeight={RFValue(190)}
@@ -55,7 +56,7 @@ const UserLikeScreen = ({ navigation }) => {
           maxHeaderTitleSize={RFValue(45)}
           minHeaderTitleSize={RFValue(17)}
           backgroundColor={color.white2}
-        />
+        />*/}
       </ScrollView>
       {
         showAlertBoxTop &&

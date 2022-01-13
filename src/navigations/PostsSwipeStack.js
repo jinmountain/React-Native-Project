@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 // Screens
 import PostsSwipeScreen from '../screens/PostsSwipeScreen';
 import PostManagerScreen from '../screens/PostManagerScreen';
-import DeletionConfirmationScreen from '../screens/DeletionConfirmationScreen';
+import PostDeleteConfirmationScreen from '../screens/PostDeleteConfirmationScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 
 import CommentScreen from '../screens/comment/CommentScreen';

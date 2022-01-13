@@ -10,7 +10,6 @@ export const useOrientation = () => {
         setOrientation("PORTRAIT")
       } else {
         setOrientation("LANDSCAPE")
-    
       }
     })
     return () => {

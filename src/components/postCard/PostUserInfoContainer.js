@@ -31,13 +31,19 @@ import { timeDifference } from '../../hooks/timeDifference';
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {featherMoreVertical} from '../../expoIcons';
 
 const { width, height } = Dimensions.get("window");
 // const CARD_HEIGHT = height * 0.77;
 const DEFAULT_USER_INFO_BOX_HEIGHT = RFValue(55);
 
-const PostUserInfoContainer = ({ postId, postData, currentUserId, postTimestamp }) => {
+const PostUserInfoContainer = ({ 
+  postId, 
+  postData, 
+  currentUserId, 
+  postTimestamp,
+  deletePostState
+}) => {
   const [ postUser, setPostUser ] = useState(null);
 
   useEffect(() => {
@@ -75,14 +81,14 @@ const PostUserInfoContainer = ({ postId, postData, currentUserId, postTimestamp 
         <TouchableOpacity 
           style={styles.infoContainer}
           onPress={() => {
-            postData.uid === currentUserId
-            ?
-            navigation.navigate('AccountTab')
-            :
+            // postData.uid === currentUserId
+            // ?
+            // navigation.navigate('AccountTab')
+            // :
             navigation.navigate('UserAccountTab', {
               screen: 'UserAccount',
               params: {
-                accountUserId: postUser.id
+                accountUserId: postData.uid
               }
             })
           }}
@@ -150,12 +156,13 @@ const PostUserInfoContainer = ({ postId, postData, currentUserId, postTimestamp 
               postData: postData,
               postUserId: postUser.id,
               currentUserId: currentUserId,
+              deletePostState: deletePostState,
             })
           }
           underlayColor={color.grey4}
           style={styles.pmButton}
         >
-          {expoIcons.featherMoreVertical(RFValue(23), color.grey2)}
+          {featherMoreVertical(RFValue(23), color.grey2)}
         </TouchableHighlight>
       </View>
     </View>

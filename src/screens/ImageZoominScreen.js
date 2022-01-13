@@ -4,7 +4,9 @@ import {
 	StyleSheet, 
 	View, 
 	Image, 
-	Dimensions 
+	Dimensions,
+	SafeAreaView,
+	Animated,
 } from 'react-native';
 // import ImageView from "react-native-image-viewing";
 import { Video, AVPlaybackStatus } from 'expo-av';
@@ -19,7 +21,7 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 // icon
-import expoIcons from '../expoIcons';
+import {ioniconsMdArrowBack} from '../expoIcons';
 
 // color
 import color from '../color';
@@ -32,19 +34,30 @@ const ImageZoominScreen = ({ route, navigation }) => {
 
 	return (
 		<View style={styles.screenContainer}>
-			<HeaderForm 
-				addPaddingTop={true}
-				leftButtonTitle={null}
-				leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
-        leftButtonPress={() => {
-          navigation.goBack(); 
-        }}
-			/>
+			<Animated.View 
+				style={[
+					styles.headerBarContainer,
+					{ transform: [{translateY: 0}] }
+				]}
+
+			>
+				<SafeAreaView/>
+				<HeaderForm 
+					leftButtonTitle={null}
+					leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
+	        leftButtonPress={() => {
+	          navigation.goBack(); 
+	        }}
+				/>
+			</Animated.View>
 			<View style={styles.fileContainer}>
 				{
 					file.type == 'image'
 					?
 					<ImageViewer
+						onMove={() => {
+							
+						}}
 					  imageUrls={[{ url: file.url }]}
 					  onSwipeDown={() => {
 					  	navigation.goBack();
@@ -57,6 +70,7 @@ const ImageZoominScreen = ({ route, navigation }) => {
 					  onClick={() => {
 					  	setHideSurrounds(!hideSurrounds);
 					  }}
+					  saveToLocalByLongPress={false}
 					/>
 					: file.type  == 'video'
 					?
@@ -81,12 +95,29 @@ const ImageZoominScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
 	screenContainer: {
 		flex: 1,
-		justifyContent: 'center',
+		backgroundColor: color.white2
 	},
+	headerBarContainer: { 
+		position: 'absolute',
+		width: '100%',
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 	fileContainer: {
 		elevation: 10,
 		flex: 1,
 		justifyContent: 'center',
+		backgroundColor: color.white2
 	},
 	image: {
 		width: windowWidth, 

@@ -192,7 +192,6 @@ const CommentScreen = ({ navigation, route }) => {
                         ?
                         <View style={styles.cardVideoContainer}>
                           <Video
-                            ref={video}
                             style={{ width: imageWidth, height: imageWidth }}
                             source={{
                               uri: item.url,

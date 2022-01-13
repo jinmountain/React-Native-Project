@@ -178,8 +178,24 @@ const matStarBoxMultipleOutline = (size, color) => {
 	return <MaterialCommunityIcons name="star-box-multiple-outline" size={size} color={color} />
 };
 
+const featherRotateCw = (size, color) => {
+	return <Feather name="rotate-cw" size={size} color={color} />
+};
 
-export default { 
+const featherRotateCcw = (size, color) => {
+	return <Feather name="rotate-ccw" size={size} color={color} />
+};
+
+const featherBook = (size, color) => {
+	return <Feather name="book" size={size} color={color} />
+};
+
+const featherBookOpen = (size, color) => {
+	return <Feather name="book-open" size={size} color={color} />
+};
+
+
+export { 
 	dollarSign, 
 	entypoDot, 
 	antClose, 
@@ -221,5 +237,9 @@ export default {
 	antdesignStaro,
 	antdesignStar,
 	antdesignPicture,
-	matStarBoxMultipleOutline
+	matStarBoxMultipleOutline,
+	featherRotateCw,
+	featherRotateCcw,
+	featherBook,
+	featherBookOpen
 };

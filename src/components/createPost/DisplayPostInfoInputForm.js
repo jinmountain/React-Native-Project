@@ -34,7 +34,7 @@ import businessGetFire from '../../firebase/businessGetFire';
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import { antdesignStaro } from '../../expoIcons';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -335,7 +335,7 @@ const DisplayPostInfoInputForm = ({
                   />
                   <View>
                     <Text stlye={styles.techInfoText}>
-                      {expoIcons.antdesignStaro(RFValue(13), color.yellow2)} {item.countRating ? (Math.round(item.totalRating/item.countRating * 10) / 10) : "-"}
+                      {antdesignStaro(RFValue(13), color.yellow2)} {item.countRating ? (Math.round(item.totalRating/item.countRating * 10) / 10) : "-"}
                     </Text>
                   </View>
                   { 

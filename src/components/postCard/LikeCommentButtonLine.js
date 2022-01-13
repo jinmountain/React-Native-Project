@@ -27,16 +27,20 @@ import likeGetFire from '../../firebase/like/likeGetFire.js'
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import {
+  evilIconsChevronDown, 
+  evilIconsChevronUp, 
+  featherBookmark
+} from '../../expoIcons';
 
 // Components
 import THButtonWOBorder from '../buttons/THButtonWOBorder';
-import AliveHighlight from '../buttons/AliveHighlight';
+import AnimHighlight from '../buttons/AnimHighlight';
 
 const LikeCommentButtonLine = ({ 
   countRating, 
   postId, 
-  uid, 
+  postUserId, 
   likeCount,
   commentCount,
   currentUserId,
@@ -74,7 +78,7 @@ const LikeCommentButtonLine = ({
   }, []);
 
   return (
-    <AliveHighlight
+    <AnimHighlight
       content={
         <View 
           style={styles.likeCommentButtonContainer}
@@ -89,8 +93,8 @@ const LikeCommentButtonLine = ({
             <View style={styles.expandInfoBoxIconContainer}>
               {
                 !expandInfoBox
-                ? expoIcons.evilIconsChevronDown(RFValue(27), color.black1)
-                : expoIcons.evilIconsChevronUp(RFValue(27), color.black1)
+                ? evilIconsChevronDown(RFValue(27), color.black1)
+                : evilIconsChevronUp(RFValue(27), color.black1)
               }
             </View>
           }
@@ -101,7 +105,7 @@ const LikeCommentButtonLine = ({
               style={styles.buttonContainer}
               onPress={() => {
                 setLike(false); 
-                likePostFire.undoLikePostFire(postId, uid);
+                likePostFire.undoLikePostFire(postId, currentUserId);
                 setLikeCountState(likeCountState - 1);
               }}
             >
@@ -114,7 +118,7 @@ const LikeCommentButtonLine = ({
               style={styles.buttonContainer}
               onPress={() => {
                 setLike(true);
-                likePostFire.likePostFire(postId, uid);
+                likePostFire.likePostFire(postId, currentUserId);
                 setLikeCountState(likeCountState + 1);
               }}
             >
@@ -155,7 +159,7 @@ const LikeCommentButtonLine = ({
               console.log("book mark");
             }}
           >
-            {expoIcons.featherBookmark(styles.buttonSize, color.black1)}
+            {featherBookmark(styles.buttonSize, color.black1)}
           </TouchableOpacity>
         </View>
       }

@@ -19,7 +19,7 @@ import PostCardCommentLine from "./PostCardCommentLine";
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+// import expoIcons from '../../expoIcons';
 
 const PostInfoBox = ({
   tags, 
