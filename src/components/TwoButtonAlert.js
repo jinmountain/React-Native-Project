@@ -5,7 +5,7 @@ import {
 	Text,
 	Pressable,
 	TouchableOpacity, 
-	TouchableHighlight 
+	TouchableHighlight
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -95,10 +95,11 @@ const styles = StyleSheet.create({
 		shadowRadius: 3,
 		// elevation for android
 		elevation: 5,
+		zIndex: 5
 	},
 	
 	titleContainer: {
-		flex: 0.7,
+		paddingVertical: RFValue(15),
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
@@ -108,15 +109,14 @@ const styles = StyleSheet.create({
 	},
 	messageContainer: {
 		flex: 1,
-		justifyContent: 'center',
 		alignItems: 'center',
-		padding: RFValue(7),
+		padding: RFValue(10),
 	},
 	messageText: {
 		fontSize: RFValue(17)
 	},
 	actionContainer: {
-		flex: 1,
+		height: RFValue(75),
 		flexDirection: 'row',
 	},
 	buttonContainer: {

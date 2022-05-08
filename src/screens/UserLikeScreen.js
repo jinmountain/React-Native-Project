@@ -58,13 +58,13 @@ const UserLikeScreen = ({ navigation }) => {
           backgroundColor={color.white2}
         />*/}
       </ScrollView>
-      {
+{/*      {
         showAlertBoxTop &&
         <AlertBoxTop 
           setAlert={setShowAlertBoxTop}
           alertText={alertBoxTopText}
         />
-      }
+      }*/}
     </View>
   )
 };

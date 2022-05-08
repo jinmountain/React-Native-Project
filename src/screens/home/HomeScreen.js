@@ -7,10 +7,10 @@ import {
 	Button,
 	StyleSheet, 
 	TouchableOpacity,
+	SafeAreaView,
 	Image,
 	Dimensions,
 } from 'react-native';
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { Video, AVPlaybackStatus } from 'expo-av';
 
@@ -20,7 +20,9 @@ import { Context as AuthContext } from '../../context/AuthContext';
 import { Context as SocialContext } from '../../context/SocialContext';
 
 // Hooks
-import postGetFire from '../../firebase/post/postGetFire';
+import {
+	getHotPostsFire
+} from '../../firebase/post/postGetFire';
 
 // Designs
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -74,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
 		let isMounted = true;
 		if( hotPostFetchSwitch && !hotPostState) {
 			isMounted && setHotPostState(true);
-			const getHotPosts = postGetFire.getHotPostsFire(null, user.id);
+			const getHotPosts = getHotPostsFire(null, user.id);
 			getHotPosts
 			.then((posts) => {
 				isMounted && setHotPosts(posts.fetchedPosts);
@@ -144,7 +146,8 @@ const HomeScreen = ({ navigation }) => {
   const [status, setStatus] = React.useState({});
   
 	return (
-		<View style={{ flex: 1 }}>
+		<View style={{ flex: 1, backgroundColor: color.white2 }}>
+			<SafeAreaView />
 			<View>
 				<Text>
 					{i18n.t('greeting')}
@@ -199,17 +202,28 @@ const HomeScreen = ({ navigation }) => {
 						>
 							<TouchableOpacity
 		            onPress={() => {
-		              navigation.navigate( 
-	              		'PostsSwipe',
-	                	{
-		                	postSource: "hot",
+		            	navigation.navigate("HomePostsSwipeStack", {
+		              	screen: 'PostsSwipe',
+      							params: {
+      								postSource: "hot",
 		                  cardIndex: 0,
                 			posts: hotPosts,
   										postState: hotPostState,
 											postFetchSwitch: hotPostFetchSwitch,
 											postLast: hotPostLast,
-		                } 
-		              );
+		                }
+		              });
+		         //      navigation.navigate( 
+	          //     		'PostsSwipe',
+	          //       	{
+		         //        	postSource: "hot",
+		         //          cardIndex: 0,
+           //      			posts: hotPosts,
+  									// 	postState: hotPostState,
+											// postFetchSwitch: hotPostFetchSwitch,
+											// postLast: hotPostLast,
+		         //        } 
+		         //      );
 		            }}
 		          > 
 		          	{ 
@@ -361,7 +375,7 @@ const HomeScreen = ({ navigation }) => {
 			    </View>
 				</View>
 			</ScrollView>
-			<NavigationBar/>
+			<SafeAreaView />
 		</View>
   );
 };

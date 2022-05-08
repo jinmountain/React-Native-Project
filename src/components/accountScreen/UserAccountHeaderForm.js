@@ -5,9 +5,13 @@ import {
 	Text,  
 	TouchableOpacity,
 	TouchableHighlight,
+  SafeAreaView,
+  ImageBackground,
   Platform,
+  Pressable
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 // Designs
 // import { AntDesign } from '@expo/vector-icons';
@@ -26,15 +30,18 @@ import { useOrientation } from '../../hooks/useOrientation';
 
 // Components
 import HeaderBottomLine from '../../components/HeaderBottomLine';
+import AnimScaleButton from '../../components/buttons/AnimScaleButton';
 
-const headerBoxHeight = sizes.headerBoxHeight;
+const headerBoxHeight = sizes.headerBoxHeight + RFValue(10);
 
 const UserAccountHeaderForm = ({ 
   userActiveState,
   leftButtonTitle, 
   leftButtonIcon,
   leftButtonPress,
+  coverPhotoMode,
   username, 
+  usernameTextStyle,
   title, 
   firstIcon, 
   secondIcon,
@@ -42,151 +49,132 @@ const UserAccountHeaderForm = ({
   firstOnPress, 
   secondOnPress,
   thirdOnPress,
-  addPaddingTop,
-  paddingTopCustomStyle
 }) => {
   const orientation = useOrientation();
 	return (
-    <View style={styles.headerShadow}>
-      {
-        addPaddingTop &&
-        <View 
-          style={
-            paddingTopCustomStyle
-            ?
-            [styles.safeAreaPadding, paddingTopCustomStyle]
-            :
-            styles.safeAreaPadding
-          }
-        />
-      }
-  		<View 
-        // style={{ ...styles.accountScreenHeaderContainer, ...{ 
-        //   height: orientation === 'LANDSCAPE' ? headerBoxHeight : RFValue(70), 
-        //   minHeight: orientation === 'LANDSCAPE' ? headerBoxHeight : RFValue(70), } 
-        // }}
-        style={styles.accountScreenHeaderContainer}
-      >
-        <View style={styles.compartmentOuter}>
-          <View style={styles.leftCompartmentContainer}>
-            <View style={styles.leftCompartmentInnerContainer}>
-              {
-                leftButtonIcon
-                ?
-                <TouchableHighlight 
-                  style={ 
-                    styles.compartmentHighlight 
-                  }
-                  onPress={leftButtonPress}
-                  // deplayPressIn={500}
-                  // onPressIn={() => {
-                  //   console.log("HAHA");
-                  // }}
-                  underlayColor={color.grey4}
-                >
-                  <View style={styles.compartmentIconContainer}>
-                    {leftButtonIcon}
-                  </View>
-                </TouchableHighlight>
-                :
-                <View style={{ width: RFValue(17) }}/>
-              }
-              {
-                leftButtonTitle &&
-                <View style={styles.compartmentTextContainer}>
-                  <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
-                </View>
-              }
-              <View style={styles.usernameContainer}>
-                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={styles.compartmentText}>{username}</Text>
-                </View>
-                {
-                  userActiveState
+		<View style={styles.accountScreenHeaderContainer}>
+      <View style={styles.compartmentOuter}>
+        <View style={styles.leftCompartmentContainer}>
+          <View style={styles.leftCompartmentInnerContainer}>
+            {
+              leftButtonIcon
+              ?
+              <AnimScaleButton
+                icon={leftButtonIcon}
+                onPress={leftButtonPress}
+                customButtonContainerStyle={
+                  coverPhotoMode
                   ?
-                  <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                    {userActiveState}
-                  </View>
-                  :
-                  null
+                  [ styles.leftIconContainer, { backgroundColor: 'rgba(0, 0, 0, 0.3)' } ]
+                  : styles.leftIconContainer
                 }
+                customScaleValue={1.1}
+              />
+              :
+              <View style={{ width: RFValue(17) }}/>
+            }
+            {
+              leftButtonTitle &&
+              <View style={styles.compartmentTextContainer}>
+                <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
               </View>
+            }
+            <View style={
+              coverPhotoMode
+              ?
+              [ styles.usernameContainer, { backgroundColor: 'rgba(0, 0, 0, 0.3)' } ]
+              :styles.usernameContainer
+            }>
+              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={[styles.compartmentText, usernameTextStyle]}>{username}</Text>
+              </View>
+              {
+                userActiveState
+                ?
+                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                  {userActiveState}
+                </View>
+                :
+                null
+              }
             </View>
           </View>
-
-    		  <View style={styles.rightCompartmentContainer}>
-    		    <View style={styles.headerCompartmentContainer}>
-    					<View style={styles.headerElementsInRow}>
-                { firstIcon &&
-                  <TouchableOpacity 
-                    onPress={firstOnPress}
-                    style={styles.headerElement}
-                  >
-                    <Text style={styles.iconText}>{firstIcon}</Text>
-                  </TouchableOpacity>
-                }
-                { secondIcon &&
-                  <TouchableOpacity 
-                    onPress={secondOnPress}
-                    style={styles.headerElement}
-                  >
-                    <Text style={styles.iconText}>{secondIcon}</Text>
-                  </TouchableOpacity>
-                }
-    						{
-                  thirdIcon &&
-                  <TouchableOpacity 
-                    onPress={thirdOnPress}
-                    style={styles.headerElement}
-                  >
-                    <Text style={styles.iconText}>{thirdIcon}</Text>
-                  </TouchableOpacity>
-                }
-    					</View>
-    				</View>
-    		  </View>
         </View>
-        <HeaderBottomLine />
-  		</View>
-    </View>
+
+  		  <View style={styles.rightCompartmentContainer}>
+  		    <View style={styles.headerCompartmentContainer}>
+  					<View style={styles.headerElementsInRow}>
+              { firstIcon &&
+                <Pressable 
+                  onPress={firstOnPress}
+                >
+                  <View style={
+                    coverPhotoMode
+                    ?
+                    [styles.headerElement, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]
+                    : styles.headerElement
+                  }>
+                    <Text style={styles.iconText}>{firstIcon}</Text>
+                  </View>
+                </Pressable>
+              }
+              { secondIcon &&
+                <Pressable 
+                  onPress={secondOnPress}
+                >
+                  <View style={
+                    coverPhotoMode
+                    ?
+                    [styles.headerElement, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]
+                    : styles.headerElement
+                  }>
+                    <Text style={styles.iconText}>{secondIcon}</Text>
+                  </View>
+                </Pressable>
+              }
+  						{
+                thirdIcon &&
+                <Pressable 
+                  onPress={thirdOnPress}
+                >
+                  <View style={
+                    coverPhotoMode
+                    ?
+                    [styles.headerElement, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]
+                    : styles.headerElement
+                  }>
+                    <Text style={styles.iconText}>{thirdIcon}</Text>
+                  </View>
+                </Pressable>
+              }
+  					</View>
+  				</View>
+  		  </View>
+      </View>
+		</View>
 	)
 };
 
 const styles = StyleSheet.create({
-  headerShadow: {
-    backgroundColor: color.white2,
-    // shadowColor: "#000",
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // 
-
+	accountScreenHeaderContainer: {
+    justifyContent: 'center',
+    height: headerBoxHeight,
+    // backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
     // for android
-    // elevation: 10,
+    elevation: 5,
     // for ios
     zIndex: 5,
   },
-	accountScreenHeaderContainer: {
-    justifyContent: 'center',
-    // same % as the header form 
-    backgroundColor: '#FFF',
-    // ...Platform.select({
-    //   android: {
-    //     marginTop: '7%',
-    //   },
-    //   ios: {
-    //     marginTop: '11%',
-    //   },
-    //   default: {
-    //     marginTop: '7%',
-    //   }
-    // })
-    height: headerBoxHeight,
-  },
   compartmentOuter: {
-    flex: 1, 
-    justifyContent: 'center'
+    flex: 1,
+    justifyContent: 'center',
   },
   leftCompartmentContainer: {
     position: 'absolute',
@@ -206,6 +194,9 @@ const styles = StyleSheet.create({
     fontSize: RFValue(19)
   },
   usernameContainer: {
+    paddingHorizontal: RFValue(10),
+    paddingVertical: RFValue(5),
+    borderRadius: RFValue(10),
     flexDirection: 'row',
   },
 
@@ -230,21 +221,20 @@ const styles = StyleSheet.create({
   headerElementsInRow: {
   	flexDirection: 'row',
   	justifyContent: 'space-around',
-  	flex: 1,
+    alignItems: 'center',
   },
   headerElement: {
-  	marginHorizontal: RFValue(3),
+    marginHorizontal: RFValue(3),
   	padding: RFValue(5),
   	borderRadius: RFValue(100),
   	justifyContent: 'center',
   	alignItems: 'center',
   },
 
-  compartmentHighlight: {
+  leftIconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: headerBoxHeight,
-    height: headerBoxHeight,
+    marginHorizontal: RFValue(10),
     borderRadius: RFValue(100),
   },
   compartment: {
@@ -265,7 +255,7 @@ const styles = StyleSheet.create({
   },
 
   iconText: {
-    color: color.black1,
+    color: color.white2,
     fontSize: RFValue(19)
   },
 });

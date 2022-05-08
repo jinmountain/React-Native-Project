@@ -6,18 +6,17 @@ import {
   Button, 
   Image, 
   View,
-  TouchableOpacity
+  TouchableOpacity,
+  SafeAreaView
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Video } from "expo-av";
 import { Audio } from 'expo-av';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import CancelButton from '../components/CancelButton';
+import CancelButton from '../components/buttons/CancelButton';
 
-import { SafeAreaView, } from 'react-native-safe-area-context';
-
-// Componeㅜts
+// Components
 import { HeaderForm } from '../components/HeaderForm';
 
 const WINDOW_HEIGHT = Dimensions.get("window").height;

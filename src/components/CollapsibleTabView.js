@@ -24,7 +24,7 @@ import {TabView, TabBar} from 'react-native-tab-view';
 import { useOrientation } from '../hooks/useOrientation';
 
 // expo icons
-import expoIcons from '../expoIcons';
+// import expoIcons from '../expoIcons';
 
 // color
 import color from '../color';

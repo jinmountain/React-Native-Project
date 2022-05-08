@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { 
 	View, 
 	StyleSheet,
@@ -37,7 +37,14 @@ import { Entypo } from '@expo/vector-icons';
 import color from '../../color';
 
 // expo icons
-import expoIcons from '../../expoIcons';
+import {
+	chevronBack,
+	antdesignBars,
+	entypoNewMessage,
+	mcCheckCircle,
+	mcCheckBoxBlankCircle,
+	ioniconsMdArrowBack
+} from '../../expoIcons';
 
 // Hooks
 import count from '../../hooks/count';
@@ -144,32 +151,6 @@ const ChatListScreen = ({ navigation }) => {
 		};
 	}, [isFocused])
 
- 	// useFocusEffect(
-  //   useCallback(() => {
-  //   	if (chatFetchState === false && chatFetchSwitch === true) {
-  //   		setChatFetchSwitch(true);
-  //   		const getChatsUserIn = chatGetFire.getChatsUserIn(
-		// 			user.id, 
-		// 			setChatLast,
-		// 			setChatFetchSwitch,
-		// 			chatLast,  
-		// 			isFocused
-		// 		)
-		// 		getChatsUserIn
-		// 		.then((chatsFetched) => {
-		// 			addChatList(chatsFetched);
-		// 			if (chatsFetched) {
-		// 				setScreenReady(true);
-		// 			}
-		// 			setChatFetchState(false);
-		// 		})
-  //   	}
-  //     return () => {
-  //     	clearChatList();
-  //     }
-  //   }, [])
-  // );
-
   useEffect(() => {
   	if (chatFetchState === false && chatFetchSwitch === true) {
   		setChatFetchSwitch(true);
@@ -236,14 +217,14 @@ const ChatListScreen = ({ navigation }) => {
 				:
 				<UserAccountHeaderForm
 					addPaddingTop={true}
-					leftButtonIcon={expoIcons.chevronBack(RFValue(27), color.black1)}
+					leftButtonIcon={chevronBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					username={user.username}
 					firstIcon={
-						expoIcons.antdesignBars(RFValue(27), color.black1)
+						antdesignBars(RFValue(27), color.black1)
 					}
 					secondIcon={
-						expoIcons.entypoNewMessage(RFValue(27), color.black1)
+						entypoNewMessage(RFValue(27), color.black1)
 					}
 					firstOnPress={() => {
 						setSelectChatToDelete(!selectChatToDelete);
@@ -311,7 +292,7 @@ const ChatListScreen = ({ navigation }) => {
 	              				setSelectedChatsToDelete([ ...selectedChatsToDelete.filter((chat) => item) ]);
 	              			}}
 	              		>
-	              			{expoIcons.mcCheckCircle(RFValue(27), color.black1)}
+	              			{mcCheckCircle(RFValue(27), color.black1)}
 	              		</TouchableOpacity>
 	              		:
 	              		<TouchableOpacity
@@ -321,7 +302,7 @@ const ChatListScreen = ({ navigation }) => {
 	              				setSelectedChatsToDelete([ ...selectedChatsToDelete, item ]);
 	              			}}
 	              		>
-	              			{expoIcons.mcCheckBoxBlankCircle(RFValue(27), color.black1)}
+	              			{mcCheckBoxBlankCircle(RFValue(27), color.black1)}
 	              		</TouchableOpacity>
               		}
               	</View>
@@ -404,11 +385,11 @@ const ChatListScreen = ({ navigation }) => {
 		?
 		<View style={styles.mainContainer}>
 			<UserAccountHeaderForm
-				leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+				leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
 				leftButtonPress={() => { navigation.goBack() }}
 				username={user.username}
 				secondIcon={
-					expoIcons.entypoNewMessage(RFValue(27), color.black1)
+					entypoNewMessage(RFValue(27), color.black1)
 				}
 				secondOnPress={() => {
 					navigation.navigate("WriteNewMessage");

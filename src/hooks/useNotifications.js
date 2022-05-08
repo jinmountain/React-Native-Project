@@ -7,6 +7,28 @@ import { useNavigation } from '@react-navigation/native';
 // Contexts
 import { Context as SocialContext } from '../context/SocialContext';
 
+// import * as Notifications from 'expo-notifications';
+
+// export default function App() {
+//   const lastNotificationResponse = Notifications.useLastNotificationResponse();
+  
+//   React.useEffect(() => {
+//     if (
+//       lastNotificationResponse &&
+//       lastNotificationResponse.notification.request.content.data['someDataToCheck'] &&
+//       lastNotificationResponse.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER
+//     ) {
+//       // navigate to your desired screen
+//     }
+//   }, [lastNotificationResponse]);
+
+//   return (
+//     /*
+//      * your app
+//      */
+//   );
+// }
+
 export default () => {
 	Notifications.setNotificationHandler({
 	  handleNotification: async () => ({

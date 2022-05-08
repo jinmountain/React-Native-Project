@@ -8,8 +8,10 @@ import {
 	TouchableHighlight, 
 	TextInput,
 	FlatList,
-	ScrollView } from 'react-native';
-import { SafeAreaView, } from 'react-native-safe-area-context';
+	ScrollView,
+	SafeAreaView,
+	ActivityIndicator
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -21,17 +23,23 @@ import { Context as LocationContext } from '../../context/LocationContext';
 import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
+import { wait } from '../../hooks/wait';
 
 // Color codes
 import color from '../../color';
 
 // Firestore
-import businessUpdateFire from '../../firebase/businessUpdateFire';
+import {
+	businessUpdateLocation
+} from '../../firebase/business/businessUpdateFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
+
+// expo icons
+import { chevronBack } from '../../expoIcons';
 
 const UBLocationAddressScreen = ({ navigation }) => {
 	const { 
@@ -54,35 +62,59 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		}
 	}, [])
 
+	const [ waitingToFinishUpdate, setWaitingToFinishUpdate ] = useState(false);
+
 	return (
-		<SafeAreaView style={styles.screenContainer}>
-			<HeaderForm 
-				leftButtonTitle="Back"
-		    headerTitle="Edit Location & Address" 
-		    rightButtonTitle={ locationType !== null || businessLocation !== null ? "Done" : null }
-		    leftButtonPress={() => {
-		    	navigation.goBack(); 
-		    	resetLocationsAddress();
-		    }}
-    		rightButtonPress={() => {
-    			if (locationType !== null || businessLocation !== null) {
-    				const newLocation = { ...businessLocation, ...{ locationType: locationType }};
-    				const updateLocation = businessUpdateFire.businessUpdateLocation(newLocation, user.locality, user.service);
-    				updateLocation
-    				.then(() => {
-    					resetLocationsAddress();
-    					navigation.goBack();
-    				})
-    				.catch((error) => {
-    					console.log("Error occured:  updateLocation: ", error);
-    				})
-    			}
-    		}}
-		  />
+		<View style={styles.screenContainer}>
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView/>
+				<HeaderForm 
+					leftButtonIcon={chevronBack(RFValue(27), color.black1)}
+			    headerTitle={
+			    	waitingToFinishUpdate 
+			    	?
+			    	<ActivityIndicator size="small" color={color.purple2}/>
+			    	:
+			    	"Edit Location & Address"
+			    }
+			    rightButtonIcon={ 
+			    	locationType !== null || businessLocation !== null 
+			    	? "Done" 
+			    	: null 
+			    }
+			    leftButtonPress={() => {
+			    	navigation.goBack(); 
+			    	resetLocationsAddress();
+			    }}
+	    		rightButtonPress={() => {
+	    			if (locationType !== null || businessLocation !== null) {
+	    				setWaitingToFinishUpdate(true);
+
+	    				const newLocation = { ...businessLocation, ...{ locationType: locationType }};
+	    				const updateLocation = businessUpdateLocation(newLocation, user.service);
+	    				updateLocation
+	    				.then(() => {
+	    					wait(1000)
+		    				.then(() => {
+		    					resetLocationsAddress();
+	    						setWaitingToFinishUpdate(false);
+		    				})
+		    				.then(() => {
+		    					navigation.goBack();
+		    				});
+	    				})
+	    				.catch((error) => {
+	    					console.log("Error occured:  updateLocation: ", error);
+	    					setWaitingToFinishUpdate(false);
+	    				})
+	    			}
+	    		}}
+			  />
+			</View>
 		  <View style={styles.progressBarContainer}>
 		  	<TouchableOpacity 
 		  		style={
-		  			{ ...styles.progressBar, ...{backgroundColor: color.black2}}
+		  			{ ...styles.progressBar, ...{backgroundColor: color.purple2}}
 		  		}
 		  	>
 					<AntDesign name="smileo" size={RFValue(20)} color={color.white2} />
@@ -90,7 +122,7 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  	<TouchableOpacity 
 		  		style={
 		  			locationType
-		  			? { ...styles.progressBar, ...{backgroundColor: color.black2}}
+		  			? { ...styles.progressBar, ...{backgroundColor: "#675DA5"}}
 		  			: styles.progressBar
 		  		}
 		  		onPress={() => { 
@@ -106,7 +138,7 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  	<TouchableOpacity 
 		  		style={
 		  			businessLocation
-		  			? { ...styles.progressBar, ...{backgroundColor: color.black2 }}
+		  			? { ...styles.progressBar, ...{backgroundColor: "#2A2646" }}
 		  			: styles.progressBar
 		  		}
 		  		onPress={() => { 
@@ -123,7 +155,7 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  	<TouchableOpacity 
 		  		style={
 		  			locationType && businessLocation
-		  			? { ...styles.progressBar, ...{backgroundColor: color.black2}}
+		  			? { ...styles.progressBar, ...{backgroundColor: "#0E0D18" }}
 		  			: styles.progressBar
 		  		}
 		  	>
@@ -150,11 +182,20 @@ const UBLocationAddressScreen = ({ navigation }) => {
 	  			}}
 	  		>
 	  			<View style={styles.buttonTextContainer}>
-		  			<AntDesign name="isv" size={RFValue(28)} color={color.black1} />
-		  			<View style={{borderWidth: 1, marginHorizontal: 2}}></View>
-		  			<AntDesign name="rocket1" size={RFValue(24)} color={color.black1} />
-		  			<Text style={styles.buttonText}>Choose In-Store or Mobile</Text>
-		  			{ locationType ? <AntDesign name="check" size={RFValue(24)} color={color.blue1} /> : null }
+		  			<Text style={styles.buttonText}>
+		  				{ 
+		  					locationType 
+		  					? <AntDesign name="check" size={RFValue(24)} color={color.red2} /> 
+		  					: 
+		  					<View style={{ flexDirection: 'row' }}>
+		  						<AntDesign name="isv" size={RFValue(28)} color={color.black1} />
+					  			<View style={{borderWidth: 1, marginHorizontal: 2}}></View>
+					  			<AntDesign name="rocket1" size={RFValue(24)} color={color.black1} />
+		  					</View>
+		  				}
+		  				{' '}
+		  				Choose In-Store or Mobile
+		  			</Text>
 		  		</View>
 	  		</TouchableHighlight>
 	  		<TouchableHighlight
@@ -171,11 +212,15 @@ const UBLocationAddressScreen = ({ navigation }) => {
 	  			underlayColor={color.grey4}
 	  		>
 					<View style={styles.buttonTextContainer}>
-						<FontAwesome name="map-o" size={RFValue(28)} color={color.black1} />
 						<Text style={styles.buttonText}>
+							{ 
+								businessLocation 
+								? <AntDesign name="check" size={RFValue(24)} color={color.red2} /> 
+								: <FontAwesome name="map-o" size={RFValue(28)} color={color.black1} />
+							}
+							{' '}
 							Pick Location and Address
 						</Text>
-						{ businessLocation ? <AntDesign name="check" size={RFValue(24)} color={color.blue1} /> : null }
 					</View>
 	  		</TouchableHighlight>
 	  		<TouchableHighlight 
@@ -191,17 +236,30 @@ const UBLocationAddressScreen = ({ navigation }) => {
 		  		</View>
 	  		</TouchableHighlight>
 		  </View>
-	  </SafeAreaView>
+	  </View>
 	);
 };
 
 const styles = StyleSheet.create({
 	screenContainer: {
 		flex: 1,
-		backgroundColor: color.white1,
+		backgroundColor: color.white2,
 	},
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 	progressBarContainer: {
-		flex: 0.5,
 		flexDirection: 'row',
 	},
 	progressBar: {
@@ -210,9 +268,10 @@ const styles = StyleSheet.create({
 		borderColor: color.gray1,
 		justifyContent: 'center',
 		alignItems: 'center',
+		paddingVertical: RFValue(7)
 	},
 	buttonListContainer: {
-		flex: 9,
+		flex: 1
 	},
 	buttonContainer: {
 		flex: 1,

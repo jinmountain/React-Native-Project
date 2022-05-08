@@ -30,22 +30,36 @@ import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 import { FontAwesome } from '@expo/vector-icons';
 
 // firebase
-import businessUpdateFire from '../../firebase/businessUpdateFire';
-import businessGetFire from '../../firebase/businessGetFire';
-import businessDeleteFire from '../../firebase/businessDeleteFire';
+import {
+  updateBusSpecialHoursDocHours,
+  updateTechSpecialHoursDocHours
+} from '../../firebase/business/businessUpdateFire';
+import {
+  getBusUpcomingSpecialHours,
+} from '../../firebase/business/businessGetFire';
+import businessDeleteFire from '../../firebase/business/businessDeleteFire';
 
 // Context
 import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+  getDayMonthDateYearFromDate,
+  convertMilitaryToStandard
+} from '../../hooks/useConvertTime';
 import { isCloseToBottom } from '../../hooks/isCloseToBottom';
 
 // color
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+  fontAwesomeCalendarO,
+  antClose,
+  featherPlus,
+  evilIconsClose,
+  fontAwesomeCalendarPlusO
+} from '../../expoIcons';
 
 const SetSpecialHoursScreen = ({ route, navigation }) => {
   const { 
@@ -59,8 +73,10 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
     // from SetAnotherDayScreen
     newSpecialDateId,
     newSpecialDateInMs,
-    newSpecialDate,
     newSpecialDateStatus,
+    newSpecialYear,
+    newSpecialMonthIndex,
+    newSpecialDate,
     // from SetHoursScreen
     newHours,
     specialDateIndex,
@@ -76,10 +92,14 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
   //   special day
   //   {
   //      id: string,
-  //      date_in_ms: number,
-  //      date: json,
+  //      date: {
+  //        date: number,
+  //        monthIndex: number,
+  //        year: number
+  //      },
   //      status: boolean,
-  //      hours: array
+  //      hours: array,
+  //      timezoneOffset: number,
   //   } 
 
   //   hours example below
@@ -114,13 +134,13 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
 
     if (userType === 'bus' && user.id) {
       isMounted && setGetSpecialHoursState(true);
-      getSpecialHours = businessGetFire.getBusUpcomingSpecialHours(user.id, null);
+      getSpecialHours = getBusUpcomingSpecialHours(user.id, null);
     };
     
     if (userType === 'tech' && techId && user.id) {
       // get tech business hours
       isMounted && setGetSpecialHoursState(true);
-      getSpecialHours = businessGetFire.getTechUpcomingSpecialHours(user.id, techId, null);
+      getSpecialHours = getTechUpcomingSpecialHours(user.id, techId, null);
     };
 
     getSpecialHours
@@ -128,6 +148,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
       // result
       // { specialHours: specialHours, lastSpecialHour: lastVisible, fetchSwitch: true }
       if (isMounted) {
+        console.log("result: ", result.specialHours);
         setSpecialDates(result.specialHours);
         setGetSpecialHoursState(false);
         setLastSpecialHour(result.lastSpecialHour);
@@ -148,15 +169,17 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     let isMounted = true;
-    if (newSpecialDate) {
+    if (newSpecialDateId) {
       isMounted && setSpecialDates([ 
         ...specialDates, 
         { 
           id: newSpecialDateId,
           date_in_ms: newSpecialDateInMs, 
-          date: newSpecialDate, 
           status: newSpecialDateStatus, 
-          hours: [] 
+          hours: [],
+          year: newSpecialYear,
+          monthIndex: newSpecialMonthIndex,
+          date: newSpecialDate
         } 
       ]);
       // navigation.setParams({
@@ -198,12 +221,11 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
       isMounted = false;
       setShowTba(false);
     }
-  }, [ newSpecialDate, newHours ]);
+  }, [ newSpecialDateId, newHours ]);
 
   const RenderSpecialDayItem = ({ item, index }) => {
     const [ sp, setSp ] = useState(item);
     const [ spHours, setSpHours ] = useState(item.hours);
-
     return (
       sp && sp.date
       ?
@@ -215,10 +237,10 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
         <View style={styles.settingTopContainer}>
           <View style={styles.dayContainer}>
             <View style={styles.specialDayIconContainer}>
-              {expoIcons.fontAwesomeCalendarO(RFValue(23), color.black1)}
+              {fontAwesomeCalendarO(RFValue(23), color.black1)}
             </View>
             <View style={styles.specialDateTextContainer}>
-              <Text style={styles.specialDateText}>{useConvertTime.getDayMonthDateYearFromDate(sp.date.year, sp.date.monthIndex, sp.date.date)}</Text>
+              <Text style={styles.specialDateText}>{getDayMonthDateYearFromDate(sp.year, sp.monthIndex, sp.date)}</Text>
             </View>
           </View>
           <View style={styles.statusContainer}>
@@ -272,7 +294,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
                       </View>
                       <View style={styles.timeContainer}>
                         <Text style={styles.timeText}>
-                          {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
+                          {convertMilitaryToStandard(item.opens.hour, item.opens.min)}
                         </Text>
                       </View>
                     </View>
@@ -292,7 +314,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
                       </View>
                       <View style={styles.timeContainer}>
                         <Text style={styles.timeText}>
-                          {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
+                          {convertMilitaryToStandard(item.closes.hour, item.closes.min)}
                         </Text>
                       </View>
                     </View>
@@ -307,10 +329,10 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
                         // named "update" not "delete" because it updates doc's "hours" attribute to "newHours"
                         let updateSpecialHoursDocHours;
                         if (userType === "bus") {
-                          updateSpecialHoursDocHours = businessUpdateFire.updateBusSpecialHoursDocHours(user.id, sp.id, newHours);
+                          updateSpecialHoursDocHours = updateBusSpecialHoursDocHours(user.id, sp.id, newHours);
                         };
                         if (userType === "tech") {
-                          updateSpecialHoursDocHours = businessUpdateFire.updateTechSpecialHoursDocHours(user.id, techId, sp.id, newHours);
+                          updateSpecialHoursDocHours = updateTechSpecialHoursDocHours(user.id, techId, sp.id, newHours);
                         };
 
                         // make the change to firestore doc 
@@ -342,7 +364,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
                       underlayColor={color.grey4}
                     >
                       <View style={styles.addButtonTextContainer}>
-                        <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
+                        <Text style={styles.addButtonText}>{antClose(RFValue(23), color.black1)}</Text>
                       </View>
                     </TouchableHighlight>
                   </View>
@@ -367,7 +389,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
             >
               <View style={styles.addOpenHoursTextContainer}>
                 <Text style={styles.addOpenHoursText}>
-                  {expoIcons.featherPlus(RFValue(19), color.red2)} Add open hours
+                  {featherPlus(RFValue(19), color.red2)} Add open hours
                 </Text>
               </View>
             </TouchableHighlight>
@@ -384,7 +406,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
       <View style={styles.headerBarContainer}>
         <SafeAreaView/>
         <HeaderForm 
-          leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+          leftButtonIcon={evilIconsClose(RFValue(27), color.black1)}
           headerTitle={"Special Hours"} 
           rightButtonIcon={"Done"} 
           leftButtonPress={() => {
@@ -404,11 +426,11 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
               setGetSpecialHoursState(true);
               let getSpecialHours;
               if (userType === 'bus' && user.id) {
-                getSpecialHours = businessGetFire.getBusUpcomingSpecialHours(user.id, lastSpecialHour);
+                getSpecialHours = getBusUpcomingSpecialHours(user.id, lastSpecialHour);
               };
               if (userType === 'tech' && techId && user.id) {
                 // get tech business hours
-                getSpecialHours = businessGetFire.getTechUpcomingSpecialHours(user.id, techId, lastSpecialHour);
+                getSpecialHours = getTechUpcomingSpecialHours(user.id, techId, lastSpecialHour);
               };
               getSpecialHours
               .then((result) => {
@@ -456,7 +478,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
         >
           <View style={styles.addAnotherDayTextContainer}>
             <Text style={styles.addAnotherDayText}>
-              {expoIcons.fontAwesomeCalendarPlusO(RFValue(23), color.black1)} Add Another Day
+              {fontAwesomeCalendarPlusO(RFValue(23), color.black1)} Add Another Day
             </Text>
           </View>
         </TouchableHighlight>
@@ -472,7 +494,7 @@ const SetSpecialHoursScreen = ({ route, navigation }) => {
           buttonTwoText={"No"} 
           buttonOneAction={() => {
             if (userType === 'tech') {
-              const updateTechSpecialHours = businessUpdateFire.updateTechSpecialHours(user.id, techId, specialDates);
+              const updateTechSpecialHours = updateTechSpecialHours(user.id, techId, specialDates);
               updateTechSpecialHours
               .then(() => {
                 setCurrentSpecialHours(specialDates);

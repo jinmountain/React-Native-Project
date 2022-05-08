@@ -11,7 +11,9 @@ import {
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // hooks
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+	convertMilitaryToStandard,
+} from '../../hooks/useConvertTime';
 
 // color
 import color from '../../color';
@@ -34,7 +36,7 @@ const BusinessHoursForm = ({ businessHours, busHoursVisibleSwitch }) => {
 			<View style={{ height: RFValue(30), flexDirection: 'row' }}>
 				<View style={styles.hourContainer}>
 					<Text style={styles.hourText}>
-						{useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
+						{convertMilitaryToStandard(item.opens.hour, item.opens.min)}
 					</Text>
 				</View>
 				<Text style={{ color: color.white2, fontSize: RFValue(19), fontWeight: 'bold', padding: RFValue(5) }}> 
@@ -42,7 +44,7 @@ const BusinessHoursForm = ({ businessHours, busHoursVisibleSwitch }) => {
 				</Text>
 				<View style={styles.hourContainer}>
 					<Text style={styles.hourText}>
-						{useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
+						{convertMilitaryToStandard(item.closes.hour, item.closes.min)}
 					</Text>
 				</View>
 			</View>

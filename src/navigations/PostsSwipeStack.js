@@ -10,10 +10,14 @@ import PostDetailScreen from '../screens/PostDetailScreen';
 import CommentScreen from '../screens/comment/CommentScreen';
 import CommentManagerScreen from '../screens/comment/CommentManagerScreen';
 import CommentEditScreen from '../screens/comment/CommentEditScreen';
+import CommentDeleteConfirmationScreen from '../screens/comment/CommentDeleteConfirmationScreen';
+import CommentTextInputScreen from '../screens/comment/CommentTextInputScreen';
 
 import ReplyScreen from '../screens/reply/ReplyScreen';
 import ReplyManagerScreen from '../screens/reply/ReplyManagerScreen';
 import ReplyEditScreen from '../screens/reply/ReplyEditScreen';
+import ReplyDeleteConfirmationScreen from '../screens/reply/ReplyDeleteConfirmationScreen';
+import ReplyTextInputScreen from '../screens/reply/ReplyTextInputScreen';
 
 // Stacks
 // import UserAccountStack from './UserAccountStack';
@@ -25,8 +29,6 @@ const PostsSwipeStack = () => {
     <Stack.Navigator
       screenOptions={{ 
         headerShown: false,
-        animationEnabled: false,
-        presentation: 'transparentModal'
       }}
     >
       <Stack.Screen 
@@ -44,25 +46,10 @@ const PostsSwipeStack = () => {
           accountUserId: null,
           businessUserId: null,
         }}
-        options={{ 
-          cardStyle: {
-            backgroundColor: 'transparent',
-          },
-          animationEnabled: true,
-          presentation: 'transparentModal'
-        }}
       />
       <Stack.Screen 
         name="PostDetail" 
         component={PostDetailScreen} 
-        options={{ 
-          headerShown: false,
-          cardStyle: {
-            backgroundColor: 'transparent',
-          },
-          animationEnabled: true,
-          presentation: 'transparentModal'
-        }}
       />
       <Stack.Screen 
         name="Comment" 
@@ -72,7 +59,20 @@ const PostsSwipeStack = () => {
             backgroundColor: 'transparent',
           },
           animationEnabled: true,
-          presentation: 'transparentModal'
+          presentation: 'transparentModal',
+          gestureEnabled: false
+        }}
+      />
+      <Stack.Screen 
+        name="CommentTextInput" 
+        component={CommentTextInputScreen} 
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal',
+          gestureEnabled: false
         }}
       />
       <Stack.Screen 
@@ -98,8 +98,33 @@ const PostsSwipeStack = () => {
         }}
       />
       <Stack.Screen 
+        name="CommentDeleteConfirmation" 
+        component={CommentDeleteConfirmationScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+        initialParams={{
+
+        }}
+      />
+      <Stack.Screen 
         name="Reply" 
         component={ReplyScreen} 
+        options={{ 
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+      />
+      <Stack.Screen 
+        name="ReplyTextInput" 
+        component={ReplyTextInputScreen} 
         options={{ 
           cardStyle: {
             backgroundColor: 'transparent',
@@ -131,6 +156,20 @@ const PostsSwipeStack = () => {
         }}
       />
       <Stack.Screen 
+        name="ReplyDeleteConfirmation" 
+        component={ReplyDeleteConfirmationScreen} 
+        options={{
+          cardStyle: {
+            backgroundColor: 'transparent',
+          },
+          animationEnabled: true,
+          presentation: 'transparentModal'
+        }}
+        initialParams={{
+
+        }}
+      />
+      <Stack.Screen 
         name="PostManager" 
         component={PostManagerScreen} 
         options={{
@@ -142,28 +181,14 @@ const PostsSwipeStack = () => {
         }}
       />
       <Stack.Screen 
-        name="DeletionConfirmationScreen" 
-        component={DeletionConfirmationScreen} 
+        name="PostDeleteConfirmationScreen" 
+        component={PostDeleteConfirmationScreen} 
         options={{
           cardStyle: {
             backgroundColor: 'transparent',
           },
           animationEnabled: true,
           presentation: 'transparentModal'
-        }}
-        initialParams={{
-          requestType: null,
-          // post deletion
-          postId: null,
-          postData: null,
-
-          // rsv deletion
-          rsvId: null,
-          busId: null,
-          busLocationType: null,
-          busLocality: null,
-          cusId: null,
-          postServiceType: null
         }}
       />
     </Stack.Navigator>

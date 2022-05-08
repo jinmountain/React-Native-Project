@@ -4,15 +4,31 @@ import {
   View, 
   ScrollView,
   FlatList,
-  Animated,
   Text, 
   TouchableOpacity,
   TouchableHighlight,
   Dimensions,
-  Modal,
-  PanResponder,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+  Pressable
 } from 'react-native';
+
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedGestureHandler,
+  useDerivedValue,
+  withTiming,
+  interpolate,
+  Extrapolate,
+  runOnJS,
+} from "react-native-reanimated";
+
+import { PanGestureHandler } from "react-native-gesture-handler";
+import { clamp } from "react-native-redash";
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { useNavigation } from '@react-navigation/native';
 
@@ -20,10 +36,12 @@ import { useNavigation } from '@react-navigation/native';
 import MainTemplate from '../components/MainTemplate';
 import HeaderBottomLine from '../components/HeaderBottomLine';
 import { HeaderForm } from '../components/HeaderForm';
+import BottomSheetHeader from '../components/BottomSheetHeader';
 
 // Design
 
 // Hooks
+import { useOrientation } from '../hooks/useOrientation';
 
 // color
 import color from '../color';
@@ -31,173 +49,232 @@ import color from '../color';
 // icon
 import expoIcons from '../expoIcons';
 
-const { width, height } = Dimensions.get("window");
+const { width: wWidth, height: wHeight } = Dimensions.get("window");
 
-const SnailBottomSheet = ({ header, content, initialSnap, snapPoints, setShowBottomSheet }) => {
+const SnailBottomSheet = ({ 
+  header, 
+  content, 
+  snapPoints,
+  snapSwitchs,
+  onClickBackground,
+  onCloseEnd,
+  bottomSheetContainerStyle
+}) => {
   const navigation = useNavigation();
 
-  // panY is the height of background area
-  const panY = useRef(new Animated.Value(height)).current;
-
-  const resetPositionAnim =
-  Animated.timing(panY, {
-    toValue: 0,
-    duration: 300,
-    useNativeDriver: false
+  const iosStatusBarHeight = getStatusBarHeight();
+  const SafeStatusBar = Platform.select({
+    ios: iosStatusBarHeight,
+    android: StatusBar.currentHeight,
   });
 
-  // const resetToCurrentPositionAnim = 
-  // Animated.timing(panY, {
-  //   toValue: height - snapPoints[currentSnapIndex],
-  //   duration: 300,
-  //   useNativeDriver: false
-  // });
+  // -- orientation and state
+    const [ safeWindowHeight, setSafeWindowHeight ] = useState(wHeight - SafeStatusBar);
 
-  // const goToSecondSnapPoint =
-  // Animated.timing(panY, {
-  //   toValue: height - snapPoints[1],
-  //   duration: 300,
-  //   useNativeDriver: false
-  // });
+    const orientation = useOrientation();
 
-  // const goToThirdSnapPoint =
-  // Animated.timing(panY, {
-  //   toValue: height - snapPoints[2],
-  //   duration: 300,
-  //   useNativeDriver: false
-  // });
+    useEffect(() => {
+      const safeWindowHeight = wHeight - SafeStatusBar;
+      setSafeWindowHeight(safeWindowHeight);
 
-  const closeAnim =
-  Animated.timing(panY, {
-    toValue: height,
-    duration: 500,
-    useNativeDriver: false
-  });
+    }, [orientation]);
 
-  const translateY = panY.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: [0, 0, 1],
-    // when y goes positive panY is 1 when y goes to 0 or negative pnaY goes to 0
-  });
+  // const snapPoints = [ 0, 0.75, 1 ];
+  const initialSnapIndex = 1
 
-  const handleDismiss = () => closeAnim.start(setShowBottomSheet(false));
+  const firstSnapSwitch = snapSwitchs[0];
+  const thirdSnapSwitch = snapSwitchs[1];
 
-  // const [ currentSheetHeight, setCurrentSheetHeight ] = useState(snapPoints[initialSnap]);
-  // const [ currentSnapIndex, setCurrentSnapIndex ] = useState(initialSnap);
+  const firstSnapHeight = safeWindowHeight * snapPoints[0];
+  const secondSnapHeight = safeWindowHeight * snapPoints[1];
+  const thirdSnapHeight = safeWindowHeight * snapPoints[2];
 
-  const panResponders = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => false,
-      onPanResponderMove: Animated.event([
-        null, {dy: panY}
-      ],
-      {
-        useNativeDriver: false,
-      }),
-      onPanResponderRelease: (e, gs) => {
-        console.log("gs.vy: ", gs.vy);
-        console.log("gs.dy: ", gs.dy);
-        // if (gs.dy > 0 && gs.vy > 0) {
-        //   return handleDismiss();
-        // }
-        //when current snap point is 0, which is the first snap point
-        // if (
-        //   gs.dy > 0 && 
-        //   gs.vy > 0 &&
-        //   gs.vy <= 2 &&
-        //   snapPoints[1] !== 0 &&
-        //   currentSnapIndex === 0
-        // ) {
-        //   console.log("go to second snap point")
-        //   return goToSecondSnapPoint.start(() => {
-        //     setCurrentSheetHeight(snapPoints[1]);
-        //     setCurrentSnapIndex(1);
-        //   });
-        // }
-        // when current snap point is 1, which is the second snap point
-        // if (
-        //   gs.dy > 0 && 
-        //   gs.vy > 0 && 
-        //   gs.vy <= 2 &&
-        //   snapPoints [2] !== 0 &&
-        //   currentSnapIndex === 1
-        // ) {
-        //   return goToThirdSnapPoint.start(setCurrentSnapIndex(2));
-        // }
+  const firstSnapAbsY = safeWindowHeight * (1 - snapPoints[0]); // bigger and lower
+  const secondSnapAbsY = safeWindowHeight * (1 - snapPoints[1]);
+  const thirdSnapAbsY = safeWindowHeight * (1 - snapPoints[2]);
+  const bottomAbsY = safeWindowHeight;
 
-        if (gs.dy > 0 && gs.vy > 2) {
-          console.log("dismiss");
-          return handleDismiss();
+  const bottomFirstSnapDistAvg = firstSnapHeight / 2;
+  const firstSecondSnapDistAvg = (secondSnapHeight - firstSnapHeight) / 2;
+  const secondThirdSnapDistAvg = (thirdSnapHeight - secondSnapHeight) / 2;
+
+  const thirdSnapTranslateY = -(safeWindowHeight * snapPoints[2] - safeWindowHeight * snapPoints[1]);
+  const firstSnapTranslateY = safeWindowHeight * snapPoints[1] - safeWindowHeight * snapPoints[0];
+
+  const btwSecondAndThirdAbsY = (secondSnapAbsY + thirdSnapAbsY)/2;
+  const btwFirstAndSecondAbsY = (secondSnapAbsY + firstSnapAbsY)/2;
+
+  const bottomSheetHeight = useSharedValue(secondSnapHeight);
+  const translateY = useSharedValue(0);
+  const snapIndex = useSharedValue(1);
+
+  const goBack = () => {
+    navigation.goBack()
+  };
+
+  const onGestureEvent = useAnimatedGestureHandler({
+    onStart: (_, ctx) => {
+      ctx.offsetY = translateY.value;
+    },
+    onActive: (event, ctx) => {
+      translateY.value = event.translationY;
+
+      if (!thirdSnapSwitch) {
+        bottomSheetHeight.value = clamp(
+          secondSnapHeight - (ctx.offsetY + event.translationY), 
+          0, 
+          secondSnapHeight + 30
+        );
+      } 
+      else if (!firstSnapSwitch) {
+        bottomSheetHeight.value = clamp(
+          secondSnapHeight - (ctx.offsetY + event.translationY), 
+          secondSnapHeight - 30, 
+          safeWindowHeight
+        );
+      } else if (!firstSnapSwitch && !thirdSnapSwitch) {
+        bottomSheetHeight.value = clamp(
+          secondSnapHeight - (ctx.offsetY + event.translationY), 
+          secondSnapHeight - 30, 
+          secondSnapHeight + 30
+        );
+      } else {
+        bottomSheetHeight.value = secondSnapHeight - (ctx.offsetY + event.translationY);
+      }
+    },
+    onEnd: (event, ctx) => {
+      if (snapIndex.value === 2) {
+        // only go down
+        if (event.velocityY > 900 || event.translationY > secondThirdSnapDistAvg) {
+          bottomSheetHeight.value = withTiming(secondSnapHeight, {
+            duration: 500
+          });
+          translateY.value = 0;
+          snapIndex.value = 1
+        } 
+        // go back to the third snap 
+        else {
+          bottomSheetHeight.value = withTiming(thirdSnapHeight, {
+            duration: 500
+          });
+          translateY.value = thirdSnapTranslateY;
+          snapIndex.value = 2
         }
+      }
+      else if (snapIndex.value === 1) {
+        // go down
+        if (event.velocityY > 900 || event.translationY > firstSecondSnapDistAvg) {
+          if (event.velocityY > 1500 || !firstSnapSwitch) {
+            runOnJS(onCloseEnd)();
+          } else {
+            bottomSheetHeight.value = withTiming(firstSnapHeight, {
+              duration: 500
+            });
+            translateY.value = firstSnapTranslateY;
+            snapIndex.value = 0
+          }
+        }
+        // go up
+        else if (event.velocityY < -900 || event.translationY < -secondThirdSnapDistAvg) {
+          if (thirdSnapSwitch) {
+            bottomSheetHeight.value = withTiming(thirdSnapHeight, {
+              duration: 500
+            });
+            translateY.value = thirdSnapTranslateY;
+            snapIndex.value = 2
+          } else {
+            bottomSheetHeight.value = withTiming(secondSnapHeight, {
+              duration: 500
+            });
+            translateY.value = 0;
+            snapIndex.value = 1
+          }
+        } 
+        // go back to the second snap
+        else {
+          bottomSheetHeight.value = withTiming(secondSnapHeight, {
+            duration: 500
+          });
+          translateY.value = 0;
+          snapIndex.value = 1
+        }
+      }
+      else if (snapIndex.value === 0) {
+        // go down
+        if (event.velocityY > 900 || event.translationY > bottomFirstSnapDistAvg) {
+          runOnJS(onCloseEnd)();
+        }
+        // go up
+        else if (event.velocityY < -900 || event.translationY < -firstSecondSnapDistAvg) {
+          bottomSheetHeight.value = withTiming(secondSnapHeight, {
+            duration: 500
+          });
+          translateY.value = 0;
+          snapIndex.value = 1
+        }
+        else {
+          bottomSheetHeight.value = withTiming(firstSnapHeight, {
+            duration: 500
+          });
+          translateY.value = firstSnapTranslateY;
+          snapIndex.value = 0;
+        }
+      } else {
+        bottomSheetHeight.value = withTiming(secondSnapHeight, {
+          duration: 500
+        });
+        translateY.value = 0;
+        snapIndex.value = 1
+      }
+    }
+  });
 
-        resetPositionAnim.start();
-      },
-    })
-  ).current;
-
-  useEffect(() => {
-    resetPositionAnim.start();
-  }, []);
+  const bottomSheetAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      height: bottomSheetHeight.value
+    };
+  });
 
   return (
-    <Modal
-      animated
-      animationType="fade"
-      visible={true}
-      transparent
-      onRequestClose={handleDismiss}
-    >
-      <TouchableWithoutFeedback
-        onPress={() => {
-          navigation.goBack();
-        }}
-      >
-        <View style={styles.overlay}>
-          <Animated.View
-            style={{
-              ...styles.container,
-              transform: [{translateY: translateY}],
-              ...{ height: height - RFValue(100) }
-            }}
-            {...panResponders.panHandlers}
-          >
-            <View style={styles.sliderIndicatorRow}>
-              <View style={styles.sliderIndicator} />
-            </View>
-            <View style={{ flex: 1 }}>
-              {content}
-            </View>
-          </Animated.View>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+    <View style={{ 
+      position: 'absolute', 
+      width: '100%', 
+      height: '100%', 
+      justifyContent: 'flex-end',
+      zIndex: 6,
+    }}>
+      <Pressable
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+        ]}
+        onPress={
+          onClickBackground
+          ?
+          onClickBackground
+          :
+          null
+        }
+      />
+      <PanGestureHandler onGestureEvent={onGestureEvent}>
+        <Animated.View
+          style={[
+            styles.bottomSheetContainer,
+            bottomSheetAnimatedStyle,
+            bottomSheetContainerStyle,
+          ]}
+        >
+          {header}
+          {content}
+        </Animated.View>
+      </PanGestureHandler>
+    </View>
   )
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    flex: 1,
-    justifyContent: 'flex-end',
-    borderWidth: 1,
-    borderColor: 'red'
-  },
-  container: {
-    backgroundColor: 'white',
-    borderTopRightRadius: 12,
-    borderTopLeftRadius: 12,
-  },
-  sliderIndicatorRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sliderIndicator: {
-    backgroundColor: '#CECECE',
-    height: 4,
-    width: 45,
+  bottomSheetContainer: {
+    backgroundColor: color.white2,
   },
 });
 

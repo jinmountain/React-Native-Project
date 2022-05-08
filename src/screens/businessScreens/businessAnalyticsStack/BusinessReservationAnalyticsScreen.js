@@ -14,7 +14,9 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 // Contexts
 
 // Hooks
-import useConvertTime from '../../../hooks/useConvertTime';
+import {
+	convertToMonthly
+} from '../../../hooks/useConvertTime';
 
 // Components
 import MainTemplate from '../../../components/MainTemplate';
@@ -185,7 +187,7 @@ const BusinessReservationAnalyticsScreen = ({ navigation }) => {
                 	<Text>{item.count}</Text>
                 </View>
             		<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            			<Text>{useConvertTime.convertToMonthly(item.time)}</Text>
+            			<Text>{convertToMonthly(item.time)}</Text>
             		</View>
               </View>
             </View>

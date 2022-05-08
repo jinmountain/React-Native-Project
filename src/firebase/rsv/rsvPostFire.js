@@ -1,30 +1,67 @@
-import Firebase from '../firebase/config';
+import Firebase from '../../firebase/config';
 import firebase from 'firebase/app';
-import { navigate } from '../navigationRef';
 
-// Hooks
-import useConvertTime from '../hooks/useConvertTime';
+import {
+	convertToDateInMs,
+	convertToTime,
+	convertToWeekInMs,
+	convertToMonthInMs,
+	convertToYearInMs
+} from '../../hooks/useConvertTime';
 
 const db = Firebase.firestore();
 const usersRef = db.collection('users');
 const reservationsRef = db.collection('reservations');
 
-const appRsvCounts = db.collection('rsv_counts');
+const appRsvCounts = db.collection('rsvCounts');
 
-const appRsvGlobalPeriodsRef = db.collection('rsv_global_periods');
-const appRsvLocalPeriodsRef = db.collection('rsv_local_periods');
+const cancelRsv = (
+	rsvId,
+	busId,
+	busLocationType,
+	busLocality,
+	cusId,
+	postServiceType,
+) => {
+	return new Promise (async (res, rej) => {
+		const countIncrementByOne = firebase.firestore.FieldValue.increment(1);
 
-const getLocality = (address) => {
-	let locality; // string
-	const splitAddressArr = address.split(", ");
-	const splitArrLength = splitAddressArr.length;
-	if (splitAddressArr[splitArrLength-1] === "usa") {
-		var state = splitAddressArr[2].replace(/[0-9]/g, '').replace(/ /g, '').toLowerCase();
-		var city = splitAddressArr[1].replace(/ /g, '').toLowerCase();
-		var country = splitAddressArr[splitArrLength-1].toLowerCase();
-		locality = `${city}_${state}_${country}`;
-	}
-	return locality;
+		const changeCounts = (changeRef, doc) => {
+			// increase total count
+			changeRef.doc(doc).set({
+  			cancelledCount: countIncrementByOne,
+  		}, { merge: true });
+  	}
+
+		try {
+			// check if the rsv exists
+			reservationsRef
+			.doc(rsvId)
+			.get()
+			.then((doc) => {
+				if (doc.exists) {
+					// delete reservation
+					const deleteRsv = reservationsRef.doc(rsvId).delete();
+					// App Global Reservation Count
+					changeCounts(appRsvCounts, `${postServiceType}GlobalRsvCount`);
+					if (busLocationType === "inStore" && busLocality) {
+						// App Local Reservation Count
+						changeCounts(appRsvCounts, `${postServiceType}${busLocality}RsvCount`);
+					}
+					// Business Reservation Count
+					changeCounts(usersRef.doc(busId).collection("rsvCounts"), `${postServiceType}RsvCount`);
+		  		// Customer User Reservation Count
+		  		changeCounts(usersRef.doc(cusId).collection("rsvCounts"), `${postServiceType}RsvCount`);
+		  		res(true);
+				} else {
+					res("rsvNotFound");
+				}
+			});
+		} 
+		catch {(error) => {
+			rej(error);
+		}};
+	});
 };
 
 const sendRsvRequest = (
@@ -42,10 +79,10 @@ const sendRsvRequest = (
 		const endAt = startAt + (etc * 60 * 1000);
 		// max time for nail is 2 hour most
 		const expectedEndAt = startAt - (120 * 60 * 100);
-		const dateInMs = useConvertTime.convertToDateInMs(startAt);
+		const dateInMs = convertToDateInMs(startAt);
 
 		const countIncrementByOne = firebase.firestore.FieldValue.increment(1);
-		const time = useConvertTime.convertToTime(startAt);
+		const time = convertToTime(startAt);
 		// return {
 		// 	timestamp: timestamp,
 		// 	year: year,
@@ -70,16 +107,16 @@ const sendRsvRequest = (
 		const hourString = String(time.hour);
 		const hourNumber = Number(time.hour);
 
-		const dateInMsNumber = Number(useConvertTime.convertToDateInMs(startAt));
+		const dateInMsNumber = Number(convertToDateInMs(startAt));
 		const dateInMsString = String(dateInMsNumber);
 
-		const weekInMsNumber = Number(useConvertTime.convertToWeekInMs(startAt));
+		const weekInMsNumber = Number(convertToWeekInMs(startAt));
 		const weekInMsString = String(weekInMsNumber);
 
-		const monthInMsNumber = Number(useConvertTime.convertToMonthInMs(startAt));
+		const monthInMsNumber = Number(convertToMonthInMs(startAt));
 		const monthInMsString = String(monthInMsNumber);
 
-		const yearInMsNumber = Number(useConvertTime.convertToYearInMs(startAt));
+		const yearInMsNumber = Number(convertToYearInMs(startAt));
 		const yearInMsString = String(yearInMsNumber);
 
 		const changeCounts = (changeRef, doc) => {
@@ -577,107 +614,5 @@ const completeReservation = (rsvId, busId, cusId, busLocationType, busLocality, 
 	});
 };
 
-const postBusSpecialDate = (busId, timezoneOffset, dateInMs, yearMonthDate, dateStatus) => {
-	return new Promise (async (res, rej) => {
-		const newDocId = await usersRef.doc(busId).collection("special_hours").doc().id;
 
-		const newSpecialDate = {
-			id: newDocId,
-			timezoneOffset: timezoneOffset,
-			date_in_ms: dateInMs,
-			date: yearMonthDate,
-			status: dateStatus,
-			hours: []
-		}
-		const busSpecialHoursRef = usersRef.doc(busId).collection("special_hours").doc(newDocId);
-		busSpecialHoursRef
-		.set(
-			newSpecialDate, 
-			{
-				merge: true
-			}
-		)
-		.then(() => {
-			res(newSpecialDate);
-		})
-		.catch((error) => {
-			rej(error);
-		});
-	});
-}
-
-const postTechSpecialDate = (busId, techId, timezoneOffset, dateInMs, yearMonthDate, dateStatus) => {
-	return new Promise (async (res, rej) => {
-		const newDocId = await usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc().id;
-
-		const newSpecialDate = {
-			id: newDocId,
-			timezoneOffset: timezoneOffset,
-			date_in_ms: dateInMs,
-			date: yearMonthDate,
-			status: dateStatus,
-			hours: []
-		}
-		const techSpecialHoursRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc(newDocId);
-		techSpecialHoursRef
-		.set(
-			newSpecialDate, 
-			{
-				merge: true
-			}
-		)
-		.then(() => {
-			res(newSpecialDate);
-		})
-		.catch((error) => {
-			rej(error);
-		});
-	});
-};
-
-const postBusSpecialHours = (busId, docId, mergedHours) => {
-	return new Promise (async (res, rej) => {
-		const busSpecialHoursRef = usersRef.doc(busId).collection("special_hours").doc(docId);
-		busSpecialHoursRef
-		.set(
-			{ hours: mergedHours }, 
-			{
-				merge: true
-			}
-		)
-		.then(() => {
-			res(true);
-		})
-		.catch((error) => {
-			rej(error);
-		});
-	});
-};
-
-const postTechSpecialHours = (busId, techId, docId, mergedHours) => {
-	return new Promise (async (res, rej) => {
-		const busSpecialHoursRef = usersRef.doc(busId).collection("technicians").doc(techId).collection("special_hours").doc(docId);
-		busSpecialHoursRef
-		.set(
-			{ hours: mergedHours }, 
-			{
-				merge: true
-			}
-		)
-		.then(() => {
-			res(true);
-		})
-		.catch((error) => {
-			rej(error);
-		});
-	});
-};
-
-export default { 
-	sendRsvRequest, 
-	completeReservation, 
-	postBusSpecialDate, 
-	postTechSpecialDate, 
-	postBusSpecialHours, 
-	postTechSpecialHours 
-};
+export { sendRsvRequest, cancelRsv, completeReservation };

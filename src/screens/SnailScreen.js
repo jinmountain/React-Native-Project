@@ -8,7 +8,8 @@ import {
   Dimensions,
   PanResponder,
   Animated,
-  ActivityIndicator
+  ActivityIndicator,
+  FlatList
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import * as MediaLibrary from 'expo-media-library'
@@ -31,11 +32,143 @@ import color from '../color';
 // icon
 // import expoIcons from '../expoIcons';
 
+const flatListData = [
+  {
+    text: '128u301389013810'
+  },
+  {
+    text: '12jo1j2eonoivjso'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  },
+  {
+    text: '1231jijovsjeoifj'
+  }
+]
+
 const SnailScreen = ({ navigation }) => {
   // image browser callback and selected photos
   const [ selectedFiles, setSelectedFiles ] = useState([]);
 
   const [ showBottomSheet, setShowBottomSheet ] = useState(true);
+  const switchBottomSheet = () => {
+    setShowBottomSheet(!showBottomSheet);
+  };
 
   const [ mode, setMode ] = useState(null);
 
@@ -68,33 +201,42 @@ const SnailScreen = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {
-        !mode && 
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <TouchableHighlight
-            style={{ borderWidth: 1, alignItems: 'center' }}
-            underlayColor={color.grey4}
-            onPress={() => {
-              setMode('cTabView');
-            }}
-          >
-            <View>
-              <Text>Show C Tab View</Text>
-            </View>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={{ borderWidth: 1, alignItems: 'center' }}
-            underlayColor={color.grey4}
-            onPress={() => {
-              setMode('imageBrowser');
-            }}
-          >
-            <View>
-              <Text>Show ImageBrowser</Text>
-            </View>
-          </TouchableHighlight>
-        </View>
-      }
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <TouchableHighlight
+          style={{ borderWidth: 1, alignItems: 'center' }}
+          underlayColor={color.grey4}
+          onPress={() => {
+            // setMode('cTabView');
+          }}
+        >
+          <View>
+            <Text>Show C Tab View</Text>
+          </View>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={{ borderWidth: 1, alignItems: 'center' }}
+          underlayColor={color.grey4}
+          onPress={() => {
+            setMode('imageBrowser');
+          }}
+        >
+          <View>
+            <Text>Show ImageBrowser</Text>
+          </View>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={{ borderWidth: 1, alignItems: 'center', paddingVertical: RFValue(15) }}
+          underlayColor={color.grey4}
+          onPress={() => {
+            setShowBottomSheet(true);
+            setMode('bottomSheet');
+          }}
+        >
+          <View>
+            <Text>Show bottomSheet</Text>
+          </View>
+        </TouchableHighlight>
+      </View>
       {
         mode === 'imageBrowser' &&
         <ImageBrowser 
@@ -129,14 +271,35 @@ const SnailScreen = ({ navigation }) => {
       }
        
       {
-        mode === ' bottomSheet' && showBottomSheet
-        ?
+        mode === 'bottomSheet' &&
         <SnailBottomSheet
-          setShowBottomSheet={setShowBottomSheet}
+          content={
+            <View>
+              <Text>HAHAHAHAHAH</Text>
+              <View style={{borderWidth: 1 }}>
+                <FlatList
+                  data={flatListData}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <View> 
+                        <Text>{item.text}</Text>
+                      </View>
+                    )
+                  }}
+                  contentContainerStyle={{
+                    paddingBottom: 200
+                  }}
+                  keyExtractor={(item, index ) => index.toString()}
+                />
+              </View>
+            </View>
+          }
+          setMode={setMode}
+          showBottomSheet={showBottomSheet}
+          switchBottomSheet={switchBottomSheet}
+          closeAction={() => {navigation.goBack();}}
         />
-        : null
       }
-
       {
         mode === 'cTabView' &&
         <CollapsibleTabView/>

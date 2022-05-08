@@ -14,6 +14,7 @@ import {
   Switch,
   TouchableOpacity,
   TouchableHighlight,
+  SafeAreaView,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -29,20 +30,33 @@ import BottomSheetHeader from '../../components/BottomSheetHeader';
 // Design
 
 // firebase
-import businessUpdateFire from '../../firebase/businessUpdateFire';
-import businessGetFire from '../../firebase/businessGetFire';
+import {
+  updateBusBusinessHoursFire,
+  updateTechBusinessHoursFire
+} from '../../firebase/business/businessUpdateFire';
+import {
+  getTechBusinessHoursFire
+} from '../../firebase/business/businessGetFire';
 
 // Context
 import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+  convertMilitaryToStandard,
+} from '../../hooks/useConvertTime';
 
 // color
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+  chevronBack,
+  clockIcon,
+  featherPlus,
+  antClose,
+  evilIconsClose,
+} from '../../expoIcons';
 
 // timezone
 import timezoneList from '../../timezoneList';
@@ -106,7 +120,7 @@ const VerticalScrollPicker = ({
         >
           <View style={{ justifyContent: 'center', alignItems: 'center', width: "100%", flexDirection: 'row'}}>
             <View style={styles.modalCloseContainer}>
-              {expoIcons.chevronBack(RFValue(27), color.black1)}
+              {chevronBack(RFValue(27), color.black1)}
             </View>
             <View>
               <Text style={{ fontSize: RFValue(17) }}>{defaultLabel}</Text>
@@ -135,6 +149,7 @@ const VerticalScrollPicker = ({
         content.map((item, index) => {
           return (
             <VerticalScrollModalButton
+              key={index}
               index={index}
               label={item.gmt}
               timezoneValue={item.timezone}
@@ -156,7 +171,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
       <View style={styles.settingTopContainer}>
         <View style={styles.dayContainer}>
           <View style={styles.clockIconContainer}>
-            {expoIcons.clockIcon(RFValue(20), color.black1)}
+            {clockIcon(RFValue(20), color.black1)}
           </View>
           <View style={styles.dayTextContainer}>
             <Text style={styles.dayText}>{dayText}</Text>
@@ -206,7 +221,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                     </View>
                     <View style={styles.timeContainer}>
                       <Text style={styles.timeText}>
-                        {useConvertTime.convertMilitaryToStandard(item.opens.hour, item.opens.min)}
+                        {convertMilitaryToStandard(item.opens.hour, item.opens.min)}
                       </Text>
                     </View>
                   </View>
@@ -226,7 +241,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                     </View>
                     <View style={styles.timeContainer}>
                       <Text style={styles.timeText}>
-                        {useConvertTime.convertMilitaryToStandard(item.closes.hour, item.closes.min)}
+                        {convertMilitaryToStandard(item.closes.hour, item.closes.min)}
                       </Text>
                     </View>
                   </View>
@@ -238,7 +253,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
                     underlayColor={color.grey4}
                   >
                     <View style={styles.addButtonTextContainer}>
-                      <Text style={styles.addButtonText}>{expoIcons.antClose(RFValue(23), color.black1)}</Text>
+                      <Text style={styles.addButtonText}>{antClose(RFValue(23), color.black1)}</Text>
                     </View>
                   </TouchableHighlight>
                 </View>
@@ -260,7 +275,7 @@ const SettingHoursDayContainer = ({ navigation, dayText, dayOpen, setDayOpen, ho
           >
             <View style={styles.addOpenHoursButtonInner}>
               <View style={styles.addOpenHoursIconContainer}>
-                {expoIcons.featherPlus(RFValue(19), color.red2)}
+                {featherPlus(RFValue(19), color.red2)}
               </View>
               <View style={styles.addOpenHoursTextContainer}>
                 <Text style={styles.addOpenHoursText}>Add open hours</Text>
@@ -421,7 +436,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
     // only for tech
     if (userType === 'tech' && techId) {
       // get tech business hours
-      const getTechBusinessHours = businessGetFire.getTechBusinessHours(user.id, techId);
+      const getTechBusinessHours = getTechBusinessHoursFire(user.id, techId);
       getTechBusinessHours
       .then((currentBusinessHours) => {
         // set to the states
@@ -531,134 +546,137 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.mainContainer}>
-      <HeaderForm 
-        addPaddingTop={userType === 'tech' ? false : true}
-        leftButtonTitle={null}
-        leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
-        headerTitle={"Hours"} 
-        rightButtonIcon={"Save"}
-        rightButtonTitle={null} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          const newBusinessHours = 
-          { 
-            timezone: userTimezone,
-            timezoneOffset: userTimezoneOffset,
-            sun_open: sunOpen, 
-            mon_open: monOpen, 
-            tue_open: tueOpen, 
-            wed_open: wedOpen, 
-            thu_open: thuOpen, 
-            fri_open: friOpen, 
-            sat_open: satOpen,
-            sun_hours: sunHours,
-            mon_hours: monHours,
-            tue_hours: tueHours,
-            wed_hours: wedHours,
-            thu_hours: thuHours,
-            fri_hours: friHours,
-            sat_hours: satHours
-          };
+      <View style={styles.headerBarContainer}>
+        <SafeAreaView/>
+        <HeaderForm 
+          addPaddingTop={userType === 'tech' ? false : true}
+          leftButtonTitle={null}
+          leftButtonIcon={evilIconsClose(RFValue(27), color.black1)}
+          headerTitle={"Hours"} 
+          rightButtonIcon={"Save"}
+          rightButtonTitle={null} 
+          leftButtonPress={() => {
+            navigation.goBack();
+          }}
+          rightButtonPress={() => {
+            const newBusinessHours = 
+            { 
+              timezone: userTimezone,
+              timezoneOffset: userTimezoneOffset,
+              sun_open: sunOpen, 
+              mon_open: monOpen, 
+              tue_open: tueOpen, 
+              wed_open: wedOpen, 
+              thu_open: thuOpen, 
+              fri_open: friOpen, 
+              sat_open: satOpen,
+              sun_hours: sunHours,
+              mon_hours: monHours,
+              tue_hours: tueHours,
+              wed_hours: wedHours,
+              thu_hours: thuHours,
+              fri_hours: friHours,
+              sat_hours: satHours
+            };
 
-          let readyToSave = false;
+            let readyToSave = false;
 
-          const compareHours = (currentHours, newHours) => {
-            let hoursIndex = 0;
-            const currentHoursLen = currentHours.length;
-            const newHoursLen = newHours.length;
-            // when the two hours have different length then return false
-            if (currentHoursLen !== newHoursLen) {
-              return true
-            }
-            // if not compare each hours in the two arrays
-            for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
-              if (
-                currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
-                currentHours[hoursIndex].min !== newHours[hoursIndex].min 
-              ) {
+            const compareHours = (currentHours, newHours) => {
+              let hoursIndex = 0;
+              const currentHoursLen = currentHours.length;
+              const newHoursLen = newHours.length;
+              // when the two hours have different length then return false
+              if (currentHoursLen !== newHoursLen) {
                 return true
               }
+              // if not compare each hours in the two arrays
+              for ( hoursIndex; hoursIndex < currentHoursLen; hoursIndex++ ) {
+                if (
+                  currentHours[hoursIndex].hour !== newHours[hoursIndex].hour ||
+                  currentHours[hoursIndex].min !== newHours[hoursIndex].min 
+                ) {
+                  return true
+                }
+              }
+              return false;
+            };
+            // compare timezone and timezoneOffset
+            if (businessHours.timezone && businessHours.timezoneOffset) {
+              console.log("existing: ", businessHours.timezone, businessHours.timezoneOffset);
+              console.log("newBusinessHours: ", newBusinessHours.timezone, newBusinessHours.timezoneOffset);
+              if (
+                businessHours.timezone !== newBusinessHours.timezone ||
+                businessHours.timezoneOffset !== newBusinessHours.timezoneOffset
+              ) {
+                readyToSave = true;
+              }
+            } else {
+              if (newBusinessHours.timezone && newBusinessHours.timezoneOffset) {
+                readyToSave = true;
+              }
             }
-            return false;
-          };
-          // compare timezone and timezoneOffset
-          if (businessHours.timezone && businessHours.timezoneOffset) {
-            console.log("existing: ", businessHours.timezone, businessHours.timezoneOffset);
-            console.log("newBusinessHours: ", newBusinessHours.timezone, newBusinessHours.timezoneOffset);
-            if (
-              businessHours.timezone !== newBusinessHours.timezone ||
-              businessHours.timezoneOffset !== newBusinessHours.timezoneOffset
-            ) {
-              readyToSave = true;
-            }
-          } else {
-            if (newBusinessHours.timezone && newBusinessHours.timezoneOffset) {
-              readyToSave = true;
-            }
-          }
 
-          // compare status and hours
-          if (businessHours) {
-            if ( 
-              // when one of the days is changed from open to close or vice versa
-              businessHours.sun_open !== newBusinessHours.sun_open ||
-              businessHours.mon_open !== newBusinessHours.mon_open ||
-              businessHours.tue_open !== newBusinessHours.tue_open ||
-              businessHours.wed_open !== newBusinessHours.wed_open ||
-              businessHours.thu_open !== newBusinessHours.thu_open ||
-              businessHours.fri_open !== newBusinessHours.fri_open ||
-              businessHours.sat_open !== newBusinessHours.sat_open
-            ) {
-              readyToSave = true;
-            }
-            else if (
-              compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
-              compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
-              compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
-              compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
-              compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
-              compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
-              compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
-            ) {
-              readyToSave = true;
-            };
-          } else {
-            if (
-              newBusinessHours.sun_open ||
-              newBusinessHours.mon_open ||
-              newBusinessHours.tue_open ||
-              newBusinessHours.wed_open ||
-              newBusinessHours.thu_open ||
-              newBusinessHours.fri_open ||
-              newBusinessHours.sat_open
-            ) {
-              readyToSave = true;
-            };
+            // compare status and hours
+            if (businessHours) {
+              if ( 
+                // when one of the days is changed from open to close or vice versa
+                businessHours.sun_open !== newBusinessHours.sun_open ||
+                businessHours.mon_open !== newBusinessHours.mon_open ||
+                businessHours.tue_open !== newBusinessHours.tue_open ||
+                businessHours.wed_open !== newBusinessHours.wed_open ||
+                businessHours.thu_open !== newBusinessHours.thu_open ||
+                businessHours.fri_open !== newBusinessHours.fri_open ||
+                businessHours.sat_open !== newBusinessHours.sat_open
+              ) {
+                readyToSave = true;
+              }
+              else if (
+                compareHours(businessHours.sun_hours, newBusinessHours.sun_hours) ||
+                compareHours(businessHours.mon_hours, newBusinessHours.mon_hours) ||
+                compareHours(businessHours.tue_hours, newBusinessHours.tue_hours) ||
+                compareHours(businessHours.wed_hours, newBusinessHours.wed_hours) ||
+                compareHours(businessHours.thu_hours, newBusinessHours.thu_hours) ||
+                compareHours(businessHours.fri_hours, newBusinessHours.fri_hours) ||
+                compareHours(businessHours.sat_hours, newBusinessHours.sat_hours)
+              ) {
+                readyToSave = true;
+              };
+            } else {
+              if (
+                newBusinessHours.sun_open ||
+                newBusinessHours.mon_open ||
+                newBusinessHours.tue_open ||
+                newBusinessHours.wed_open ||
+                newBusinessHours.thu_open ||
+                newBusinessHours.fri_open ||
+                newBusinessHours.sat_open
+              ) {
+                readyToSave = true;
+              };
 
-            if (
-              newBusinessHours.sun_hours ||
-              newBusinessHours.mon_hours ||
-              newBusinessHours.tue_hours ||
-              newBusinessHours.wed_hours ||
-              newBusinessHours.thu_hours ||
-              newBusinessHours.fri_hours ||
-              newBusinessHours.sat_hours
-            ) {
-              readyToSave = true;
-            };
-          }
-          
-          if (readyToSave) {
-            console.log("ready to save");
-            setShowTba(true);
-          } else {
-            setAlertBoxStatus(true);
-            setAlertBoxText("Change has not made.");
-          }
-        }}
-      />
+              if (
+                newBusinessHours.sun_hours ||
+                newBusinessHours.mon_hours ||
+                newBusinessHours.tue_hours ||
+                newBusinessHours.wed_hours ||
+                newBusinessHours.thu_hours ||
+                newBusinessHours.fri_hours ||
+                newBusinessHours.sat_hours
+              ) {
+                readyToSave = true;
+              };
+            }
+            
+            if (readyToSave) {
+              console.log("ready to save");
+              setShowTba(true);
+            } else {
+              setAlertBoxStatus(true);
+              setAlertBoxText("Change has not made.");
+            }
+          }}
+        />
+      </View>
       <View>
         <ScrollView
           contentContainerStyle={{
@@ -807,7 +825,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
                 sat_hours: satHours
               };
               if (userType === 'bus') {
-                const updateBusBusinessHours = businessUpdateFire.updateBusBusinessHours(newBusinessHours);
+                const updateBusBusinessHours = updateBusBusinessHoursFire(newBusinessHours);
                 updateBusBusinessHours
                 .then(() => {
                   setBusinessHours(newBusinessHours);
@@ -818,7 +836,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
                 });
               }
               if (userType === 'tech' && techId) {
-                const updateTechBusinessHours = businessUpdateFire.updateTechBusinessHours(techId, newBusinessHours);
+                const updateTechBusinessHours = updateTechBusinessHoursFire(techId, newBusinessHours);
                 updateTechBusinessHours
                 .then(() => {
                   setBusinessHours(newBusinessHours);
@@ -844,7 +862,7 @@ const SetBusinessHoursScreen = ({ route, navigation }) => {
       </View>
       {
         isModalVisible &&
-        <View style={{ position: 'absolute', width: "100%", height: "100%" }}>
+        <View style={{ position: 'absolute', width: "100%", height: "100%", zIndex: 6 }}>
           <Pressable
             style={[
               StyleSheet.absoluteFill,
@@ -892,6 +910,21 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: color.white2
+  },
+
+  headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
 
   settingContainer: {

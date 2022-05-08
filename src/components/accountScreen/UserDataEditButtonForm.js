@@ -8,6 +8,7 @@ import {
 
 // NPMs
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { useNavigation } from '@react-navigation/native';
 
 // Components
 import { InputFormBottomLine } from '../InputFormBottomLine';
@@ -15,40 +16,78 @@ import { InputFormBottomLine } from '../InputFormBottomLine';
 // Color
 import color from '../../color';
 
-const UserDataEditButtonForm = ({ navigate, newInput, currentValue, dataType, allowUsernameChange, setUsernameTimeLimitWarning }) => {
-	console.log(dataType + ' new input: ' + newInput);
+const UserDataEditButtonForm = ({ 
+	inputValue,
+	currentValue, 
+	dataType, 
+	allowUsernameChange, 
+	setUsernameTimeLimitWarning 
+}) => {
+	const navigation = useNavigation();
+	// console.log(dataType + ' new input value: ' + inputValue);
+
+	const dataTypeLabel = (dataType) => {
+		if (dataType === 'name') {
+			return "Name"
+		} 
+		else if (dataType === 'username') {
+			return "Username"
+		}
+		else if (dataType === "website") {
+			return "Website"
+		}
+		else if (dataType === "sign") {
+			return "Sign"
+		}
+		else if (dataType === "phoneNumber") {
+			return "Phone Number"
+		}
+		else {
+			"undefined"
+		}
+	};
+
 	return (
 		<TouchableOpacity
 			onPress={() => {
+				const existingInputValue = inputValue ? inputValue : currentValue ? currentValue : null
+
 				dataType === 'Username' && allowUsernameChange === false
 				? setUsernameTimeLimitWarning(true)
-				: navigate(
+				: navigation.navigate(
 						"UpdateProfileInput", 
 						{ 
 							inputType: dataType,
+							inputValue: existingInputValue,
 						}
 					)
 			}}
 			style={styles.buttonContainer}
 		>
-			<View style={styles.textInputLabelContainer}>
-			{ newInput
-				? <Text style={styles.textInputLabel}>{dataType}</Text>
-				: {currentValue} && <Text style={styles.textInputLabel}>{dataType}</Text>
+			{ inputValue
+				? 
+				<View style={styles.textInputLabelContainer}>
+					<Text style={styles.textInputLabel}>{dataTypeLabel(dataType)}</Text>
+				</View>
+				: currentValue 
+				? 
+				<View style={styles.textInputLabelContainer}>
+					<Text style={styles.textInputLabel}>{dataTypeLabel(dataType)}</Text>
+				</View>
+				: null
 			}
-			</View>
 			<View
 				style={styles.inputContainer}
 			>
 				{
-					newInput
+					inputValue
 					// New Input
-					? <Text style={styles.blackText}>{newInput}</Text>
+					? <Text style={styles.blackText}>{inputValue}</Text>
 					// User data
-					: {currentValue} 
+					: currentValue
 					? <Text style={styles.blackText}>{currentValue}</Text>
 					// placeholder
-					: <Text style={styles.usernameInput}>{dataType}</Text>
+					: <Text style={styles.usernameInput}>{dataTypeLabel(dataType)}</Text>
 				}
 			</View>
 		</TouchableOpacity>
@@ -57,11 +96,13 @@ const UserDataEditButtonForm = ({ navigate, newInput, currentValue, dataType, al
 
 const styles = StyleSheet.create({
 	buttonContainer: {
-		borderRadius: RFValue(30),
+		borderRadius: RFValue(15),
 		backgroundColor: color.grey4,
 		padding: RFValue(7),
 		marginBottom: RFValue(7),
-		backgroundColor: color.white2
+		backgroundColor: color.white2,
+		height: RFValue(75),
+		justifyContent: 'center'
 	},
 	textInputLabelContainer: {
 		minHeight: RFValue(25),

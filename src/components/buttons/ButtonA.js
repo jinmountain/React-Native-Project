@@ -1,19 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
-import color from '../color';
+import color from '../../color';
 
-const ButtonA = ({buttonContainerCustomStyle, customStyles, text, icon}) => {
+const ButtonA = ({customButtonContainerStyle, customTextStyle, text, icon}) => {
 	return (
 		<View style={
-			buttonContainerCustomStyle
+			customButtonContainerStyle
 			?
-			[styles.buttonAContainer, buttonContainerCustomStyle]
+			[styles.buttonAContainer, customButtonContainerStyle]
 			:
 			styles.buttonAContainer
 		}>
 			{icon}
-			<Text style={[styles.buttonAText, customStyles]}>
+			<Text style={[styles.buttonAText, customTextStyle]}>
 				{text}
 			</Text>
 		</View>
@@ -22,11 +22,11 @@ const ButtonA = ({buttonContainerCustomStyle, customStyles, text, icon}) => {
 
 const styles = StyleSheet.create({
 	buttonAContainer: {
-		backgroundColor: '#fff',
+		backgroundColor: color.white2,
 		flexDirection: 'row',
 		borderWidth: 0.5,
 		borderColor: color.grey3,
-		borderRadius: 5,
+		borderRadius: RFValue(5),
 		justifyContent: 'center',
 		alignItems: 'center',
 		paddingHorizontal: RFValue(5),

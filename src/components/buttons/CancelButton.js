@@ -13,7 +13,7 @@ const WINDOW_HEIGHT = Dimensions.get("window").height;
 const closeButtonSize = Math.floor(WINDOW_HEIGHT * 0.04);
 
 // color
-import  color from '../color'
+import  color from '../../color'
 
 const CancelButton = ({onPressFunction}) => {
   

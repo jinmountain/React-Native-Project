@@ -1,7 +1,14 @@
 import { useEffect } from 'react';
 
 // hooks
-import useConvertTime from './useConvertTime';
+import {
+  convertToTime,
+  convertToDateInMs,
+  getTimeYearMonthDate,
+  getDaysInMonth,
+  getDayIndex,
+  getDateTimestamp,
+} from './useConvertTime';
 
 export const getCalendarDates = (
   calendarDate, 
@@ -17,10 +24,10 @@ export const getCalendarDates = (
     let mounted = true;
 
     const monthInMs = calendarDate;
-    const calendarTime = useConvertTime.convertToTime(monthInMs);
+    const calendarTime = convertToTime(monthInMs);
     // todays date and when business end today
-    const calendarDateInMs = useConvertTime.convertToDateInMs(calendarDate);
-    const dateNowInMs = useConvertTime.convertToDateInMs(dateNow);
+    const calendarDateInMs = convertToDateInMs(calendarDate);
+    const dateNowInMs = convertToDateInMs(dateNow);
 
     // when end time is given
     let dateNowEndTime;
@@ -37,7 +44,7 @@ export const getCalendarDates = (
     if (firstDayIndex !== 0) {
       for (dayInPreMonthIndex = 1; dayInPreMonthIndex < firstDayIndex + 1; dayInPreMonthIndex++) {
         // convert
-        const dayInPreMonthTime = useConvertTime.getTimeYearMonthDate(calendarTime.year, calendarTime.monthIndex, calendarTime.date - dayInPreMonthIndex);
+        const dayInPreMonthTime = getTimeYearMonthDate(calendarTime.year, calendarTime.monthIndex, calendarTime.date - dayInPreMonthIndex);
         if (dayInPreMonthTime.timestamp > dateNowInMs) {
           datesInPreMonth.unshift({ time: dayInPreMonthTime, thisMonth: false, past: false });
         } else {
@@ -48,9 +55,9 @@ export const getCalendarDates = (
     
     let datesInMonth = []
     let dateInMonthIndex;
-    let numOfDaysInMonth = useConvertTime.getDaysInMonth(calendarTime.monthIndex, calendarTime.year);
+    let numOfDaysInMonth = getDaysInMonth(calendarTime.monthIndex, calendarTime.year);
     for (dateInMonthIndex = 0; dateInMonthIndex < numOfDaysInMonth; dateInMonthIndex++) {
-      const dateInMonthTime = useConvertTime.getTimeYearMonthDate(calendarTime.year, calendarTime.monthIndex, calendarTime.date + dateInMonthIndex);
+      const dateInMonthTime = getTimeYearMonthDate(calendarTime.year, calendarTime.monthIndex, calendarTime.date + dateInMonthIndex);
       // date is in the month and same as today and the current time is bigger than the end time
       if (
         dateInMonthTime.timestamp === dateNowInMs && 
@@ -98,15 +105,15 @@ export const getCalendarDates = (
     };
 
     let datesInNextMonth = [];
-    let lastDateTime = useConvertTime.getDateTimestamp(calendarTime.year, calendarTime.monthIndex, numOfDaysInMonth);
-    let lastDayIndex = useConvertTime.getDayIndex(calendarTime.year, calendarTime.monthIndex, numOfDaysInMonth);
+    let lastDateTime = getDateTimestamp(calendarTime.year, calendarTime.monthIndex, numOfDaysInMonth);
+    let lastDayIndex = getDayIndex(calendarTime.year, calendarTime.monthIndex, numOfDaysInMonth);
 
     // if lastDayIndex is not 6 which is saturday
     if (lastDayIndex !== 6) {
       let daysLeftInWeek = 6 - lastDayIndex;
       let dayInNextMonthIndex
       for (dayInNextMonthIndex = 1; dayInNextMonthIndex < daysLeftInWeek + 1; dayInNextMonthIndex++) {
-        const dateInNextMonthTime = useConvertTime.getTimeYearMonthDate(calendarTime.year, calendarTime.monthIndex, numOfDaysInMonth + dayInNextMonthIndex);
+        const dateInNextMonthTime = getTimeYearMonthDate(calendarTime.year, calendarTime.monthIndex, numOfDaysInMonth + dayInNextMonthIndex);
         datesInNextMonth.push({ time: dateInNextMonthTime, thisMonth: false, past: false });
       };
     }

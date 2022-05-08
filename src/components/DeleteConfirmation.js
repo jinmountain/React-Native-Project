@@ -19,12 +19,6 @@ import { useCardAnimation } from '@react-navigation/stack';
 // components
 import HeaderBottomLine from '../components/HeaderBottomLine';
 
-// Firebase
-// delete post
-import postDeleteFire from '../firebase/post/postDeleteFire';
-// cancel rsv
-import rsvPostFire from '../firebase/rsvPostFire';
-
 // Color
 import color from '../color';
 

@@ -34,8 +34,12 @@ import DisplayPostLoading from '../../components/displayPost/DisplayPostLoading'
 import count from '../../hooks/count';
 
 // firebase
-import postGetFire from '../../firebase/post/postGetFire';
-import businessGetFire from '../../firebase/businessGetFire';
+import {
+  getBusinessDisplayPostsFire
+} from '../../firebase/post/postGetFire';
+import {
+  getTechniciansByIds
+} from '../../firebase/business/businessGetFire';
 
 // Designs
 import { Ionicons } from '@expo/vector-icons';
@@ -100,7 +104,7 @@ const SearchUsersForm = ({
       chosenUserDisplayPostFetchSwitch && 
       !chosenUserDisplayPostState
     ) {
-      const getChosenUserDisplayPosts = postGetFire.getBusinessDisplayPostsFire(null, chosenUser.id);
+      const getChosenUserDisplayPosts = getBusinessDisplayPostsFire(chosenUser.id, null);
       getChosenUserDisplayPosts
       .then((posts) => {
         mounted && setChosenUserDisplayPosts([ ...posts.fetchedPosts ]);
@@ -232,7 +236,7 @@ const SearchUsersForm = ({
                 <FlatList
                   onEndReached={() => {
                     if (chosenUserDisplayPostFetchSwitch && !chosenUserDisplayPostState) {
-                      const getChosenUserDisplayPosts = postGetFire.getBusinessDisplayPostsFire(chosenUserDisplayPostLast, chosenUser.id);
+                      const getChosenUserDisplayPosts = getBusinessDisplayPostsFire(chosenUser.id, chosenUserDisplayPostLast);
                       getChosenUserDisplayPosts
                       .then((posts) => {
                         setChosenUserDisplayPosts([ ...chosenUserDisplayPosts, ...posts.fetchedPosts ]);
@@ -257,7 +261,7 @@ const SearchUsersForm = ({
                         onPress={() => {
                           setChosenDisplayPost(item);
                           if (!displayPostTechsState) {
-                            const getDisplayPostTechs = businessGetFire.getTechniciansByIds(item.data.techs);
+                            const getDisplayPostTechs = getTechniciansByIds(item.data.techs);
                             getDisplayPostTechs
                             .then((techs) => {
                               setDisplayPostTechs(techs);
@@ -283,12 +287,6 @@ const SearchUsersForm = ({
                           price={item.data.price}
                           etc={item.data.etc}
                         />
-                        { item.data.files.length > 1
-                          ? <MultiplePhotosIndicator
-                              size={RFValue(24)}
-                            />
-                          : null
-                        }
                       </TouchableOpacity>
                     )
                   }}
@@ -482,7 +480,8 @@ const SearchUsersForm = ({
 
 const styles = StyleSheet.create({
   userSearchFormContainer: {
-    backgroundColor: "#fff",
+    paddingTop: RFValue(10),
+    backgroundColor: color.white2,
   },
   searchBarContainer: {
     marginVertical: RFValue(7),

@@ -141,4 +141,4 @@ const deletePostFire = (postId, postData) => {
 	});
 };
 
-export default { deletePostFire };
+export { deletePostFire };

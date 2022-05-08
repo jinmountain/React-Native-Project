@@ -20,7 +20,7 @@ import MultiplePhotosIndicator from '../components/MultiplePhotosIndicator';
 import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
 import DisplayPostsDefault from '../components/defaults/DisplayPostsDefault';
 import { HeaderForm } from '../components/HeaderForm';
-import VerticalSwipePostImage from '../components/postCard/VerticalSwipePostImage';
+import PostImageForm from '../components/postCard/PostImageForm';
 import DefaultUserPhoto from '../components/defaults/DefaultUserPhoto';
 import PostUserInfoContainer from '../components/postCard/PostUserInfoContainer';
 import PanX from '../components/PanX';
@@ -34,8 +34,9 @@ import { Context as AuthContext } from '../context/AuthContext';
 import UserAccountHeaderForm from '../components/accountScreen/UserAccountHeaderForm';
 
 // Firebase
-import businessGetFire from '../firebase/businessGetFire';
-import postGetFire from '../firebase/post/postGetFire';
+import {
+	getTechsRating
+} from '../firebase/business/businessGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -80,7 +81,7 @@ const PostDetailScreen = ({ route, navigation }) => {
 				// fetch techs when the post is a display post
 				if (!displayPostTechsState && post.data.display) {
 					isMounted && setDisplayPostTechsState(true);
-					const getDisplayPostTechs = businessGetFire.getTechsRating(post.data.techs, post.data.uid, post.id);
+					const getDisplayPostTechs = getTechsRating(post.data.techs, post.data.uid, post.id);
 					getDisplayPostTechs
 					.then((techs) => {
 						console.log(techs);

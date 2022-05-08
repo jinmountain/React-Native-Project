@@ -6,6 +6,7 @@ LogBox.ignoreLogs(['Setting a timer']);
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 // import { createBottomTabNavigator } from 'react-navigation-tabs';
 // import * as ScreenOrientation from 'expo-screen-orientation';
@@ -24,6 +25,7 @@ import ImageZoominScreen from './src/screens/ImageZoominScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import PostDetailScreen from './src/screens/PostDetailScreen';
 import ContentCreateScreen from './src/screens/ContentCreateScreen';
+import SnailScreen from './src/screens/SnailScreen';
 
 // navigation stacks
 import ChatListStack from './src/navigations/ChatListStack';
@@ -92,6 +94,20 @@ const MainFlow = () => {
       <Stack.Screen 
         name="Main" 
         component={MainBottomTab}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="MainFlowPostsSwipeStack"
+        component={PostsSwipeStack}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="Snail" 
+        component={SnailScreen}
         options={{
           headerShown: false,
         }}
@@ -165,9 +181,16 @@ const MainFlow = () => {
 }
 
 // Firebase
-import authFire from './src/firebase/authFire';
-import usersGetFire from './src/firebase/usersGetFire';
-import usersPostFire from './src/firebase/usersPostFire';
+import {
+  localSigninFire
+} from './src/firebase/authFire';
+import {
+  getUserNotificationsRealtime,
+  getUserDataRealtime
+} from './src/firebase/user/usersGetFire';
+import {
+  changeUserAppState
+} from './src/firebase/user/usersPostFire';
 
 // Hooks
 import useNotifications from './src/hooks/useNotifications';
@@ -179,12 +202,9 @@ const App = () => {
   // const route = useRoute();
   // console.log(route.name);
   const { 
-    state: { user, userRealtimeListenerSwitch },
-    localSignin,
+    state: { user, userId },
+    addCurrentUserId,
     addCurrentUserData,
-    changeUserLogin,
-    turnOnUserRealtimeListener,
-    turnOffUserRealtimeListener
   } = useContext(AuthContext);
 
   const { 
@@ -196,19 +216,10 @@ const App = () => {
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
-  // merged with another useEffect
-  // useEffect(() => {
-  //   AppState.addEventListener('change', handleAppStateChange);
-
-  //   return () => {
-  //     AppState.removeEventListener('change', handleAppStateChange);
-  //   };
-  // }, []);
-
   // change app state on user's data on firestore and context
   useEffect(() => {
     if (user && user.emailVerified) {
-      usersPostFire.changeUserAppState(user.id, appStateVisible);
+      changeUserAppState(user.id, appStateVisible);
       addAppStateSocial(user.id, appStateVisible);
     }
   }, [appStateVisible]);
@@ -218,33 +229,31 @@ const App = () => {
     setAppStateVisible(appState.current);
   };
 
-  // const [ userRealtimeListenerSwitch, setUserRealtimeListenerSwitch ] = useState(false);
-
   // start local sign in and app state listener
   useEffect(() => {
-    const tryLoginFirst = localSignin();
-    tryLoginFirst
-    .then((userData) => {
-      wait(1000).then(() => {
-        setSplash(false);
-        changeUserLogin(true);
-        turnOnUserRealtimeListener();
-        AppState.addEventListener('change', handleAppStateChange);
+    // when user is not null and added from sign in or sign up skip local sign in
+    if (!user) {
+      const localSignin = localSigninFire();
+      localSignin
+      .then((userData) => {
+        addCurrentUserId(userData.id);
+        addCurrentUserData(userData);
+        wait(1000).then(() => {
+          // turn off splash / the default starting screen
+          setSplash(false);
+        });
+      })
+      .catch((error) => {
+        console.log("Error occured: App: localSignin: ", error);
+        wait(1000).then(() => {
+          setSplash(false);
+        });
       });
-    })
-    .catch((error) => {
-      console.log("Error occured: App: localSignin: ", error);
-      wait(1000).then(() => {
-        setSplash(false);
-      });
-    });
+    }
 
     return () => {
       isReadyRef.current = false;
-      // remove app state listener
-      AppState.removeEventListener('change', handleAppStateChange);
-      turnOffUserRealtimeListener();
-    };
+    }
   }, []);
 
   // user notification listener, user data listener
@@ -252,32 +261,34 @@ const App = () => {
     let notificationListener;
     let userDataListener;
 
-    if (userRealtimeListenerSwitch && user && user.id) {
-      notificationListener = usersGetFire.getUserNotificationsRealtime(user.id, schedulePushNotification);
-      userDataListener = usersGetFire.getUserDataRealtime(user.id, addCurrentUserData);
+    if (userId) {
+      AppState.addEventListener('change', handleAppStateChange);
+      notificationListener = getUserNotificationsRealtime(userId, schedulePushNotification);
+      userDataListener = getUserDataRealtime(userId, addCurrentUserData);
     } else {
-      if (notificationListener && !userRealtimeListenerSwitch) {
-        console.log("realtime listener is off. unsubscribe: notificationListener");
-        notificationListener()
+      if (notificationListener) {
+        notificationListener();
       };
-      if (userDataListener && !userRealtimeListenerSwitch) {
-        console.log("realtime listener is off. unsubscribe: userDataListener");
-        userDataListener()
+      if (userDataListener) {
+        userDataListener();
       };
     }
 
-    // return () => {
-    //   // must unsubscribe when not in effect
-    //   if (notificationListener) {
-    //     console.log("App: unsubscribe: notificationListener");
-    //     notificationListener();
-    //   };
-    //   if (userDataListener) {
-    //     console.log("App: unsubscribe: userDataListener");
-    //     userDataListener();
-    //   };
-    // };
-  }, [userRealtimeListenerSwitch]);
+    return () => {
+      // must unsubscribe when not in effect
+      if (notificationListener) {
+        console.log("App: unsubscribe: notificationListener");
+        notificationListener();
+      };
+      if (userDataListener) {
+        console.log("App: unsubscribe: userDataListener");
+        userDataListener();
+      };
+      
+      // remove app state listener
+      AppState.removeEventListener('change', handleAppStateChange);
+    };
+  }, [userId]);
 
   return (
     <NavigationContainer 
@@ -307,14 +318,16 @@ const App = () => {
 
 export default () => {
   return (
-    <SocialProvider>
-      <PostProvider>
-        <LocationProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </LocationProvider>
-      </PostProvider>
-    </SocialProvider>
+    <PaperProvider>
+      <SocialProvider>
+        <PostProvider>
+          <LocationProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </LocationProvider>
+        </PostProvider>
+      </SocialProvider>
+    </PaperProvider>
   );
 };

@@ -5,8 +5,10 @@ import {
 	View,
 	TouchableOpacity, 
 	TextInput,
-	ScrollView } from 'react-native';
-import { SafeAreaView, } from 'react-native-safe-area-context';
+	SafeAreaView,
+	ScrollView,
+	KeyboardAvoidingView 
+} from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Hooks
@@ -17,7 +19,7 @@ import {
 
 // Components
 import { HeaderForm } from '../../components/HeaderForm';
-import { ProfileInputForm } from '../../components/ProfileInputForm';
+import { InputFormBottomLine } from '../../components/InputFormBottomLine';
 
 // Contexts
 import { Context as AuthContext } from '../../context/AuthContext';
@@ -30,25 +32,19 @@ import { AntDesign } from '@expo/vector-icons';
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+	evilIconsClose
+} from '../../expoIcons';
 
 const UpdateProfileInputScreen = ({ route, navigation }) => {
-	const { inputType } = route.params;
+	const { 
+		inputType,
+		inputValue,
+	} = route.params;
 	const { 
 		state: { 
-			user, 
-			newProfileJson,
-			newName,
-			newUsername,
-			newWebsite,
-			newSign
+			user
 		}, 
-		addNewName,
-		addNewUsername,
-		addNewWebsite,
-		addNewSign,
-		addNewInputToJson,
-		cancelProfileUpdate,
 	} = useContext(AuthContext);
 
 	// newInputCheck is going to be added to new inputs and new inputs' json
@@ -56,145 +52,213 @@ const UpdateProfileInputScreen = ({ route, navigation }) => {
 	const [uniqueUsernameControl, setUniqueUsernameControl] = useState(false);
 	const [rulesUsernameControl, setRulesUsernameControl] = useState(false);
 
-	if (inputType === 'Username' && newUsername !== null) {
-		useEffect(() => {
+  const [ textInputFormHeight, setTextInputFormHeight ] = useState(RFValue(35));
+
+	useEffect(() => {
+		if (inputType === 'username' && newInputCheck.length > 0) {
 			uniqueUsername(newInputCheck, user.username, setUniqueUsernameControl);
 			meetUsernameRules(newInputCheck, setRulesUsernameControl);
-		}, [newInputCheck]);
-	};
+		}
+	}, [newInputCheck]);
+
+	useEffect(() => {
+		console.log("inputValue: ", inputValue);
+		if (inputValue) {
+			setNewInputCheck(inputValue);
+		}
+	}, [inputType]);
 
 	return (
-		<SafeAreaView style={styles.updateProfileInputScreenContainer}>
-			<HeaderForm 
-		    leftButtonTitle={null}
-		    leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
-		    headerTitle={inputType} 
-		    rightButtonTitle={
-	    		inputType === 'Name' && newInputCheck !== ''
-		    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
-		    	: 
-		    	inputType === 'Username' && 
-		    	uniqueUsernameControl === true && 
-		    	rulesUsernameControl === true && 
-		    	newInputCheck !== ''
-			    ?	<AntDesign name="check" size={RFValue(25)} color={color.blue1} />
-		    	: inputType === 'Website' && newInputCheck !== ''
-		    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
-		    	: inputType === 'Sign' && newInputCheck !== ''
-		    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
-		    	: <AntDesign name="check" size={RFValue(25)} color={color.black1} />
-	    	}
-		    leftButtonPress={() => {
-		    	navigation.goBack();
-		    }}
-		    rightButtonPress={() => {
-		    	{
-		    		inputType === 'Name'
-			    	? (
-			    			addNewName(newInputCheck),
-			    			addNewInputToJson({ name: newInputCheck }),
-			    			navigation.goBack()
-			    		)
+		<KeyboardAvoidingView
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.updateProfileInputScreenContainer}
+		>
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView/>
+				<HeaderForm 
+			    leftButtonTitle={null}
+			    leftButtonIcon={evilIconsClose(RFValue(27), color.black1)}
+			    headerTitle={
+			    	inputType === 'name'
+						?
+						"Name"
+						: inputType === 'username'
+						? "Username"
+						: inputType === 'website'
+						? "Website"
+						: inputType === 'sign'
+						? "Sign"
+						: inputType === "phoneNumber"
+						? "Phone Number"
+						: inputType === "email"
+						? "Email"
+						: "undefined"
+			    } 
+			    rightButtonIcon={
+		    		inputType === 'name' && newInputCheck.length > 0
+			    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
 			    	: 
-			    	inputType === 'Username' && 
+			    	inputType === 'username' && 
 			    	uniqueUsernameControl === true && 
 			    	rulesUsernameControl === true && 
-			    	newInputCheck !== ''
-				    ?	( 
-				    		console.log( uniqueUsernameControl, rulesUsernameControl ),
-			    			addNewInputToJson({ username: newInputCheck }),
-				    		addNewUsername(newInputCheck),
-			    			navigation.goBack()
-			    		)
-			    	: inputType === 'Website'
-			    	? (
-			    			addNewWebsite(newInputCheck),
-			    			addNewInputToJson({ website: newInputCheck }),
-			    			navigation.goBack()
-			    		)
-			    	: inputType === 'Sign'
-			    	? (
-			    			addNewSign(newInputCheck),
-			    			addNewInputToJson({ sign: newInputCheck }),
-			    			navigation.goBack()
-			    		)
-			    	: null
+			    	newInputCheck.length > 0
+				    ?	<AntDesign name="check" size={RFValue(25)} color={color.blue1} />
+			    	: inputType === 'website' && newInputCheck.length > 0
+			    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
+			    	: inputType === 'sign' && newInputCheck.length > 0
+			    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
+			    	: inputType === 'phoneNumber' && newInputCheck.length > 0
+			    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
+			    	: inputType === 'email' && newInputCheck.length > 0
+			    	? <AntDesign name="check" size={RFValue(25)} color={color.blue1} />
+			    	: <AntDesign name="check" size={RFValue(25)} color={color.black1} />
 		    	}
-		    }}
-		  />
-		  <View style={styles.inputContainer} >
-		  	{
-		  		inputType === 'Name'
-		    	? <ProfileInputForm
-							setInputCheck={setNewInputCheck}
-							assignedValue={newInputCheck}
-							currentValue={user.name}
-							maxLength={30}
-							placeholderValue={"Name"}
-							multiline={false}
-							customHeight={RFValue(35)}
-						/>
-		    	: inputType === 'Username'
-		    	? <ProfileInputForm
-							setInputCheck={setNewInputCheck}
-							assignedValue={newInputCheck}
-							currentValue={user.username}
-							maxLength={30}
-							placeholderValue={"Username"}
-							multiline={false}
-							customHeight={RFValue(35)}
-						/>
-		    	: inputType === 'Website'
-		    	? <ProfileInputForm
-							setInputCheck={setNewInputCheck}
-							assignedValue={newWebsite}
-							currentValue={user.website}
-							// maxLength={30}
-							placeholderValue={"Website"}
-							multiline={false}
-							customHeight={RFValue(35)}
-						/>
-		    	: inputType === 'Sign'
-		    	? <ProfileInputForm
-							setInputCheck={setNewInputCheck}
-							assignedValue={newSign}
-							currentValue={user.sign}
-							// maxLength={30}
-							numberOfLines={30}
-							placeholderValue={"Sign"}
-							multiline={true}
-							customHeight={RFValue(100)}
-						/>
-		    	: null
-		    }
-		    { 
-		    	inputType !== "Username"
-		    	? null
-		    	: uniqueUsernameControl === false || rulesUsernameControl === false
-		    	? <View style={styles.alertContainer}>
-							<AntDesign name="exclamationcircleo" size={RFValue(18)} color="black" />
-							<Text style={styles.alertText}>
-								Username must be unique, longer than 4 characters, limited to 30 characters, and contain only letters, numbers, periods, and underscores.
-							</Text>
-						</View>
-					: <View style={styles.validContainer}>
-							<AntDesign name="check" size={RFValue(25)} color={color.blue1} />
-							<Text style={styles.validText}>
-								Valid
-							</Text>
-						</View>
-		    }
+			    leftButtonPress={() => {
+			    	navigation.goBack();
+			    }}
+			    rightButtonPress={() => {
+			    	if (
+				    	inputType === 'username' && 
+				    	uniqueUsernameControl === true && 
+				    	rulesUsernameControl === true && 
+				    	newInputCheck.trim().length > 0
+					  ) {	
+		    			navigation.navigate("UpdateProfile", {
+		    				returnedInputType: inputType,
+	          		returnedInputValue: newInputCheck
+		    			});
+		    		};
+		    		if (
+		    			inputType !== 'username' && 
+		    			newInputCheck.trim().length > 0
+		    		) {
+		    			navigation.navigate("UpdateProfile", {
+		    				returnedInputType: inputType,
+	          		returnedInputValue: newInputCheck
+		    			});
+		    		};
+			    }}
+			  />
 			</View>
-		</SafeAreaView>
+		  <View style={styles.inputContainer}>
+		  	<ScrollView
+		  		contentContainerStyle={{ paddingBottom: RFValue(100) }}
+		  	>
+					<View style={styles.profileInputFormContainer}>
+						<View style={styles.textInputLabelContainer}>
+							{ newInputCheck
+								? 
+								<Text style={styles.textInputLabel}>
+									{
+										inputType === 'name'
+										?
+										"Name"
+										: inputType === 'username'
+										? "Username"
+										: inputType === 'website'
+										? "Website"
+										: inputType === 'sign'
+										? "Sign"
+										: inputType === "phoneNumber"
+										? "Phone Number"
+										: inputType === "email"
+										? "Email"
+										: "undefined"
+									}
+								</Text>
+								: null
+							}
+						</View>
+						<View style={styles.textInputContainer}>
+							<TextInput
+								style={[
+									styles.input,
+									{
+		                height: Math.max(RFValue(35), textInputFormHeight)
+		              }
+								]}
+								placeholder={
+									inputType === 'name'
+									?
+									"Name"
+									: inputType === 'username'
+									? "Username"
+									: inputType === 'website'
+									? "Website"
+									: inputType === 'sign'
+									? "Sign"
+									: inputType === "phoneNumber"
+									? "Phone Number"
+									: inputType === "email"
+									? "Email"
+									: "undefined"
+								}
+								placeholderTextColor={color.grey3}
+								onChangeText={(text) => {
+									if (inputType === 'sign') {
+										setNewInputCheck(text);
+									} else {
+										const trimmedText = text.trim();
+										setNewInputCheck(trimmedText);
+									}
+								}}
+								value={newInputCheck}
+								maxLength={
+									inputType === 'sign'
+									? 100
+									: inputType === 'website'
+									? 50
+									: 30
+								}
+								multiline={
+									inputType === 'sign'
+									? true
+									: false
+								}
+								underlineColorAndroid="transparent"
+								autoCapitalize="none"
+								numberOfLines={
+									inputType === 'sign'
+									? 10
+									: 1
+								}
+								onContentSizeChange={(event) => {
+		              setTextInputFormHeight(event.nativeEvent.contentSize.height);
+		            }}
+							/>
+						</View>
+						<InputFormBottomLine customStyles={{borderColor: color.grey1}} />
+					</View>
+			    { 
+			    	inputType !== "username"
+			    	? null
+			    	: uniqueUsernameControl === false || rulesUsernameControl === false
+			    	? <View style={styles.alertContainer}>
+								<AntDesign name="exclamationcircleo" size={RFValue(18)} color="black" />
+								<Text style={styles.alertText}>
+									Username must be unique, longer than 4 characters, limited to 30 characters, and contain only letters, numbers, periods, and underscores.
+								</Text>
+							</View>
+						: <View style={styles.validContainer}>
+								<AntDesign name="check" size={RFValue(25)} color={color.blue1} />
+								<Text style={styles.validText}>
+									Valid
+								</Text>
+							</View>
+			    }
+			  </ScrollView>
+			</View>
+		</KeyboardAvoidingView>
 	);
 };
 
 const styles = StyleSheet.create({
 	updateProfileInputScreenContainer: {
 		flex: 1,
-		backgroundColor: "#FFF",
+		backgroundColor: color.white2,
 	},
 	inputContainer: {
+		flex: 1,
 		marginTop: RFValue(30),
 		paddingLeft: RFValue(30),
 		paddingRight: RFValue(30),
@@ -215,6 +279,44 @@ const styles = StyleSheet.create({
 		marginLeft: 5,
 		fontSize: RFValue(15),
 	},
+
+	profileInputFormContainer: {
+
+	},
+	textInputContainer: {
+		paddingBottom: RFValue(7)
+	},
+	textInputLabel: {
+		fontSize: RFValue(12),
+		marginTop: RFValue(8),
+		color: color.grey3
+	},
+	textInputLabelContainer: {
+		minHeight: RFValue(25),
+		paddingBottom: RFValue(10),
+	},
+	input: {
+		color: color.black1,
+		fontSize: RFValue(17),
+		overflow: 'hidden',
+		// don't put margin or padding bottom 
+		// it increase the gap between the placeholder and the bottom line
+	},
+
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 });
 
 export default UpdateProfileInputScreen;

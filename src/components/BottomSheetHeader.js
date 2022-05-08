@@ -41,7 +41,7 @@ const BottomSheetHeader = ({ headerText, closeButtonOnPress }) => {
             underlayColor={color.grey4}
             onPress={closeButtonOnPress}
           >
-            {antClose(RFValue(19), color.black1)}
+            {antClose(RFValue(21), color.black1)}
           </TouchableHighlight>
         </View>
       </View>
@@ -52,10 +52,11 @@ const BottomSheetHeader = ({ headerText, closeButtonOnPress }) => {
 
 const styles = StyleSheet.create({
   bottomSheetHeaderContainer: {
+    backgroundColor: color.white2,
     height: RFValue(55),
     width: "100%", 
-    borderTopLeftRadius: 9,
-    borderTopRightRadius: 9,
+    borderTopLeftRadius: RFValue(9),
+    borderTopRightRadius: RFValue(9),
   },
   bottomSheetHeaderInner: {
     flex: 1,
@@ -71,8 +72,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   sliderIndicator: {
-    width: 35,
-    height: 7,
+    width: 50,
+    height: 5,
     backgroundColor: color.grey1,
     borderRadius: 100
   },

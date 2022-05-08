@@ -14,7 +14,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 // Contexts
 
 // Hooks
-import useConvertTime from '../../../hooks/useConvertTime';
+// import useConvertTime from '../../../hooks/useConvertTime';
 
 // Components
 import MainTemplate from '../../../components/MainTemplate';

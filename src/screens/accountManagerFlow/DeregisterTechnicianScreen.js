@@ -15,7 +15,9 @@ import CheckBox from '../../components/CheckBox';
 import { HeaderForm } from '../../components/HeaderForm';
 
 // Hooks
-import businessUpdateFire from '../../firebase/businessUpdateFire';
+import {
+	technicianDeregister
+} from '../../firebase/business/businessUpdateFire';
 
 // Contexts
 import { Context as AuthContext } from '../../context/AuthContext';
@@ -78,10 +80,11 @@ const DeregisterBusinessScreen = ({ navigation }) => {
 								style={{ ...styles.buttonContainer, ...{ backgroundColor: "#E9FEFF" }}}
 								onPress={() => {
 									isChecked 
-									? ( 
-											businessUpdateFire.technicianDeregister(user.id),
-											localSignin(navigation.navigate, 'Account')
-										)
+									? 
+									technicianDeregister(user.id)
+									.then(() => {
+										navigation.navigate("AccountManager");
+									})
 									: console.log("need checkmark")
 								}}
 							>

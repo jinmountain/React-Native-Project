@@ -22,8 +22,12 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import color from '../../color';
 
 // Hooks
-import businessPostFire from '../../firebase/businessPostFire';
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+	sendRsvRequest
+} from '../../firebase/rsv/rsvPostFire';
+import {
+	convertEtcToHourMin
+} from '../../hooks/useConvertTime';
 
 // Designs
 import { Entypo } from '@expo/vector-icons';
@@ -220,7 +224,7 @@ const ConfirmationPage = ({
 									{pickedDisplayPost.data.price}
 								</Text>
 								<Text><Entypo name="dot-single" size={RFValue(13)} color={color.grey7} /></Text>
-								<Text style={styles.cfmInfoText}>{useConvertTime.convertEtcToHourMin(pickedDisplayPost.data.etc)}</Text>
+								<Text style={styles.cfmInfoText}>{convertEtcToHourMin(pickedDisplayPost.data.etc)}</Text>
 							</View>
 						</View>
 					}
@@ -437,7 +441,7 @@ const ReservationRequestScreen = ({ route, navigation }) => {
 										<Text style={styles.majorInfoText}>{gridTime.normalHour}:{gridTime.normalMin} {gridTime.pmOrAm}</Text>
 										<Text><Entypo name="dot-single" size={RFValue(13)} color="black" /></Text>
 										<View style={styles.rsvEtc}>
-											<Text style={styles.majorInfoText}>{useConvertTime.convertEtcToHourMin(pickedDisplayPost.data.etc)}</Text>
+											<Text style={styles.majorInfoText}>{convertEtcToHourMin(pickedDisplayPost.data.etc)}</Text>
 										</View>
 									</View>
 									<View style={styles.rsvPriceContainer}>

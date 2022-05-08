@@ -17,11 +17,19 @@ const UpdateProfileStack = () => {
     >
       <Stack.Screen 
         name="UpdateProfile" 
-        component={UpdateProfileScreen} 
+        component={UpdateProfileScreen}
+        initialParams={{ 
+          returnedInputType: null,
+          returnedInputValue: null
+        }}
       />
       <Stack.Screen 
         name="UpdateProfileInput" 
         component={UpdateProfileInputScreen} 
+        initialParams={{ 
+          inputType: null,
+          inputValue: null
+        }}
       />
     </Stack.Navigator>
   );

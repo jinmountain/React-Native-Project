@@ -13,7 +13,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 import color from '../color';
 
-const ExpandableText = ({ caption, defaultCaptionNumLines }) => {
+const ExpandableText = ({ caption, defaultCaptionNumLines, moreLessTextSize }) => {
   const [ textShown, setTextShown ] = useState(false); //To show ur remaining Text
   const [ lengthMore, setLengthMore ] = useState(false); //to show the "Read more & Less Line"
 
@@ -102,7 +102,13 @@ const ExpandableText = ({ caption, defaultCaptionNumLines }) => {
               &&
               <Text
                 numberOfLines={1}
-                style={styles.moreLessText}
+                style={[
+                  styles.moreLessText
+                  ,
+                  {
+                    fontSize: moreLessTextSize ? moreLessTextSize : RFValue(15)
+                  }
+                ]}
               >
                 {loadMore ? 'Show less' :'Read more'}
               </Text>
@@ -131,7 +137,7 @@ const styles = StyleSheet.create({
   },
   moreLessText: {
     justifyContent: 'center',
-    fontSize: RFValue(17),
+    fontSize: RFValue(15),
     color: color.grey3
   }, 
 });

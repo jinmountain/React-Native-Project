@@ -139,7 +139,7 @@ const likeCommentFire = (postId, commentId, currentUserId) => {
           commentsWhoLikeRef.doc(currentUserId).set({
             uid: currentUserId,
             postId: postId,
-            commentId: comemntId,
+            commentId: commentId,
             createdAt: Date.now()
           });
           
@@ -323,4 +323,11 @@ const undoLikeReplyFire = (postId, commentId, replyId, currentUserId) => {
   });
 };
 
-export default { likePostFire, undoLikePostFire, likeCommentFire, undoLikeCommentFire, likeReplyFire, undoLikeReplyFire };
+export { 
+  likePostFire, 
+  undoLikePostFire, 
+  likeCommentFire, 
+  undoLikeCommentFire, 
+  likeReplyFire, 
+  undoLikeReplyFire 
+};

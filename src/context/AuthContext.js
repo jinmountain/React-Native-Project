@@ -1,7 +1,14 @@
 import createDataContext from './createDataContext';
-import authFire from '../firebase/authFire';
-import usersGetFire from '../firebase/usersGetFire';
-import businessUpdateFire from '../firebase/businessUpdateFire';
+import {
+	authCheck,
+	signoutFire,
+	signupFire,
+	signinFire,
+	passwordResetFire,
+} from '../firebase/authFire';
+import {
+	getUserInfoFire,
+} from '../firebase/user/usersGetFire';
 
 // import navigate from '../hooks/navigate';
 
@@ -9,53 +16,22 @@ const authReducer = (state, action) => {
 	switch (action.type) {
 		case 'add_error': 
 			return { ...state, errorMessage: action.payload };
-		case 'turn_on_user_realtime_listener':
-			return { ...state, userRealtimeListenerSwitch: true };
-		case 'turn_off_user_realtime_listener':
-			return { ...state, userRealtimeListenerSwitch: false };
+
 		case 'signin':
 			return { ...state, errorMessage: '' };
-		case 'clear_error_message':
-			return { ...state, errorMessage: '' };
-		case 'change_user_login':
-			return { ...state, userLogin: action.payload };
-		case 'add_current_user_data':
-			return { user: action.payload };
-		case 'clear_current_user_data':
-			return { ...state, user: null };
 		case 'signout':
 			return { errorMessage: '', user: null };
-		// update profile
-		case 'reset_profile_edit':
-			return { ...state, newName: null, newUsername: null, newWebsite: null, newSign: null, newProfileJson: null };
-		case 'add_new_name':
-			return { 
-				...state, 
-				newName: action.payload, 
-			};
-		case 'add_new_username':
-			return { 
-				...state, 
-				newUsername: action.payload,
-			};
-		case 'add_new_website':
-			return { 
-				...state, 
-				newWebsite: action.payload,
-			};
-		case 'add_new_sign':
-			return { 
-				...state, 
-				newSign: action.payload,
-			};
-		case 'add_new_input_json':
-			return {
-				...state,
-				newProfileJson: { ...state.newProfileJson, ...action.payload }
-			}
-		case 'cancel_profile_update': 
-			return { ...state, newProfileJson: null };
-		
+
+		case 'clear_error_message':
+			return { ...state, errorMessage: '' };
+
+		case 'add_current_user_id':
+			return { ...state, userId: action.payload };
+		case 'add_current_user_data':
+			return { ...state, user: action.payload };
+		case 'clear_current_user_data':
+			return { ...state, user: null, userId: null };
+
 		// navigation status
 		case 'tab_home':
 			return { ...state, homeTab: true, searchTab: false, activityTab: false, accountTab: false };
@@ -75,73 +51,49 @@ const trimmer = (string) => {
 	return string.trim();
 };
 
-const turnOnUserRealtimeListener = dispatch => () => {
-	dispatch({ type: 'turn_on_user_realtime_listener' });
-};
-
-const turnOffUserRealtimeListener = dispatch => () => {
-	dispatch({ type: 'turn_off_user_realtime_listener' });
-};
-
-const localSignin = dispatch => async (navigate, screen) => {
-	return new Promise (async (res, rej) => {
-		try {
-			const userData = await authFire.localSigninFire();
-			if (userData) {
-				console.log('localSignin: userData >> ', userData.id);
-				dispatch({ type: 'add_current_user_data', payload: userData});
-			} else {
-				console.log('localSignin: current user data does not exist');
-			}
-			if (screen) {
-				navigate(screen);
-			}
-			// userData is false when didn't go through
-			res(userData);
-		} catch (error) {
-			console.log('localSignin: ', error);
-			rej(error);
-		};
-	});
-};
-
-const changeUserLogin = dispatch => (value) => {
-	dispatch({ type: 'change_user_login', payload: value });
-};
-
 const accountRefresh = dispatch => (navigate) => {
-	const authCheck = authFire.authCheck();
-	authCheck
-	.then((currentUser) => {
-		const getUserInfo = usersGetFire.getUserInfoFire(currentUser.uid);
-		getUserInfo
-		.then((userData) => {
-			if (userData) {
-				dispatch({ type: 'add_current_user_data', payload: userData});
-				console.log('current user data is up to date: ', userData.id);
-			} else {
-				// when userData is false
-				console.log('can not find the curren user data');
-			}
+	return new Promise ((res, rej) => {
+		const checkAuth = authCheck();
+		checkAuth
+		.then((currentUser) => {
+			const getUserInfo = getUserInfoFire(currentUser.uid);
+			getUserInfo
+			.then((userData) => {
+				if (userData) {
+					dispatch({ type: 'add_current_user_data', payload: userData});
+					dispatch({ type: 'add_current_user_id', payload: userData.id });
+					console.log('AuthContext accountRefresh: ', userData.id);
+					res(userData);
+				} else {
+					// when userData is false
+					console.log('current user not found');
+					rej("current user not found");
+				}
+			})
+			.catch((error) => {
+				console.log("error: AuthContext/accountRefresh/getUserInfoFire: ", error);
+			});
 		})
 		.catch((error) => {
-			console.log("error: accountRefresh: getUserInfoFire: ", error);
-		});
-	})
-	.catch((error) => {
-		// when authCheck fails
-		const signOut = authFire.signoutFire();
-		signOut
-		.then(() => {
-			dispatch({ type: 'clear_current_user_data'});
-			console.log("AuthContext: accountRefresh: authCheck: ", error);
-		})
-		.catch((error) => {
-			console.log("error: signoutFire: ", error);
+			// when authCheck fails
+			const signOut = signoutFire();
+			signOut
+			.then(() => {
+				dispatch({ type: 'clear_current_user_data'});
+				console.log("AuthContext/accountRefresh/authCheck: ", error);
+				rej("auth failed signed out");
+			})
+			.catch((error) => {
+				console.log("error: signoutFire: ", error);
+				rej("auth failed sign out failed");
+			});
 		});
 	});
 };
 
+const addCurrentUserId = dispatch => (userId) => {
+	dispatch({ type: 'add_current_user_id', payload: userId });
+};
 const addCurrentUserData = dispatch => (userData) => {
 	dispatch({ type: 'add_current_user_data', payload: userData});
 };
@@ -152,7 +104,7 @@ const clearErrorMessage = dispatch => () => {
 
 const signup = dispatch => async ({ email, password, confirmPassword }) => {
 	try {
-		const userData = await authFire.signupFire(
+		const userData = await signupFire(
 			trimmer(email), 
 			trimmer(password), 
 			trimmer(confirmPassword)
@@ -163,7 +115,8 @@ const signup = dispatch => async ({ email, password, confirmPassword }) => {
 				'Your password and confirm password do not match.' 
 			});
 		} else {
-			dispatch({ type: 'add_current_user_data', payload: userData});
+			dispatch({ type: 'add_current_user_data', payload: userData });
+			dispatch({ type: 'add_current_user_id', payload: userData.id });
 		} 
 	} catch (error) {
 		dispatch({ type: 'add_error', payload: 'Email is already registered.' })
@@ -191,8 +144,9 @@ const signup = dispatch => async ({ email, password, confirmPassword }) => {
 
 const signin = dispatch => async ({ email, password }) => {
 	try {
-		const userData = await authFire.signinFire(trimmer(email), trimmer(password));
+		const userData = await signinFire(trimmer(email), trimmer(password));
 		dispatch({ type: 'add_current_user_data', payload: userData});
+		dispatch({ type: 'add_current_user_id', payload: userData.id });
 	} catch (err) {
 		dispatch({
 			type: 'add_error',
@@ -205,7 +159,7 @@ const signin = dispatch => async ({ email, password }) => {
 const passwordReset = dispatch => ({ email }) => {
 	return new Promise (async (res, rej) => {
 		try {
-			const request = await authFire.passwordResetFire(trimmer(email));
+			const request = await passwordResetFire(trimmer(email));
 			res(request);
 		} catch (error) {
 			switch (error.code) {
@@ -217,11 +171,19 @@ const passwordReset = dispatch => ({ email }) => {
 					});
 	        console.log(`Email address is not valid.`);
 	        break;
+
+	      case 'auth/user-not-found':
+	      	dispatch({
+	      		ype: 'add_error',
+						payload: 'Email is not registered'
+	      	});
+	      	break;
 	      default:
 	      	dispatch({
 						type: 'add_error',
 						payload: 'Sorry, try again later'
 					});
+					console.log(error.code);
 	        console.log(error.message);
 	        break;
 	    };
@@ -232,69 +194,24 @@ const passwordReset = dispatch => ({ email }) => {
 
 const signout = dispatch => async () => {
 	return new Promise ((res, rej) => {
-		const turnOffRealtimeListeners = new Promise ((res, rej) => {
-			try {
-				dispatch({ type: 'turn_off_user_realtime_listener' });
-				res();
-			} catch (error) {
-				rej(error);
-			};
-		});
-		const signOut = authFire.signoutFire();
+		const signOut = signoutFire();
 
-		turnOffRealtimeListeners
+		signOut
 		.then(() => {
-			signOut
-			.then(() => {
-				console.log("signout successful");
-				dispatch({ type: 'clear_current_user_data' });
-				console.log('state change: user >> null user info is removed from auth context');
-				res(true);
-			})
-			.catch((error) => {
-				rej(error);
-			});
+			console.log("signout successful");
+			dispatch({ type: 'clear_current_user_data' });
+			console.log('user signed out');
+			res(true);
 		})
 		.catch((error) => {
 			rej(error);
 		});
-	})
+	});
 };
 
 const clearCurrentUser = dispatch => () => {
 	dispatch({ type: 'clear_current_user_data'});
 };
-
-// update profile
-const resetEdit = dispatch => () => {
-	dispatch({ type: 'reset_profile_edit' });
-}
-
-const addNewName = dispatch => (newName) => {
-	dispatch({ type: 'add_new_name', payload: newName });
-};
-
-const addNewUsername = dispatch => (newUsername) => {
-	dispatch({ type: 'add_new_username', payload: newUsername });
-};
-
-const addNewWebsite = dispatch => (newWebsite) => {
-	dispatch({ type: 'add_new_website', payload: newWebsite });
-};
-
-const addNewSign = dispatch => (newSign) => {
-	dispatch({ type: 'add_new_sign', payload: newSign });
-};
-
-const addNewInputToJson = dispatch => (newInput) => {
-	dispatch({ type: 'add_new_input_json', payload: newInput });
-	console.log("Added: ", newInput);
-}
-
-const cancelProfileUpdate = dispatch => () => {
-	dispatch({ type: 'cancel_profile_update' });
-	console.log("Cancelled the profile update.");
-}
 
 // navigation bar status
 const tabHome = dispatch => () => {
@@ -313,26 +230,18 @@ const tabAccount = dispatch => () => {
 export const { Provider, Context } = createDataContext(
 	authReducer,
 	{
-		turnOnUserRealtimeListener,
-		turnOffUserRealtimeListener,
 		signin, 
 		signout,
 		clearCurrentUser,
 		signup,
 		passwordReset,
 		clearErrorMessage,
-		changeUserLogin, 
-		localSignin, 
-		accountRefresh, 
+
+		//
+		accountRefresh,
+		addCurrentUserId,
 		addCurrentUserData,
-		// update profile
-		resetEdit,
-		addNewName,
-		addNewUsername,
-		addNewWebsite,
-		addNewSign,
-		addNewInputToJson,
-		cancelProfileUpdate,
+
 		// navigation bar status
 		tabHome,
 		tabSearch,
@@ -340,15 +249,9 @@ export const { Provider, Context } = createDataContext(
 		tabAccount,
 	},
 	{ 
-		userRealtimeListenerSwitch: false,
 		user: null,
-		userLogin: false,
-		// update profile
-		newProfileJson: null, 
-		newName : null,
-		newUsername : null,
-		newWebsite: null,
-		newSign: null,
+		userId: null,
+
 		// navigation bar status
 		homeTab: true,
 		searchTab: false,

@@ -1,8 +1,6 @@
-import Firebase from '../firebase/config';
+import Firebase from '../../firebase/config';
 import firebase from 'firebase/app';
-import { navigate } from '../navigationRef';
-
-import useConvertTime from '../hooks/useConvertTime';
+import { navigate } from '../../navigationRef';
 
 const db = Firebase.firestore();
 const usersRef = db.collection('users');
@@ -31,7 +29,7 @@ const deleteTechSpecialHoursDoc = (busId, techId, specialHoursDocId) => {
 	});
 };
 
-export default { 
+export { 
 	deleteBusSpecialHoursDoc,
 	deleteTechSpecialHoursDoc
 };

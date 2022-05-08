@@ -172,7 +172,7 @@ const addPostFire = (newPost) => {
         const nowMonthIndex = nowTime.monthIndex;
         const nowNormalMonth = nowTime.normalMonth;
         const nowYear = nowTime.year;
-        const monthYearId = nowNormalMonth + nowYear;
+        const monthYearId = `${nowMonthIndex}_${nowYear}`;
 
         const totalRatingIncrement = firebase.firestore.FieldValue.increment(newPost.rating);
         const countRatingIncrement = firebase.firestore.FieldValue.increment(1);
@@ -326,7 +326,7 @@ const uploadFileAsyncFire = (userId, fileId, fileType, uri) => {
   });
 };
 
-export default {
+export {
   addPostFire, 
   uploadFileAsyncFire, 
 };

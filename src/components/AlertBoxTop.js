@@ -46,7 +46,7 @@ const AlertBoxTop = ({ setAlert, alertText }) => {
   const drop = () => {
   	return new Promise((res, rej) => {
   		Animated.timing(moveY, {
-	  		toValue: 30,
+	  		toValue: 50,
 	  		duration: 100,
 	  		useNativeDriver: false
 	  	}).start();

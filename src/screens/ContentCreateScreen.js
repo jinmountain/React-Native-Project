@@ -23,7 +23,7 @@ import * as MediaLibrary from 'expo-media-library'
 import { Video, AVPlaybackStatus } from 'expo-av';
 
 // Components
-import CancelButton from '../components/CancelButton';
+import CancelButton from '../components/buttons/CancelButton';
 import TagInputForm from '../components/createPost/TagInputForm';
 import { HeaderForm } from '../components/HeaderForm';
 import { SearchUsersForm } from '../components/createPost/SearchUsersForm';
@@ -31,7 +31,7 @@ import CaptionInputForm from '../components/createPost/CaptionInputForm';
 import { InputFormBottomLine } from '../components/InputFormBottomLine';
 import LoadingAlert from '../components/LoadingAlert';
 import { UsersFoundListForm } from '../components/createPost/UsersFoundListForm';
-import ButtonA from '../components/ButtonA';
+import ButtonA from '../components/buttons/ButtonA';
 import THButtonWithBorder from '../components/buttons/THButtonWithBorder';
 import THButtonWOBorder from '../components/buttons/THButtonWOBorder';
 import AlertBoxTop from '../components/AlertBoxTop'; 
@@ -59,31 +59,31 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
 
 // Firebase
-import usersGetFire from '../firebase/usersGetFire';
-import postPostFire from '../firebase/post/postPostFire';
-import authFire from '../firebase/authFire';
+import {
+  getSearchUsersFire
+} from '../firebase/user/usersGetFire';
+import { 
+  addPostFire, 
+  uploadFileAsyncFire 
+} from '../firebase/post/postPostFire';
+import {
+  authCheck
+} from '../firebase/authFire';
 
 // Color
 import color from '../color';
 
 // expo icons
-import { } from '../expoIcons';
+import { 
+  chevronBack,
+  antdesignWarning
+} from '../expoIcons';
 
-// business' services
-const services = [
-  {
-    label: "Nail",
-    value: "nail"
-  },
-  {
-    label: "Hair",
-    value: "hair",
-  },
-  {
-    label: "Eyelash",
-    value: "eyelash",
-  }
-];
+// font
+import { useFonts, Inter_900Black } from '@expo-google-fonts/inter';
+
+// business services
+import services from '../services';
 
 // display posts' etc
 const times = [
@@ -200,15 +200,16 @@ const addPost = (
 ) => {
   return new Promise((res, rej) => {
     setPostState(true);
-    const authCheck = authFire.authCheck();
-    authCheck
+    const checkAuth = authCheck();
+
+    checkAuth
     .then((currentUser) => {
       const userId = currentUser.uid;
       const getFileURL = new Promise (async (res, rej) => {
         const fileURLs = []
         let fileIndex = 0;
         for (fileIndex; fileIndex < files.length; fileIndex++) {
-          const URL = await postPostFire.uploadFileAsyncFire(
+          const URL = await uploadFileAsyncFire(
             userId, 
             files[fileIndex].id,
             files[fileIndex].type,
@@ -282,9 +283,10 @@ const addPost = (
         
         // Firestore | posts | post.id | newPost
         // await until the post is made.
-        const addPostFire = postPostFire.addPostFire(newPost);
-        addPostFire
+        const addPost = addPostFire(newPost);
+        addPost
         .then((post) => {
+          console.log("post: ", post);
           if (post) {
             changeProgress(1);
             res(post);
@@ -430,7 +432,7 @@ const ContentCreateScreen = ({ navigation }) => {
     if (searchUserUsername && searchUserUsername.length >= 1) {
       setUsersFound(null);
       console.log("length: ", searchUserUsername.length, " input: ", searchUserUsername);
-      const searchUsers = usersGetFire.getSearchUsersFire(searchUserUsername, "bus");
+      const searchUsers = getSearchUsersFire(searchUserUsername, "business");
       searchUsers
       .then((users) => {
         console.log('Search users: ', users.length);
@@ -464,6 +466,13 @@ const ContentCreateScreen = ({ navigation }) => {
   }, [postPrice]);
   // get the list of techs when display is true
 
+  let [fontsLoaded] = useFonts({
+    Inter_900Black,
+  });
+  if (!fontsLoaded) {
+    return null;
+  }
+
   const renderContentCreate = () => {
     return (
       <View style={styles.screenContainer}>
@@ -471,69 +480,108 @@ const ContentCreateScreen = ({ navigation }) => {
           ? <LoadingAlert progress={progress}/>
           : null
         }
-        <View style={styles.headerBarContainer}>
-          <SafeAreaView />
-          <HeaderForm 
-            leftButtonTitle={null}
-            // leftButtonIcon={null}
-            leftButtonIcon={<EvilIcons name="close" size={RFValue(27)} color={color.black1}/>}
-            headerTitle={"Create Post"}
-            rightButtonTitle={null}
-            rightButtonIcon={"Done"}
-            leftButtonPress={() => {
-              navigation.goBack();
-            }}
-            rightButtonPress={() => {
-              {
-                files.length < 1
-                ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
-                : chosenUser && !chosenDisplayPost 
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Select the nail design you got at ${chosenUser.username}`))
-                : chosenUser && !chosenTech
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Choose your technician at ${chosenUser.username}`))
-                : chosenUser && !rating
-                ? (setAlertBoxStatus(true), setAlertBoxText(`Rate your experience at ${chosenUser.username}`))
+        { fontsLoaded &&
+          <View style={styles.headerBarContainer}>
+            <SafeAreaView />
+            <HeaderForm 
+              leftButtonTitle={null}
+              // leftButtonIcon={null}
+              leftButtonIcon={<EvilIcons name="close" size={RFValue(27)} color={color.black1}/>}
+              headerTitle={"Create Post"}
+              rightButtonTitle={null}
+              rightButtonIcon={"Post"}
+              rightButtonIconTextCustomStyle={{ fontFamily: 'Inter_900Black' }}
+              leftButtonPress={() => {
+                navigation.goBack();
+              }}
+              rightButtonPress={() => {
+                console.log(chosenUser, chosenTech, rating)
+                { 
+                  // when there isn't a file, a chosen user, tech, and rating
+                  files.length < 1 && !chosenUser && !chosenTech && !rating
+                  ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
+                  : chosenUser && !chosenDisplayPost 
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Select the service you got at ${chosenUser.username}`))
+                  : chosenUser && !chosenTech
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Choose your technician at ${chosenUser.username}`))
+                  : chosenUser && !rating
+                  ? (setAlertBoxStatus(true), setAlertBoxText(`Rate your experience at ${chosenUser.username}`))
 
-                : display && ! postService
-                ? (setAlertBoxStatus(true), setAlertBoxText("Choose the service type of your post"))
-                : display && !postTitle
-                ? (setAlertBoxStatus(true), setAlertBoxText("Fill in the title of your post"))
-                : display && !postPrice
-                ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
-                : display && !postETC
-                ? (setAlertBoxStatus(true), setAlertBoxText("Choose the time of your post"))
-                : display && !selectedTechs.length > 0
-                ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
-                :
-                addPost(
-                  files, 
-                  tags, 
-                  caption,
+                  : display && ! postService
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose the service type of your post"))
+                  : display && !postTitle
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Fill in the title of your post"))
+                  : display && !postPrice
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Write the price of your post"))
+                  : display && !postETC
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose the time of your post"))
+                  : display && !selectedTechs.length > 0
+                  ? (setAlertBoxStatus(true), setAlertBoxText("Choose a technician for this display post"))
+                  :
+                  addPost(
+                    files, 
+                    tags, 
+                    caption,
 
-                  chosenUser,
-                  chosenDisplayPost,
-                  chosenTech,
-                  rating,
-                  
-                  display,
-                  postService,
-                  postTitle,
-                  postPrice,
-                  postETC,
-                  selectedTechs,
+                    chosenUser,
+                    chosenDisplayPost,
+                    chosenTech,
+                    rating,
+                    
+                    display,
+                    postService,
+                    postTitle,
+                    postPrice,
+                    postETC,
+                    selectedTechs,
 
-                  changeProgress,
-                  setPostState
-                )
-                .then((post) => {
-                  navigation.navigate("Account", {
-                    newPost: post
-                  });
-                })
-              }
-            }}
+                    changeProgress,
+                    setPostState
+                  )
+                  .then((post) => {
+                    navigation.navigate("Account", {
+                      newPost: post
+                    });
+                  })
+                }
+              }}
+            />
+          </View>
+        }
+        { 
+          display
+          ? null
+          :
+          <SearchUsersForm 
+            userId={user.id}
+            usersFound={usersFound ? true : false }
+            setUsersFound={setUsersFound}
+            rating={rating}
+            setRating={setRating}
+            chosenUser={chosenUser}
+            setChosenUser={setChosenUser}
+            searchUserUsername={searchUserUsername}
+            setSearchUserUsername={setSearchUserUsername}
+            chosenDisplayPost={chosenDisplayPost}
+            setChosenDisplayPost={setChosenDisplayPost}
+            chosenTech={chosenTech}
+            setChosenTech={setChosenTech}
+
+            displayPostTechs={displayPostTechs}
+            setDisplayPostTechs={setDisplayPostTechs}
+            displayPostTechsState={displayPostTechsState}
+            setDisplayPostTechsState={setDisplayPostTechsState}
+
+            chosenUserDisplayPosts={chosenUserDisplayPosts}
+            setChosenUserDisplayPosts={setChosenUserDisplayPosts}
+            chosenUserDisplayPostLast={chosenUserDisplayPostLast}
+            setChosenUserDisplayPostLast={setChosenUserDisplayPostLast}
+            chosenUserDisplayPostFetchSwitch={chosenUserDisplayPostFetchSwitch}
+            setChosenUserDisplayPostFetchSwtich={setChosenUserDisplayPostFetchSwtich}
+            chosenUserDisplayPostState={chosenUserDisplayPostState}
+            setChosenUserDisplayPostState={setChosenUserDisplayPostState}
           />
-        </View>
+        }
         { usersFound
           ? 
           <UsersFoundListForm
@@ -541,43 +589,14 @@ const ContentCreateScreen = ({ navigation }) => {
             setUsersFound={setUsersFound}
             setSearchUserUsername={setSearchUserUsername}
             setChosenUser={setChosenUser}
+            enablePressCondition={"displayPostCount"}
+            pressUnabled={() => {
+              setAlertBoxStatus(true);
+              setAlertBoxText("The user does not have a display post");
+            }}
           />
           :
           <KeyboardAwareScrollView>
-            { 
-              display === true
-              ? null
-              :
-              <SearchUsersForm 
-                userId={user.id}
-                usersFound={usersFound ? true : false }
-                setUsersFound={setUsersFound}
-                rating={rating}
-                setRating={setRating}
-                chosenUser={chosenUser}
-                setChosenUser={setChosenUser}
-                searchUserUsername={searchUserUsername}
-                setSearchUserUsername={setSearchUserUsername}
-                chosenDisplayPost={chosenDisplayPost}
-                setChosenDisplayPost={setChosenDisplayPost}
-                chosenTech={chosenTech}
-                setChosenTech={setChosenTech}
-
-                displayPostTechs={displayPostTechs}
-                setDisplayPostTechs={setDisplayPostTechs}
-                displayPostTechsState={displayPostTechsState}
-                setDisplayPostTechsState={setDisplayPostTechsState}
-
-                chosenUserDisplayPosts={chosenUserDisplayPosts}
-                setChosenUserDisplayPosts={setChosenUserDisplayPosts}
-                chosenUserDisplayPostLast={chosenUserDisplayPostLast}
-                setChosenUserDisplayPostLast={setChosenUserDisplayPostLast}
-                chosenUserDisplayPostFetchSwitch={chosenUserDisplayPostFetchSwitch}
-                setChosenUserDisplayPostFetchSwtich={setChosenUserDisplayPostFetchSwtich}
-                chosenUserDisplayPostState={chosenUserDisplayPostState}
-                setChosenUserDisplayPostState={setChosenUserDisplayPostState}
-              />
-            }
             {
               user.type === "business" && chosenUser === null
               ?
@@ -723,7 +742,7 @@ const ContentCreateScreen = ({ navigation }) => {
             <View style={[ styles.buttonContainer, { paddingTop: RFValue(30) }]}>
               <TouchableOpacity
                 onPress={() => {
-                  files.length < 1
+                  files.length < 1 && !chosenUser && !chosenTech && !rating
                   ? (setAlertBoxStatus(true), setAlertBoxText("There must be at least one file"))
                   : chosenUser && !chosenDisplayPost 
                   ? (setAlertBoxStatus(true), setAlertBoxText(`Choose a post of ${chosenUser.username}`))
@@ -868,6 +887,54 @@ const ContentCreateScreen = ({ navigation }) => {
       </View>
     )
   };
+
+  const renderNoCameraPermissionComponent = () => {
+    return (
+      <View style={styles.noCameraPermissionContainer}>
+        <View style={styles.headerBarContainer}>
+          <SafeAreaView />
+          <HeaderForm 
+            leftButtonTitle={null}
+            leftButtonIcon={chevronBack(RFValue(21), color.black1)}
+            headerTitle={null}
+            rightButtonTitle={null}
+            leftButtonPress={() => {
+              navigation.goBack();
+            }}
+          />
+        </View>
+        <View style={styles.messageContainer}>
+          <View style={styles.iconContainer}>
+            {antdesignWarning(RFValue(30), color.red2)}
+          </View>
+          <View style={styles.titleTextContainer}>
+            <Text style={styles.titleText}>
+              Camera and Photo Access Required
+            </Text>
+          </View>
+          <View style={styles.messageTextContainer}>
+            <View style={styles.messageTextContainer}>
+              <Text style={styles.messageText}>
+                In order to continue posting, you must allow access to your camera and photo
+              </Text>
+            </View>
+          </View>
+          <Pressable
+            onPress={() => {
+              navigation.goBack();
+            }}
+          >
+            <View style={styles.noCameraPermGoBackTextContainer}>
+              <Text style={styles.noCamerPermGoBackText}>
+                Go Back
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      </View>
+    )
+  }
+
   const renderImageBrowser = () => {
     return (
       <ImageBrowser 
@@ -888,7 +955,7 @@ const ContentCreateScreen = ({ navigation }) => {
         goBack={() => {
           setIsVisible("contentCreate");
         }}
-        noCameraPermissionComponent={null}
+        noCameraPermissionComponent={renderNoCameraPermissionComponent()}
         renderExtraComponent={null}
       /> 
     )
@@ -999,7 +1066,8 @@ const styles = StyleSheet.create({
     marginRight: RFValue(23),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: RFValue(7)
+    paddingTop: RFValue(10),
+    paddingBottom: RFValue(7)
   },
   displayResultContainer: {
     flex: 1,
@@ -1017,6 +1085,43 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: RFValue(17),
     paddingHorizontal: RFValue(5),
+  },
+
+  noCameraPermissionContainer: {
+    flex: 1,
+    backgroundColor: color.white2
+  },
+  messageContainer: {
+    flex: 1,
+    paddingTop: RFValue(50)
+  },
+  iconContainer: {
+    paddingBottom: RFValue(30),
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  titleTextContainer: {
+    padding: RFValue(10),
+    alignItems: 'center'
+  },
+  titleText: {
+    fontSize: RFValue(23),
+    fontWeight: 'bold'
+  },
+  messageTextContainer: {
+    paddingHorizontal: RFValue(10),
+  },
+  messageText: {
+    fontSize: RFValue(15)
+  },
+  noCameraPermGoBackTextContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: RFValue(30)
+  },
+  noCamerPermGoBackText: {
+    color: color.blue1,
+    fontSize: RFValue(17),
   },
 });
 

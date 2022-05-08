@@ -5,8 +5,8 @@ import {
 	View,
 	TouchableHighlight,
 	TouchableOpacity,
+	SafeAreaView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Components
@@ -14,6 +14,12 @@ import { HeaderForm } from '../../components/HeaderForm';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
+
+// color
+import color from '../../color';
+
+// expo icons
+import { chevronBack } from '../../expoIcons';
 
 // Context
 import { Context as LocationContext } from '../../context/LocationContext';
@@ -27,18 +33,22 @@ const UBInStoreMobileScreen = ({ navigation }) => {
 	} = useContext(LocationContext);
 
 	return (
-		<SafeAreaView style={styles.screenContainer}>
-			<HeaderForm 
-				leftButtonTitle="Back"
-		    headerTitle="In-Store or Mobile" 
-		    rightButtonTitle={null}
-		    leftButtonPress={() => {
-		    	navigation.goBack();
-		    }}
-    		rightButtonPress={() => {
-    			null;
-    		}}
-		  />
+		<View style={styles.screenContainer}>
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView/>
+				<HeaderForm 
+					leftButtonIcon={ chevronBack(RFValue(27),	color.black1) }
+			    headerTitle="In-Store or Mobile" 
+			    rightButtonTitle={null}
+			    leftButtonPress={() => {
+			    	navigation.goBack();
+			    }}
+	    		rightButtonPress={() => {
+	    			null;
+	    		}}
+			  />
+			</View>
+			
 			<View style={styles.buttonListContainer}>
 				<TouchableHighlight
 					style={styles.buttonConatiner}
@@ -73,15 +83,29 @@ const UBInStoreMobileScreen = ({ navigation }) => {
 			</View>
 			<View style={{flex: 1}}>
 			</View>
-		</SafeAreaView>
+		</View>
 	)
 };
 
 const styles = StyleSheet.create({
 	screenContainer: {
 		flex: 1,
-		backgroundColor: "#F9F9F9",
+		backgroundColor: color.white2,
 	},
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 	buttonListContainer: {
 		flex: 1,
 	},

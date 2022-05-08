@@ -19,7 +19,12 @@ import { Context as AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // Firebase
-import postGetFire from '../firebase/post/postGetFire';
+import {
+  getHotPostsFire,
+  getUserPostsFire,
+  getBusinessDisplayPostsFire,
+  getTaggedPostsFire
+} from '../firebase/post/postGetFire';
 
 // Components
 import { HeaderForm } from '../components/HeaderForm';
@@ -31,6 +36,7 @@ import GetPostLoading from '../components/GetPostLoading';
 import PostEndSign from '../components/PostEndSign';
 import PanX from '../components/PanX';
 import PanXY from '../components/PanXY';
+import SnailBottomSheet from '../components/SnailBottomSheet';
 
 // Color
 import color from '../color';
@@ -90,6 +96,8 @@ const PostsSwipeScreen = ({ route, navigation }) => {
 
   //console.log("PostsSwipe: postSource: ", postSource, "| index: ", cardIndex, "| posts: ", posts.length);
 
+  const [ showBottomSheet, setShowBottomSheet ] = useState(false);
+
   useEffect(() => {
     let mounted = true
     mounted && setSwipeCardIndex(cardIndex);
@@ -124,9 +132,25 @@ const PostsSwipeScreen = ({ route, navigation }) => {
     },
   } = useContext(AuthContext);
 
+  const RenderPostMangerContent = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: color.white2,
+        }}
+      >
+        <View>
+          <Text>HAHAHAHAH</Text>
+        </View>
+      </View>
+    )
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: color.white2, borderRadius: 30 }}>
-      <View style={styles.mainContainer}>
+    <View style={styles.mainContainer}>
+      <View style={styles.headerBarContainer}>
+        <SafeAreaView />
         <HeaderForm 
           leftButtonTitle={null}
           leftButtonIcon={chevronBack(RFValue(27), color.black1)}
@@ -139,46 +163,57 @@ const PostsSwipeScreen = ({ route, navigation }) => {
             null
           }}
         />
-        <View style={{flex: 1}}>
-          <PostCardsVerticalSwipe
-            postSource={postSource}
-            cardIndex={cardIndex}
-
-            getPosts={
-              screenSelector(
-                postSource, 
-                [], 
-                // hot posts
-                postGetFire.getHotPostsFire,
-                // account posts
-                postGetFire.getUserPostsFire,
-                // account display posts 
-                postGetFire.getBusinessDisplayPostsFire,
-                // business tagged posts (ex. search screen reviews)
-                postGetFire.getTaggedPostsFire,
-              )
-            }
-
-            swipePosts={swipePosts}
-            swipePostFetchSwitch={swipePostFetchSwitch}
-            swipePostLast={swipePostLast}
-            swipePostState={swipePostState}
-
-            setSwipePosts={setSwipePosts}
-            setSwipePostLast={setSwipePostLast}
-            setSwipePostFetchSwtich={setSwipePostFetchSwtich}
-            setSwipePostState={setSwipePostState}
-
-            currentUser={{ id: user.id, photoURL: user.photoURL }}
-            // search screen
-            businessUserId={swipeScreenBusinessUserId}
-            // need for UserAccountScreen
-            accountUserId={swipeScreenAccountUserId}
-          />
-        </View>
-        {swipePostState && <GetPostLoading />}
       </View>
-    </SafeAreaView>
+      <View style={{flex: 1}}>
+        <PostCardsVerticalSwipe
+          postSource={postSource}
+          cardIndex={cardIndex}
+
+          getPosts={
+            screenSelector(
+              postSource, 
+              [], 
+              // hot posts
+              getHotPostsFire,
+              // account posts
+              getUserPostsFire,
+              // account display posts 
+              getBusinessDisplayPostsFire,
+              // business tagged posts (ex. search screen reviews)
+              getTaggedPostsFire,
+            )
+          }
+
+          swipePosts={swipePosts}
+          swipePostFetchSwitch={swipePostFetchSwitch}
+          swipePostLast={swipePostLast}
+          swipePostState={swipePostState}
+
+          setSwipePosts={setSwipePosts}
+          setSwipePostLast={setSwipePostLast}
+          setSwipePostFetchSwtich={setSwipePostFetchSwtich}
+          setSwipePostState={setSwipePostState}
+
+          currentUser={{ id: user.id, photoURL: user.photoURL }}
+          // search screen
+          businessUserId={swipeScreenBusinessUserId}
+          // need for UserAccountScreen
+          accountUserId={swipeScreenAccountUserId}
+        />
+      </View>
+      {swipePostState && <GetPostLoading />}
+      {
+        showBottomSheet === 'postManager' &&
+        <SnailBottomSheet
+          snapPoints={[ 0, 0.5, 1 ]}
+          snapSwitchs={[ false, false ]}
+          onCloseEnd={() => { navigation.goBack() }}
+          content={
+            <RenderPostMangerContent />
+          }
+        />
+      }
+    </View>
   )
 };
 
@@ -186,6 +221,21 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: color.white2,
+  },
+
+  headerBarContainer: { 
+    backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
 });
 

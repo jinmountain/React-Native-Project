@@ -1,9 +1,4 @@
 import Firebase from '../firebase/config'
-import { navigate } from '../navigationRef';
-
-const currentUserFire = () => {
-	return Firebase.auth().currentUser || {}
-};
 
 const checkUniqueUsername = (possibleUsername) => {
 	const trimmedUsername = possibleUsername.trim();

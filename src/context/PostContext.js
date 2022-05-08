@@ -1,6 +1,4 @@
 import createDataContext from './createDataContext';
-// get users
-import usersGetFire from '../firebase/usersGetFire';
 
 const timestamp = () => {
   return Date.now()
@@ -16,15 +14,6 @@ const hasWhiteSpace = (s) => {
 
 const postReducer = (state, action) => {
 	switch (action.type) {
-		// Search Screen
-		// Add a business user to pull its posts
-		case 'add_business_user_search':
-			return { ...state, businessUserSearch: action.payload };
-		// Search businesses around a selected location
-		case 'search_business_users_near':
-			return { ...state, businessUsersNear: action.payload };
-		case 'switch_initial_search':
-			return { ...state, initialSearchSwitch: action.payload };
 		// Search screen get tagged posts
 		case 'add_business_tagged_posts':
 			return { ...state, businessTaggedPosts: [...state.businessTaggedPosts, ...action.payload] };
@@ -95,30 +84,6 @@ const postReducer = (state, action) => {
 };
 
 // search screen
-const getBusinessUsersNear = dispatch => async (currentLocation, searchDistance) => {
-	getUsers = usersGetFire.getBusinessUsersNearFire(currentLocation, searchDistance);
-	getUsers
-	.then((users) => {
-		console.log("Business users in distance: ", users.length);
-		dispatch({ type: 'search_business_users_near', payload: users });
-	})
-	.catch((error) => {
-		console.log("Error occured: postContext: getBusinessUsersNear: ", error);
-	});
-};
-
-const switchInitialSearch = dispatch => (switchButton) => {
-	dispatch({
-		type: 'switch_initial_search',
-		payload: switchButton
-	});
-	console.log("Search near businesses switch: ", switchButton);
-};
-
-const addBusinessUserSearch = dispatch => (businessUser) => {
-	dispatch({ type: 'add_business_user_search', payload: businessUser });
-	console.log("businessUser >> ", businessUser);
-};
 
 // account screen
 
@@ -157,10 +122,8 @@ export const { Provider, Context } = createDataContext(
 	{ 
 		// Search
 		// Add business user
-		addBusinessUserSearch,
 		// Search business near
-		getBusinessUsersNear,
-		switchInitialSearch,
+
 		// Search Posts
 		
 		// Account
@@ -186,15 +149,12 @@ export const { Provider, Context } = createDataContext(
 	},
 	{ 
 		// Search Screen
-		// businessUser
-		businessUserSearch: null,
+
 		// from users | taggedPosts
 
 		// from users | posts
 
 		// from businesses
-		businessUsersNear: [],
-		initialSearchSwitch: true,
 
 		// Account Screen
 

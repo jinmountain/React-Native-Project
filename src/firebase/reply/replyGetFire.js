@@ -3,26 +3,64 @@ import Firebase from '../../firebase/config'
 const usersRef = Firebase.firestore().collection("users");
 const postsRef = Firebase.firestore().collection("posts");
 
-const getRepliesFire = (postId, commentId, lastReply) => {
+const getRepliesFire = (postId, commentId, lastReply = null, sorting = null) => {
 	return new Promise (async (res, rej) => {
-		const REPLY_LIMIT = 10;
+		const REPLY_LIMIT = 5;
 
 		let repliesRef;
 		if (lastReply) {
-			repliesRef = postsRef
-			.doc(postId)
-			.collection("comments")
-			.doc(commentId)
-			.collection("replies")
-			.orderBy("heat", "desc")
-			.startAfter(lastPost)
+			if (sorting === "top") {
+				repliesRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.doc(commentId)
+				.collection("replies")
+				.orderBy("heat", "desc")
+				.startAfter(lastReply)
+			}
+			else if (sorting === "new") {
+				repliesRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.doc(commentId)
+				.collection("replies")
+				.orderBy("createdAt", "desc")
+				.startAfter(lastReply)
+			}
+			else {
+				repliesRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.doc(commentId)
+				.collection("replies")
+				.orderBy("heat", "desc")
+				.startAfter(lastReply)
+			}
 		} else {
-			repliesRef = postsRef
-			.doc(postId)
-			.collection("comments")
-			.doc(commentId)
-			.collection("replies")
-			.orderBy("heat", "desc")
+			if (sorting === "top") {
+				repliesRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.doc(commentId)
+				.collection("replies")
+				.orderBy("heat", "desc")
+			}
+			else if (sorting === "new") {
+				repliesRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.doc(commentId)
+				.collection("replies")
+				.orderBy("createdAt", "desc")
+			}
+			else {
+				repliesRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.doc(commentId)
+				.collection("replies")
+				.orderBy("heat", "desc")
+			}
 		};
 
 		repliesRef

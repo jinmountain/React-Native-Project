@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -6,7 +6,9 @@ import {
   StyleSheet,  
   Dimensions,
   TouchableWithoutFeedback,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -24,15 +26,25 @@ import { useNavigation } from '@react-navigation/native';
 import { timeDifference } from '../hooks/timeDifference';
 
 // firebase
-import usersGetFire from '../firebase/usersGetFire';
-import likeGetFire from '../firebase/like/likeGetFire';
-import likePostFire from '../firebase/like/likePostFire';
+import {
+  getUserInfoFire
+} from '../firebase/user/usersGetFire';
+import { checkReplyLikeFire } from '../firebase/like/likeGetFire';
+import {
+  likeReplyFire,
+  undoLikeReplyFire
+} from '../firebase/like/likePostFire';
 
 // color
 import color from '../color';
 
 // expo icons
-import expoIcons from '../expoIcons';
+import {
+  entypoDot,
+  antdesignHeart,
+  antdesignHearto,
+  featherMoreVertical
+} from '../expoIcons';
 
 const { width, height } = Dimensions.get("window");
 
@@ -57,7 +69,7 @@ const ReplyBar = ({
   useEffect(() => {
     let isMounted = true;
     if (replyData && replyData.uid) {
-      const getUserInfo = usersGetFire.getUserInfoFire(replyData.uid);
+      const getUserInfo = getUserInfoFire(replyData.uid);
       getUserInfo
       .then((user) => {
         const replyUserData = {
@@ -73,7 +85,7 @@ const ReplyBar = ({
       });
     }
 
-    const checkLike = likeGetFire.checkReplyLikeFire(postId, commentId, currentUserId);
+    const checkLike = checkReplyLikeFire(postId, commentId, currentUserId);
     checkLike
     .then((result) => {
       isMounted && setLikeButtonReady(true);
@@ -90,6 +102,43 @@ const ReplyBar = ({
       setLikeButtonReady(false);
     }
   }, []);
+
+  // -- like button animation
+    const scaleAnimValue = useRef(new Animated.Value(1)).current;
+    const opacityAnimValue = useRef(new Animated.Value(1)).current;
+
+    const likeOpacityAnim = () => {
+      Animated.timing(opacityAnimValue, {
+        toValue: 0.5,
+        duration: 100,
+        useNativeDriver: false
+      }).start(({ finished }) => {
+        if (finished) {
+          Animated.timing(opacityAnimValue, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: false
+          }).start();
+        }
+      });
+    }
+
+    const likeScaleAnim = () => {
+      Animated.timing(scaleAnimValue, {
+        toValue: 1.5,
+        duration: 300,
+        useNativeDriver: false,
+      }).start(({finished}) => {
+        if (finished) {
+          Animated.spring(scaleAnimValue, {
+            toValue: 1,
+            friction: 3,
+            useNativeDriver: false
+          }).start();
+        }
+      });
+    };
+
   return (
     currentReplyData &&
     <View>
@@ -106,84 +155,113 @@ const ReplyBar = ({
             />
             :
             <DefaultUserPhoto 
-              customSizeBorder={RFValue(38)}
-              customSizeUserIcon={RFValue(26)}
+              customSizeBorder={RFValue(27)}
+              customSizeUserIcon={RFValue(18)}
             />
           }
         </View>
         <View style={styles.commentContainer}>
           <View style={styles.commentBarHeader}>
-            { 
-              replyUser && replyUser.username
-              ? <Text style={styles.headerText}>{replyUser.username} {expoIcons.entypoDot(RFValue(11), color.grey1)} {timeDifference(Date.now(), currentReplyData.createdAt)} {currentReplyData.edited && "(edited)"}</Text>
-              : null
-            }
+            <View style={styles.usernameContainer}>
+              { 
+                replyUser && replyUser.username
+                ? <Text style={styles.headerText}>{replyUser.username} {entypoDot(RFValue(11), color.grey1)} {timeDifference(Date.now(), currentReplyData.createdAt)} {currentReplyData.edited && "(edited)"}</Text>
+                : null
+              }
+            </View>
+            <View style={styles.optionButtonContainer}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={() => {
+                  navigation.navigate("ReplyManager", {
+                    postId: postId,
+                    commentId: commentId,
+                    replyId: replyId,
+                    replyData: currentReplyData,
+                    replyUser: replyUser,
+                    currentUserId: currentUserId,
+                    setCurrentReplyData: setCurrentReplyData,
+                    decrementReplyCount: decrementReplyCount
+                  });
+                }}
+              >
+                <View style={styles.actionIconContainer}>
+                  <Text>{featherMoreVertical(RFValue(15), color.grey2)}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
           <ExpandableText 
             caption={currentReplyData.text}
             defaultCaptionNumLines={5}
           />
           <View style={styles.commentActionBar}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => {
-                if (like) {
-                  const undoLike = likePostFire.undoLikeReplyFire(postId, commentId, replyId, currentUserId);
-                  undoLike
-                  .then(() => {
-                    setLike(false);
-                    setCountLikes(countLikes - 1);
-                  })
-                  .catch((error) => {
-                    // handle error
-                  });
-                } else {
-                  const doLike = likePostFire.likeReplyFire(postId, commentId, replyId, currentUserId);
-                  doLike
-                  .then(() => {
-                    setLike(true);
-                    setCountLikes(countLikes + 1);
-                  })
-                  .catch((error) => {
-                    // handle error
-                  })
-                }
-              }}
-            >
-              <View style={styles.actionIconContainer}>
-                <Text>
-                {
-                  likeButtonReady && like
-                  ?
-                  expoIcons.antdesignHeart(RFValue(15), color.red2)
-                  : likeButtonReady && !like
-                  ?
-                  expoIcons.antdesignHearto(RFValue(15), color.red2)
-                  :
-                  null
-                } {countLikes} 
+            <View style={styles.likeButtonAndCountContainer}>
+              {
+                likeButtonReady && like
+                ?
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => {
+                    const undoLike = undoLikeReplyFire(postId, commentId, replyId, currentUserId);
+                    undoLike
+                    .then(() => {
+                      setLike(false);
+                      setCountLikes(countLikes - 1);
+                    })
+                    .catch((error) => {
+                      // handle error
+                    });
+                  }}
+                >
+                  <Animated.View style={[
+                    styles.actionIconContainer,
+                    {
+                      transform: [
+                        {
+                          scale: scaleAnimValue
+                        }
+                      ],
+                      opacity: opacityAnimValue
+                    }
+                  ]}>
+                    {antdesignHeart(RFValue(19), color.red2)} 
+                  </Animated.View>
+                </TouchableOpacity>
+                : likeButtonReady && !like
+                ?
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => {
+                    const doLike = likeReplyFire(postId, commentId, replyId, currentUserId);
+                    doLike
+                    .then(() => {
+                      setLike(true);
+                      likeScaleAnim();
+                      likeOpacityAnim();
+                      setCountLikes(countLikes + 1);
+                    })
+                    .catch((error) => {
+                      // handle error
+                    })
+                  }}
+                >
+                  <View style={styles.actionIconContainer}>
+                    {antdesignHearto(RFValue(19), color.red2)}
+                  </View>
+                </TouchableOpacity>
+                :
+                <ActivityIndicator 
+                  size={"small"}
+                  color={color.black1}
+                />
+              }
+              <View style={styles.likeCountContainer}>
+                <Text style={styles.likeCountText}>
+                   {countLikes} 
                 </Text>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => {
-                navigation.navigate("ReplyManager", {
-                  postId: postId,
-                  commentId: commentId,
-                  replyId: replyId,
-                  replyData: currentReplyData,
-                  replyUser: replyUser,
-                  currentUserId: currentUserId,
-                  setCurrentReplyData: setCurrentReplyData,
-                  decrementReplyCount: decrementReplyCount
-                });
-              }}
-            >
-              <View style={styles.actionIconContainer}>
-                <Text>{expoIcons.featherMoreVertical(RFValue(15), color.grey2)}</Text>
-              </View>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -206,24 +284,46 @@ const styles = StyleSheet.create({
   },
 
   commentBarHeader: {
+    flexDirection: 'row',
     paddingVertical: RFValue(5),
-    justifyContent: 'center'
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   headerText: {
     color: color.grey3,
     fontSize: RFValue(15)
   },
+  usernameContainer: {
+    alignItems: 'center',
+  },
+  optionButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  likeButtonAndCountContainer: {
+    width: RFValue(70),
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  likeCountContainer: {
+    paddingHorizontal: RFValue(5)
+  },
+  likeCountText: {
+    fontSize: RFValue(17),
+    color: color.grey3
+  },
 
   actionIconContainer: {
     justifyContent: 'center',
-    width: RFValue(70),
-    alignItems: 'center'
+    alignItems: 'center',
+    padding: RFValue(5)
   },
 
   commentActionBar: {
     paddingVertical: RFValue(5),
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
 

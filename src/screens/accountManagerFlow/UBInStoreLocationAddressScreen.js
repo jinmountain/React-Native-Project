@@ -5,6 +5,7 @@ import {
 	View,
 	TouchableHighlight,
 	TouchableOpacity,
+	SafeAreaView
 } from 'react-native';
 // import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -20,6 +21,12 @@ import { FontAwesome } from '@expo/vector-icons';
 // Hooks
 import GooglePlacesInput from '../../googleAPI/placesAutocomplete';
 
+// color
+import color from '../../color';
+
+// expo icons
+import { chevronBack } from '../../expoIcons';
+
 // Context
 import { Context as LocationContext } from '../../context/LocationContext';
 
@@ -34,24 +41,28 @@ const UBInStoreLocationAddressScreen = ({ navigation }) => {
   const [ alertBoxText, setAlertBoxText ] = useState(null);
 
 	return (
-		<MainTemplate>
-			<HeaderForm 
-				leftButtonTitle="Back"
-		    headerTitle={<FontAwesome name="map-o" size={RFValue(20)} color="black" />} 
-		    rightButtonTitle={"Done"}
-		    leftButtonPress={() => {
-		    	navigation.goBack();
-		    }}
-    		rightButtonPress={() => {
-    			if (ubAddress) {
-    				addBusinessLocation(ubAddress);
-    				navigation.goBack();
-    			} else {
-    				setAlertBoxStatus(true);
-    				setAlertBoxText("Find your business address using the input box");
-    			}
-    		}}
-		  />
+		<View style={styles.screenContainer}>
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView/>
+				<HeaderForm 
+					leftButtonIcon={chevronBack(RFValue(27), color.black1)}
+			    headerTitle={<FontAwesome name="map-o" size={RFValue(20)} color="black" />} 
+			    rightButtonIcon={"Done"}
+			    leftButtonPress={() => {
+			    	navigation.goBack();
+			    }}
+	    		rightButtonPress={() => {
+	    			if (ubAddress) {
+	    				addBusinessLocation(ubAddress);
+	    				navigation.goBack();
+	    			} else {
+	    				setAlertBoxStatus(true);
+	    				setAlertBoxText("Find your business address using the input box");
+	    			}
+	    		}}
+			  />
+			</View>
+			
 			<View style={styles.mainContainer}>
 				{ 
 					ubAddress
@@ -90,15 +101,29 @@ const UBInStoreLocationAddressScreen = ({ navigation }) => {
         />
         : null
       }
-		</MainTemplate>
+		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	screenContainer: {
 		flex: 1,
-		backgroundColor: "#F9F9F9",
+		backgroundColor: color.white1,
 	},
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 	mainContainer: {
 		flex: 1,
 		margin: RFValue(30),
@@ -118,8 +143,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		marginVertical: RFValue(7),
 		padding: RFValue(7),
-		backgroundColor: '#fff',
-		borderRadius: 15,
+		backgroundColor: color.white2,
+		borderRadius: RFValue(15),
 	},
 	ubAddressText: {
 		fontSize: RFValue(15),

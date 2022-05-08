@@ -27,6 +27,12 @@ import { FontAwesome } from '@expo/vector-icons';
 // color
 import color from '../color';
 
+// expo icons
+import {
+	octiconsPulse, 
+	matPulse
+} from '../expoIcons';
+
 function getRandomColor() {
   var letters = '0123456789ABCDEF';
   var color = '#';
@@ -37,7 +43,7 @@ function getRandomColor() {
 }
 
 
-const NavigationBar = () => {
+const NavigationBar = ({ tab }) => {
 	const { 
 		state: { 
 			user,
@@ -52,12 +58,6 @@ const NavigationBar = () => {
 		tabAccount,
 	} = useContext(AuthContext);
 
-	const {
-		state: {
-			files
-		}
-	} = useContext(PostContext);
-
 	const navigation = useNavigation();
 	const [pickImage] = useImage();
 
@@ -66,12 +66,12 @@ const NavigationBar = () => {
 		  <TouchableOpacity 
 		  	style={styles.navBarElement} 
 		  	onPress={() => {
-		  		navigation.navigate("Home");
+		  		// navigation.navigate("HomeTab");
 		  		tabHome();
 		  	}}
 		  >
 		  	{
-		  		homeTab 
+		  		tab === "home" 
 		  		? <Foundation name="home" size={RFValue(24)} color="black" />
 		  		: <Feather name="home" size={RFValue(24)} color="black" />
 		  	}
@@ -79,12 +79,12 @@ const NavigationBar = () => {
 		  <TouchableOpacity 
 		  	style={styles.navBarElement} 
 		  	onPress={() => {
-		  		navigation.navigate("Search");
+		  		// navigation.navigate("SearchTab");
 		  		tabSearch();
 		  	}}
 		  >
 		  	{ 
-		  		searchTab
+		  		tab === "search"
 		  		? <FontAwesome name="search" size={RFValue(24)} color="black" />
 		  		:<Ionicons name="ios-search" size={RFValue(24)} color="black" />
 		  	}
@@ -92,9 +92,10 @@ const NavigationBar = () => {
 		  <TouchableOpacity 
 		  	style={styles.navBarElement} 
 		  	onPress={() => { 
-		  		files.length > 0
-		  		? navigation.navigate("ContentCreate")
-		  		: pickImage('nav')
+					navigation.navigate("ContentCreate");
+		  	}}
+		  	onLongPress={() => {
+		  		navigation.navigate("Snail");
 		  	}}
 		  >
 		  	<Text style={styles.sText}>S</Text>
@@ -102,25 +103,29 @@ const NavigationBar = () => {
 		  <TouchableOpacity 
 		  	style={styles.navBarElement} 
 		  	onPress={() => {
-		  		navigation.navigate("Activity");
+		  		// navigation.navigate("ActivityTab");
 		  		tabActivity();
 		  	}}
 		  >
-		  	<Text>44</Text>
+		  	{
+		  		tab === "activity"
+		  		? octiconsPulse(RFValue(24), color.black1)
+		  		: matPulse(RFValue(24), color.black1)
+		  	}
 		  </TouchableOpacity>
 		  <TouchableOpacity 
 		  	style={styles.navBarElement} 
 		  	onPress={() => {
-		  		navigation.navigate("AccountTab", {
-		  			screen: "Account"
-		  		});
+		  		// navigation.navigate("AccountTab", {
+		  		// 	screen: "Account"
+		  		// });
 		  		tabAccount();
 		  	}}
 		  >
 		  	{ user.photoURL
 		  		? <Image 
 		  				style={
-		  					accountTab
+		  					tab === "account"
 		  					? { ...styles.userPhoto, ...{ borderWidth: 2, borderColor: color.red2 }}
 		  					: styles.userPhoto
 		  				} 

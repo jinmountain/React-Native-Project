@@ -10,10 +10,14 @@ import {
   TouchableHighlight,
   Dimensions,
   TouchableOpacity,
+  Pressable
 } from "react-native";
 // TouchableOpacity from rngh works on both ios and android
 // import { TouchableOpacity } from 'react-native-gesture-handler';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+
+// font
+import { useFonts, Inter_900Black } from '@expo-google-fonts/inter';
 
 // Components
 import DefaultUserPhoto from '../defaults/DefaultUserPhoto';
@@ -23,18 +27,27 @@ import { InputFormBottomLine } from '../InputFormBottomLine';
 import { AntDesign } from '@expo/vector-icons';
 
 // Hooks
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+  convertEtcToHourMin
+} from '../../hooks/useConvertTime';
 import { capitalizeFirstLetter } from '../../hooks/capitalizeFirstLetter';
 
 // Firebase
-import usersGetFire from '../../firebase/usersGetFire';
-import businessGetFire from '../../firebase/businessGetFire';
+import {
+  getUserInfoFire
+} from '../../firebase/user/usersGetFire';
+import {
+  getTechnicians
+} from '../../firebase/business/businessGetFire';
 
 // Color
 import color from '../../color';
 
 // expo icons
-import { antdesignStaro } from '../../expoIcons';
+import { 
+  antdesignStaro,
+  chevronDown
+} from '../../expoIcons';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -48,7 +61,7 @@ const TechBox = ({
   useEffect(() => {
     let isMounted = true;
 
-    const getUserInfo = usersGetFire.getUserInfoFire(techId);
+    const getUserInfo = getUserInfoFire(techId);
     getUserInfo
     .then((result) => {
       isMounted && setTechData(result);
@@ -110,11 +123,11 @@ const DisplayPostInfoInputForm = ({
     // get current technicians
     if (techFetchSwitch && !techFetchState) {
       setTechFetchState(true);
-      const getTechnicians = businessGetFire.getTechnicians(
+      const fetchTechs = getTechnicians(
         currentUserId, 
         techFetchLast,
       );
-      getTechnicians
+      fetchTechs
       .then((result) => {
         setCurrentTechs(result.techs);
         isMounted && setTechFetchLast(result.lastTech);
@@ -138,6 +151,14 @@ const DisplayPostInfoInputForm = ({
   }, []);
 
   const [ clickedAll, setClickedAll ] = useState(false);
+
+  let [fontsLoaded] = useFonts({
+    Inter_900Black,
+  });
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <View style={styles.infoInputFormContainer}>
       <InputFormBottomLine />
@@ -208,9 +229,18 @@ const DisplayPostInfoInputForm = ({
           : null
         }
         <View style={styles.priceInputContainer}>
-          <View style={styles.currencyTag}>
-            <Text style={styles.currencyText}>$</Text>
-          </View>
+          <Pressable
+            onPress={() => {
+              // setPickerType("currency");
+              // setIsModalVisible(true);
+            }}
+          >
+            <View style={styles.currencyTag}>
+              <Text style={styles.currencyText}>
+                {/*{chevronDown(RFValue(19), color.black1)}*/} $
+              </Text>
+            </View>
+          </Pressable>
           <TextInput 
             style={styles.priceInput}
             value={postPrice}
@@ -251,7 +281,7 @@ const DisplayPostInfoInputForm = ({
               postETC
               ?
               <View style={styles.timeInputContainer}>
-                <Text style={styles.timeInputText}>{useConvertTime.convertEtcToHourMin(postETC)}</Text>
+                <Text style={styles.timeInputText}>{convertEtcToHourMin(postETC)}</Text>
               </View>
               :
               <View style={styles.timeInputContainer}>
@@ -264,7 +294,7 @@ const DisplayPostInfoInputForm = ({
       <InputFormBottomLine />
       <View style={styles.pickTechLabelContainer}>
         <Text style={styles.pickTechLabelText}>
-          Pick technicians for this display post
+          Pick the best technicians for the service
         </Text>
       </View>
 
@@ -358,7 +388,7 @@ const DisplayPostInfoInputForm = ({
         </View>
         :
         <View style={styles.techDefaultContainer}>
-          <Text>Your technicians are not found</Text>
+          <Text>Technicians are not found</Text>
         </View>
       }
       </View>
@@ -399,11 +429,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: RFValue(7),
-    backgroundColor: color.grey1
+    backgroundColor: color.white2
   },
   pickTechLabelText: {
-    fontSize: RFValue(15),
-    color: color.black1
+    fontSize: RFValue(13),
+    color: color.black1,
+    fontFamily: 'Inter_900Black'
   },
   pickTechContainer: {
     height: techBoxWidth,

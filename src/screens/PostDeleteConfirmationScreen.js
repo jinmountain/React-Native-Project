@@ -21,9 +21,9 @@ import DeleteConfirmation from '../components/DeleteConfirmation';
 
 // Firebase
 // delete post
-import postDeleteFire from '../firebase/post/postDeleteFire';
+import { deletePostFire } from '../firebase/post/postDeleteFire';
 // cancel rsv
-import rsvPostFire from '../firebase/rsvPostFire';
+// import rsvPostFire from '../firebase/rsv/rsvPostFire';
 
 // Color
 import color from '../color';

@@ -6,24 +6,31 @@ import {
 	Image,
 	TouchableOpacity, 
 	TextInput,
-	ScrollView } from 'react-native';
+	SafeAreaView,
+	ScrollView,
+	ImageBackground,
+	Pressable
+} from 'react-native';
+import { Button, Snackbar } from 'react-native-paper';
 
 // NPMs
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 //Componenets
 import { NavigationBar } from '../../components/NavigationBar';
-import { ProfileInputForm } from '../../components/ProfileInputForm';
 import { InputFormBottomLine } from '../../components/InputFormBottomLine';
-import ButtonA from '../../components/ButtonA';
+import ButtonA from '../../components/buttons/ButtonA';
 import { HeaderForm } from '../../components/HeaderForm';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import UserDataEditButtonForm from '../../components/accountScreen/UserDataEditButtonForm';
 
 // firebase
-import { profileUpdateFire } from '../../firebase/profileUpdateFire';
+import { 
+	profileUpdateFire, 
+	updateProfilePhotoFire,
+	updateProfileCoverPhotoFire
+} from '../../firebase/user/usersPostFire';
 
 // Contexts
 import { Context as AuthContext } from '../../context/AuthContext';
@@ -34,29 +41,37 @@ import { Context as AuthContext } from '../../context/AuthContext';
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+	evilIconsClose
+} from '../../expoIcons';
 
 // Hooks
 import useImage from '../../hooks/useImage';
 
 const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
+	const { 
+		returnedInputType,
+		returnedInputValue,
+	} = route.params;
+
 	const [pickImage] = useImage();
 	const { 
 		state: { 
 			user, 
-			newProfileJson,
-			newName,
-			newUsername,
-			newWebsite,
-			newSign,
 		}, 
-		signout,
-		resetEdit,
-		addNewName,
-		addNewUsername,
-		addNewWebsite,
-		addNewSign,
 	} = useContext(AuthContext);
+
+	const [ showSnackBar, setShowSnackBar ] = useState(false);
+	const [ snackBarText, setSnackBarText ] = useState(null);
+  const onToggleSnackBar = () => setShowSnackBar(!showSnackBar);
+  const onDismissSnackBar = () => setShowSnackBar(false);
+
+	const [ newName, setNewName ] = useState(null);
+	const [ newUsername, setNewUsername ] = useState(null);
+	const [ newWebsite, setNewWebsite ] = useState(null);
+	const [ newSign, setNewSign ] = useState(null);
+	const [ newPhoneNumber, setNewPhoneNumber ] = useState(null);
+	const [ newEmail, setNewEmail ] = useState(null);
 
 	// Control for username change
 	const [ allowUsernameChange, setAllowUsernameChange ] = useState(false);
@@ -78,94 +93,208 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 		}
 
 		return () => {
-			resetEdit();
+
 		};
 	}, []);
 
+	useEffect(() => {
+		console.log(returnedInputType, returnedInputValue);
+		if (returnedInputType && returnedInputValue) {
+			if (returnedInputType === 'name') {
+				setNewName(returnedInputValue);
+			}
+			if (returnedInputType === 'username') {
+				setNewUsername(returnedInputValue);
+			}
+			if (returnedInputType === 'website') {
+				setNewWebsite(returnedInputValue);
+			}
+			if (returnedInputType === 'sign') {
+				setNewSign(returnedInputValue);
+			}
+			if (returnedInputType === 'phoneNumber') {
+				setNewPhoneNumber(returnedInputValue);
+			}
+			if (returnedInputType === 'email') {
+				setNewEmail(returnedInputValue);
+			}
+		}
+	}, [returnedInputType, returnedInputValue])
+
 	return (
-		<SafeAreaView style={styles.updateProfileScreenContainer}>
-			<HeaderForm 
-				leftButtonTitle={null}
-				leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
-				headerTitle="Edit" 
-				rightButtonTitle={ 
-					newProfileJson !== undefined && newProfileJson !== null 
-					? "Done" 
-					: null 
-				}
-				leftButtonPress={() => {
-					resetEdit();
-					navigation.goBack();
-				}}
-				rightButtonPress={() => {
-					// allow update when at least one is changed
-					if (newProfileJson !== undefined && newProfileJson !== null) {
-						console.log("update user: ", newProfileJson);
-						const updateProfile = profileUpdateFire(currentUserId, newProfileJson);
-						updateProfile
-						.then(() => {
-							navigation.navigate('Account');
-						})
-						.catch((error) => {
-							console.log(error);
-						});
-					};
-				}} 
-			/>
+		<View style={styles.updateProfileScreenContainer}>
+			<View style={styles.headerBarContainer}>
+				<SafeAreaView />
+				<HeaderForm 
+					leftButtonIcon={evilIconsClose(RFValue(27), color.black1)}
+					headerTitle="Edit" 
+					rightButtonIcon={ 
+						"Done"
+					}
+					leftButtonPress={() => {
+						navigation.goBack();
+					}}
+					rightButtonPress={() => {
+						let newUserInfo = {};
+
+						// if there is new input and the new input is not same 
+						// as the existing user data add to newUserInfo
+
+						if (newName && user.name !== newName) {
+							newUserInfo.name = newName;
+						};
+						if (newUsername && user.username !== newUsername) {
+							newUserInfo.username = newUsername;
+						};
+						if (newWebsite && user.website !== newWebsite) {
+							newUserInfo.website = newWebsite;
+						};
+						if (newSign && user.sign !== newSign) {
+							newUserInfo.sign = newSign;
+						};
+						if (newPhoneNumber && user.phoneNumber !== newPhoneNumber) {
+							newUserInfo.phoneNumber = newPhoneNumber;
+						};
+
+						console.log(newUserInfo);
+
+						if (JSON.stringify(newUserInfo) !== '{}') {
+							// console.log("go");
+							const updateProfile = profileUpdateFire(newUserInfo);
+							updateProfile
+							.then(() => {
+								navigation.navigate('Account');
+							})
+							.catch((error) => {
+								console.log(error);
+							});
+						}
+					}} 
+				/>
+			</View>
 			<View style={styles.inputFormContainer}>
-				<KeyboardAwareScrollView >
-					<View style={styles.profilePictureControlContainer}>
-						<TouchableOpacity 
-							onPress={() => {
-								user.photoURL
-								?
-								navigation.navigate("ImageZoomin", {
-									file: { type: 'image', url: user.photoURL }
-								})
-								: null
-							}}
-						>
-							<View style={styles.profilePictureContainer}>
-								{user.photoURL
-									? <Image style={styles.profilePicture} source={{uri: user.photoURL}} />
-									: <DefaultUserPhoto />
-								}
-							</View>
-						</TouchableOpacity>
-						<TouchableOpacity
-							onPress={() => {
-								pickImage("profile", 
-								{
-									userType: user.type, 
-									userId: user.id, 
-									userCurrentPhotoURL: user.photoURL ,
-								})
-							}}
-						>
-							<ButtonA 
-								text="Change Photo"
-								customStyles={{
-									fontSize: RFValue(15), 
-									color: color.black1
+				<ScrollView>
+					<ImageBackground
+						source={{uri: user.coverPhotoURL}}
+						resizeMode="cover"
+						style={{ }}
+					>
+						<View style={styles.profilePictureControlContainer}>
+							<Pressable
+								onPress={() => {
+									pickImage("image")
+									.then((pickedImage) => {
+										if (pickedImage.type === "photo" || "image") {
+											// console.log("image type: ", pickedImage.type);
+											const updateCoverPhoto = updateProfileCoverPhotoFire(pickedImage, user.coverPhotoURL);
+											updateCoverPhoto
+											.then(() => {
+												onToggleSnackBar();
+												setSnackBarText("Cover photo is changed.")
+											})
+											.catch((error) => {
+												console.log(error);
+											});
+										}
+									})
 								}}
-							/>
-						</TouchableOpacity>
-					</View>
+							>
+								<View style={{
+									backgroundColor: color.white2, 
+									justifyContent: 'center', 
+									alignItems: 'center', 
+									padding: RFValue(5),
+									borderRadius: RFValue(9),
+									marginBottom: RFValue(15)
+								}}>
+									<Text style={{
+										color: color.black1,
+										fontSize: RFValue(13),
+									}}>Change Cover Photo</Text>
+								</View>
+							</Pressable>
+							<View style={styles.profilePictureContainer}>
+								<Pressable 
+									onPress={() => {
+										user.photoURL
+										?
+										navigation.navigate("ImageZoomin", {
+											file: { type: 'image', url: user.photoURL }
+										})
+										: null
+									}}
+								>
+									<View>
+										{user.photoURL
+											? 
+											<Image 
+												style={styles.profilePicture}
+												source={{ uri: user.photoURL }}
+											/>
+											: 
+											<DefaultUserPhoto 
+												customSizeBorder={RFValue(90)}
+												customSizeUserIcon={RFValue(60)}
+											/>
+										}
+									</View>
+								</Pressable>
+
+								<Pressable
+									onPress={() => {
+										pickImage("image")
+										.then((pickedImage) => {
+											if (pickedImage.type === "photo" || "image") {
+												// console.log("image type: ", pickedImage);
+												// console.log("image type: ", pickedImage.type);
+												const updatePhoto = updateProfilePhotoFire(pickedImage, user.photoURL);
+												updatePhoto
+												.then(() => {
+													onToggleSnackBar();
+													setSnackBarText("Profile photo is changed.")
+												})
+												.catch((error) => {
+													console.log(error);
+												});
+											}
+										})
+									}}
+								>
+									<View style={{
+										backgroundColor: color.white2, 
+										justifyContent: 'center', 
+										alignItems: 'center',
+										padding: RFValue(5),
+										borderRadius: RFValue(9),
+										marginTop: RFValue(5)
+
+									}}>
+										<Text style={{
+											color: color.black1,
+											fontSize: RFValue(13),
+										}}>
+											Change Photo
+										</Text>
+									</View>
+								</Pressable>
+							</View>
+						</View>
+					</ImageBackground>
 					<InputFormBottomLine />
 					<View style={styles.updateInputContainer} >
 						<UserDataEditButtonForm
-							navigate={navigation.navigate}
-							newInput={newName}
+							inputValue={
+								newName
+							}
 							currentValue={user.name}
-							dataType={"Name"}
-							allowUsernameChange={allowUsernameChange}
-							setUsernameTimeLimitWarning={setUsernameTimeLimitWarning}
+							dataType={"name"}
 						/>
 						<UserDataEditButtonForm
-							navigate={navigation.navigate}
-							newInput={newUsername}
+							inputValue={
+								newUsername
+							}
 							currentValue={user.username}
-							dataType={"Username"}
+							dataType={"username"}
 							allowUsernameChange={allowUsernameChange}
 							setUsernameTimeLimitWarning={setUsernameTimeLimitWarning}
 						/>
@@ -178,26 +307,46 @@ const UpdateProfileScreen = ({ route, isFocused, navigation }) => {
 							: null
 						}
 						<UserDataEditButtonForm
-							navigate={navigation.navigate}
-							newInput={newWebsite}
+							inputValue={
+								newWebsite
+							}
 							currentValue={user.website}
-							dataType={"Website"}
-							allowUsernameChange={allowUsernameChange}
-							setUsernameTimeLimitWarning={setUsernameTimeLimitWarning}
+							dataType={"website"}
 						/>
 						<UserDataEditButtonForm
-							navigate={navigation.navigate}
-							newInput={newSign}
+							inputValue={
+								newSign
+							}
 							currentValue={user.sign}
-							dataType={"Sign"}
-							allowUsernameChange={allowUsernameChange}
-							setUsernameTimeLimitWarning={setUsernameTimeLimitWarning}
+							dataType={"sign"}
+						/>
+						<UserDataEditButtonForm
+							inputValue={
+								newPhoneNumber
+							}
+							currentValue={user.phoneNumber}
+							dataType={"phoneNumber"}
 						/>
 					</View>
 					<InputFormBottomLine />
-				</KeyboardAwareScrollView>
+				</ScrollView>
 			</View>
-		</SafeAreaView>
+			<Snackbar
+        visible={showSnackBar}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Close',
+          onPress: () => {
+            onDismissSnackBar();
+          },
+        }}>
+        {
+        	snackBarText
+        	? snackBarText
+        	: "404"
+        }
+      </Snackbar>
+		</View>
 	);
 };
 
@@ -210,40 +359,24 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	profilePictureControlContainer: {
-		flex: 1,
-		paddingVertical: RFValue(20),
+		paddingTop: RFValue(35),
+		paddingBottom: RFValue(35),
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
 	profilePictureContainer: {
-		justifyContent: 'center',
 		alignItems: 'center',
-		marginBottom: RFValue(15),
 	},
 	profilePicture: {
-		width: RFValue(80),
-		height: RFValue(80),
-		borderWidth: 1,
-		borderColor: '#5A646A',
+		width: RFValue(135),
+		height: RFValue(135),
 		borderRadius: RFValue(100),
 	},
-	updateBusinessButtonContainer: {
-		justifyContent: 'center',
-		alignItems: 'center',
-		marginVertical: RFValue(10),
-	},
-	updateBusinessButton: {
-		borderRadius: 5,
-		marginVertical: 5,
-		marginHorizontal: 5,
-		paddingVertical: 10,
-		paddingHorizontal: 10,
-	},
+
 	updateInputContainer: {
-		flex: 2,
-		padding: 5,
-		marginTop: 5,
-		marginBottom: 5,
+		padding: RFValue(5),
+		marginTop: RFValue(5),
+		marginBottom: RFValue(5),
 		marginLeft: RFValue(30),
 		marginRight: RFValue(30),
 	},
@@ -251,7 +384,7 @@ const styles = StyleSheet.create({
 		color: '#3D4850',
 	},
 	requisiteWarningContainer: {
-		paddingHorizontal: 18,
+		paddingHorizontal: RFValue(18),
 		justifyContent: 'center',
 		alignItems: 'center',
 		fontSize: RFValue(20),
@@ -259,5 +392,54 @@ const styles = StyleSheet.create({
 	requisiteWarning: {
 		color: color.red2,
 	},
+
+	buttonContainer: {
+		borderRadius: RFValue(15),
+		backgroundColor: color.grey4,
+		padding: RFValue(7),
+		marginBottom: RFValue(7),
+		backgroundColor: color.white2
+	},
+	textInputLabelContainer: {
+		minHeight: RFValue(25),
+	},
+	textInputLabel: {
+		fontSize: RFValue(12),
+		marginTop: RFValue(8),
+		color: color.grey3,
+	},
+	inputContainer: {
+		paddingLeft: RFValue(10),
+		justifyContent: 'center',
+		minHeight: RFValue(35),
+		paddingBottom: RFValue(7),
+	},
+	blackText: {
+		color: color.black1,
+		fontSize: RFValue(17),
+	},
+	greyaaaaaaText: {
+		color: color.grey3,
+		fontSize: RFValue(17),
+	},
+	usernameInput: {
+		fontSize: RFValue(17),
+		color: color.grey3,
+	},
+
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 });
 export default UpdateProfileScreen;

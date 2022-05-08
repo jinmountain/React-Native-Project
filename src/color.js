@@ -40,6 +40,7 @@ export default {
 	yellow2: '#F9B404', // rating yellow
 
 	purple1: '#5C5BED',
+	purple2: '#A193F9', // liked it 
 
 	luckyGreen: '#32a848',
 }

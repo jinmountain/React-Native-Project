@@ -18,7 +18,7 @@ const meetUsernameRules = (possibleUsername, setRulesUsernameControl) => {
 	}
 };
 
-const uniqueUsername = async (possibleUsername, currentUsername, setUniqueUsernameControl) => {
+const uniqueUsername = async (possibleUsername, currentUsername = null, setUniqueUsernameControl) => {
 	if (possibleUsername != currentUsername ) {
 		const check = await checkUsernameFire.checkUniqueUsername(possibleUsername);
 		console.log('Username unique true or false? ', check);

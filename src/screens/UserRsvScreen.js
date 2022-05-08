@@ -28,7 +28,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
 // Firebase
-import rsvGetFire from '../firebase/rsvGetFire';
+import {
+  getUpcomingRsvsOfCus,
+  getPreviousRsvsOfCus,
+} from '../firebase/rsv/rsvGetFire';
 
 // Contexts
 import { Context as AuthContext } from '../context/AuthContext';
@@ -273,7 +276,7 @@ const UserRsvScreen = ({ route, navigation }) => {
       const getScreenReady = new Promise ((res, rej) => {
         if ( isMounted && !getUpcomingRsvsState ) {
           isMounted && setGetUpcomingRsvsState(true);
-          const getUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, null);
+          const getUpcomingRsvs = getUpcomingRsvsOfCus(user.id, dateNow, null);
 
           getUpcomingRsvs
           .then((result) => {
@@ -297,7 +300,7 @@ const UserRsvScreen = ({ route, navigation }) => {
 
         if ( isMounted && !getPreviousRsvsState ) {
           isMounted && setGetPreviousRsvsState(true);
-          const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, null);
+          const getPreviousRsvs = getPreviousRsvsOfCus(user.id, dateNow, null);
 
           getPreviousRsvs
           .then((result) => {
@@ -398,7 +401,7 @@ const UserRsvScreen = ({ route, navigation }) => {
     const getScreenReady = new Promise ((res, rej) => {
       if ( isMounted && !getUpcomingRsvsState && upcomingRsvsFetchSwitch ) {
         isMounted && setGetUpcomingRsvsState(true);
-        const getUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, null);
+        const getUpcomingRsvs = getUpcomingRsvsOfCus(user.id, dateNow, null);
 
         getUpcomingRsvs
         .then((result) => {
@@ -422,7 +425,7 @@ const UserRsvScreen = ({ route, navigation }) => {
 
       if ( isMounted && !getPreviousRsvsState && previousRsvsFetchSwitch ) {
         isMounted && setGetPreviousRsvsState(true);
-        const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, null);
+        const getPreviousRsvs = getPreviousRsvsOfCus(user.id, dateNow, null);
 
         getPreviousRsvs
         .then((result) => {
@@ -548,7 +551,7 @@ const UserRsvScreen = ({ route, navigation }) => {
                       let isMounted = true;
                       if ( isMounted && !getUpcomingRsvsState && upcomingRsvsFetchSwitch ) {
                         isMounted && setGetUpcomingRsvsState(true);
-                        const getMoreUpcomingRsvs = rsvGetFire.getUpcomingRsvsOfCus(user.id, dateNow, upcomingRsvLast);
+                        const getMoreUpcomingRsvs = getUpcomingRsvsOfCus(user.id, dateNow, upcomingRsvLast);
 
                         getMoreUpcomingRsvs
                         .then((result) => {
@@ -631,7 +634,7 @@ const UserRsvScreen = ({ route, navigation }) => {
                       let isMounted = true;
                       if ( isMounted && !getPreviousRsvsState && previousRsvsFetchSwitch ) {
                         isMounted && setGetPreviousRsvsState(true);
-                        const getPreviousRsvs = rsvGetFire.getPreviousRsvsOfCus(user.id, dateNow, previousRsvLast);
+                        const getPreviousRsvs = getPreviousRsvsOfCus(user.id, dateNow, previousRsvLast);
 
                         getPreviousRsvs
                         .then((result) => {

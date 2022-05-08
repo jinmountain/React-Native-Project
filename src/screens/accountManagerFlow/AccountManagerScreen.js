@@ -7,8 +7,8 @@ import {
 	TouchableHighlight,
 	Dimensions,
 	ScrollView,
+	SafeAreaView
 } from 'react-native';
-// import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Contexts
@@ -44,29 +44,36 @@ const buttonSize = width/3 - 8; // borderWidth + marginHorizontal * 2 = 8
 const oneThirdWidth = width / 3
 
 const AccountManagerScreen = ({ navigation }) => {
-	const { state: { user }, accountRefresh, signout } = useContext(AuthContext);
+	const { 
+		state: { 
+			user, 
+		}, 
+		accountRefresh, 
+		signout 
+	} = useContext(AuthContext);
 
 	const [ alertBoxStatus, setAlertBoxStatus ] = useState(false);
 	const [ alertBoxText, setAlertBoxText ] = useState("Username is necessary for a business or technician registration.")
 
 	return (
 		<View style={styles.mainContainer}>
-			<HeaderForm 
-				addPaddingTop={true}
-        leftButtonTitle={user.username}
-        leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
-        // headerTitle={"Account Manager"} 
-        rightButtonTitle={null} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          {
-            null
-          }
-        }}
-      />
-      
+      <View style={styles.headerBarContainer}>
+				<SafeAreaView />
+				<HeaderForm 
+	        leftButtonTitle={user.username}
+	        leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
+	        // headerTitle={"Account Manager"} 
+	        rightButtonTitle={null} 
+	        leftButtonPress={() => {
+	          navigation.goBack();
+	        }}
+	        rightButtonPress={() => {
+	          {
+	            null
+	          }
+	        }}
+	      />
+			</View>
 			<View style={styles.menuContainer}>
 				<ScrollView>
 					{/*{ user.username
@@ -190,6 +197,20 @@ const styles = StyleSheet.create({
 		backgroundColor: color.white2,
 		flex: 1,
 	},
+	headerBarContainer: { 
+		backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
+  },
 	menuContainer: {
 		backgroundColor: color.white2,
 		flex: 1,

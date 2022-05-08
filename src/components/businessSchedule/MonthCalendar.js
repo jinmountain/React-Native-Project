@@ -18,7 +18,10 @@ import color from '../../color';
 // Designs
 
 // Hooks
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+	convertToDateInMs,
+	getMonthMovesBtwDateNowAndThis,
+} from '../../hooks/useConvertTime';
 import { useOrientation } from '../../hooks/useOrientation';
 
 const MonthCalendar = ({ 
@@ -46,7 +49,7 @@ const MonthCalendar = ({
   	setWindowHeight(Dimensions.get("window").height);
   }, [orientation]);
 
-	const [ todayDateInMs, setTodayDateInMs ] = useState(useConvertTime.convertToDateInMs(dateNow));
+	const [ todayDateInMs, setTodayDateInMs ] = useState(convertToDateInMs(dateNow));
 
 	const renderDateBoxItem = ({ item, index }) => {
 		return (
@@ -76,7 +79,7 @@ const MonthCalendar = ({
 								const dateMove = (todayDateInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
 								setDateMoveFromToday(dateMove);
 							} 
-							setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
+							setCalendarMove(getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
 						}}
 					>
 						<View style={styles.dateBoxTextContainer}>
@@ -140,7 +143,7 @@ const MonthCalendar = ({
 								const dateMove = (todayDateInMs - item.time.timestamp) / (- 24 * 60 * 60 * 1000);
 								setDateMoveFromToday(dateMove);
 							} 
-							setCalendarMove(useConvertTime.getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
+							setCalendarMove(getMonthMovesBtwDateNowAndThis(dateNow, item.time.timestamp));
 						}}
 					>
 						<View style={styles.dateBoxTextContainer}>

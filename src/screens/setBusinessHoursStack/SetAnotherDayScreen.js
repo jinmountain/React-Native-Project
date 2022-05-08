@@ -24,19 +24,29 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Hooks
 import { getCalendarDates } from '../../hooks/getCalendarDates';
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+  convertToMonthInMs,
+  convertToTime,
+  getDayMonthDateYear,
+  moveMonthInMs,
+  convertToMonthly
+} from '../../hooks/useConvertTime';
 // Calendar
 import MonthCalendar from '../../components/businessSchedule/MonthCalendar';
 
 // firebase
-import businessUpdateFire from '../../firebase/businessUpdateFire';
-import businessPostFire from '../../firebase/businessPostFire';
+import {
+  postBusSpecialDateFire,
+  postTechSpecialDateFire
+} from '../../firebase/business/businessPostFire';
 
 // color
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+  evilIconsClose,
+} from '../../expoIcons';
 
 const SetAnotherDayScreen = ({ navigation, route }) => {
   const {
@@ -46,7 +56,7 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
   } = route.params;
 
   // calendar 
-  const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
+  const [ calendarDate, setCalendarDate ] = useState(convertToMonthInMs(Date.now()));
   const [ calendarMove, setCalendarMove ] = useState(0);
   const [ dateNow, setDateNow ] = useState(Date.now());
   const [ endTime, setEndTime ] = useState(17);
@@ -88,7 +98,7 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
         <SafeAreaView/>
         <HeaderForm 
           leftButtonTitle={null}
-          leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+          leftButtonIcon={evilIconsClose(RFValue(27), color.black1)}
           headerTitle={"Speical Date"} 
           rightButtonIcon={"Save"} 
           leftButtonPress={() => {
@@ -96,36 +106,45 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
           }}
           rightButtonPress={() => {
             if (specialDate) {
-              const specialDateTime = useConvertTime.convertToTime(specialDate);
-              const specialDateYearMonthDate = {
-                year: specialDateTime.year,
-                monthIndex: specialDateTime.monthIndex,
-                date: specialDateTime.date
-              };
+              const specialDateTime = convertToTime(specialDate);
+              const year = specialDateTime.year;
+              const monthIndex = specialDateTime.monthIndex;
+              const date = specialDateTime.date;
               if (userType === 'bus') {
                 // save on firestore and get doc id
                 setShowLoadingAlert(true);
 
-                const postBusSpecialDate = businessPostFire.postBusSpecialDate(
+                const postBusSpecialDate = postBusSpecialDateFire(
                   busId, 
                   timezoneOffset,
                   specialDate,
-                  specialDateYearMonthDate, 
-                  specialDateStatus
+                  specialDateStatus,
+                  year,
+                  monthIndex,
+                  date
                 );
 
                 postBusSpecialDate
                 .then((posted) => {
                   setShowLoadingAlert(false);
-                  // and then navigate back
-                  navigation.navigate("SetSpecialHours", {
-                    newSpecialDateId: posted.id,
-                    newSpecialDate: posted.date,
-                    newSpecialDateInMs: posted.date_in_ms,
-                    newSpecialDateStatus: posted.status,
-                    userType: userType,
-                    busId: busId
-                  });
+                  // and then navigate back if posted is not null
+                  if (posted) {
+                    navigation.navigate("SetSpecialHours", {
+                      newSpecialDateId: posted.id,
+                      newSpecialDateInMs: posted.date_in_ms,
+                      newSpecialDateStatus: posted.status,
+                      newSpecialYear: posted.year,
+                      newSpecialMonthIndex: posted.monthIndex,
+                      newSpecialDate: posted.date,
+                      userType: userType,
+                      busId: busId
+                    });
+                  } else {
+                    navigation.navigate("SetSpecialHours", {
+                      userType: userType,
+                      busId: busId
+                    });
+                  }
                 })
                 .catch((error) => {
                   console.log(error);
@@ -135,28 +154,40 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
               if (userType === 'tech') {
                 setShowLoadingAlert(true);
 
-                const postTechSpecialDate = businessPostFire.postTechSpecialDate(
+                const postTechSpecialDate = postTechSpecialDateFire(
                   busId, 
                   techId, 
                   timezoneOffset,
                   specialDate, 
-                  specialDateYearMonthDate, 
-                  specialDateStatus
+                  specialDateStatus,
+                  year,
+                  monthIndex,
+                  date
                 );
 
                 postTechSpecialDate
                 .then((posted) => {
                   setShowLoadingAlert(false);
-                  // and then navigate back
-                  navigation.navigate("SetSpecialHours", {
-                    newSpecialDateId: posted.id,
-                    newSpecialDate: posted.date,
-                    newSpecialDateInMs: posted.date_in_ms,
-                    newSpecialDateStatus: posted.status,
-                    userType: userType,
-                    busId: busId,
-                    techId: techId
-                  });
+                  // and then navigate back if posted is not null
+                  if (posted) {
+                    navigation.navigate("SetSpecialHours", {
+                      newSpecialDateId: posted.id,
+                      newSpecialDateInMs: posted.date_in_ms,
+                      newSpecialDateStatus: posted.status,
+                      newSpecialYear: posted.year,
+                      newSpecialMonthIndex: posted.monthIndex,
+                      newSpecialDate: posted.date,
+                      userType: userType,
+                      busId: busId,
+                      techId: techId
+                    });
+                  } else {
+                    navigation.navigate("SetSpecialHours", {
+                      userType: userType,
+                      busId: busId,
+                      techId: techId
+                    });
+                  }
                 })
                 .catch((error) => {
                   console.log(error);
@@ -176,7 +207,7 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
             <Text style={styles.specialDateText}>
               { specialDate
                 ?
-                `Date: ${useConvertTime.getDayMonthDateYear(specialDate)}`
+                `Date: ${getDayMonthDateYear(specialDate)}`
                 : 
                 "Date: (choose a date using the calendar below)"
               }
@@ -212,13 +243,13 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
           <View style={styles.topControllerContainer}>
             <View style={styles.topControllerLeftCompartment}>
               {
-                // new calendar date => useConvertTime.moveMonthInMs(calendarDate, -1)
-                // dateNow's month in miliseconds => useConvertTime.convertToMonthInMs(dateNow)
-                useConvertTime.convertToMonthInMs(dateNow) <= useConvertTime.moveMonthInMs(calendarDate, -1)
+                // new calendar date => moveMonthInMs(calendarDate, -1)
+                // dateNow's month in miliseconds => convertToMonthInMs(dateNow)
+                convertToMonthInMs(dateNow) <= moveMonthInMs(calendarDate, -1)
                 ?
                 <TouchableOpacity
                   onPress={() => {
-                    setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, -1));
+                    setCalendarDate(moveMonthInMs(calendarDate, -1));
                     setCalendarMove(calendarMove - 1);
                   }}
                 >
@@ -237,14 +268,14 @@ const SetAnotherDayScreen = ({ navigation, route }) => {
                 }}
               >
                 <Text style={styles.calendarDateText}>
-                  {useConvertTime.convertToMonthly(calendarDate)}
+                  {convertToMonthly(calendarDate)}
                 </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.topControllerRightCompartment}>
               <TouchableOpacity
                 onPress={() => {
-                  setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, +1)),
+                  setCalendarDate(moveMonthInMs(calendarDate, +1)),
                   setCalendarMove(calendarMove + 1)
                 }}
               >

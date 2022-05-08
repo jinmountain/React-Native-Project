@@ -11,10 +11,10 @@ import { Context as SocialContext } from '../context/SocialContext';
 import { useNavigation } from '@react-navigation/native';
 
 // Firebase
-import profilePhotoFire from '../firebase/profilePhotoFire';
+// import profilePhotoFire from '../firebase/profilePhotoFire';
 
 export default () => {
-	const [updateProfilePhotoFire] = profilePhotoFire();
+	// const [updateProfilePhotoFire] = profilePhotoFire();
 	// const { addFile } = useContext(PostContext);
 	// const { addFileChat } = useContext(SocialContext);
   const navigation = useNavigation();
@@ -30,17 +30,18 @@ export default () => {
 	  })();
 	}, []);
 
-	const pickImage = async (screen, currentUser, addFile) => {
+	const pickImage = async (type = "all") => {
 		return new Promise (async (res, rej) => {
 			let result 
-			if (screen === "profile") {
+			if (type === "image") {
 				result = await ImagePicker.launchImageLibraryAsync({
 				  mediaTypes: ImagePicker.MediaTypeOptions.Images,
 				  allowsEditing: true,
 				  aspect: [1, 1],
 				  quality: 1
 				});
-			} else {
+			}
+			if (type === "all") {
 				result = await ImagePicker.launchImageLibraryAsync({
 				  mediaTypes: ImagePicker.MediaTypeOptions.All,
 				  allowsEditing: true,
@@ -57,7 +58,7 @@ export default () => {
 					let lastIndexOfDash = result.uri.lastIndexOf('/');
 					let lastIndexOfDot = result.uri.lastIndexOf(".") - lastIndexOfDash;
 					// id is the combi of the file name and the current time
-					let id = result.uri.substr(lastIndexOfDash+1, lastIndexOfDot-1).concat('_' + Date.now());
+					let id = result.uri.substr(lastIndexOfDash+1, lastIndexOfDot-1).concat('-' + Date.now());
 					//console.log('file id: ', id);
 					//console.log('file type: ', result.type);
 					if (result.type === 'video' && result.duration < 5000) {

@@ -8,10 +8,20 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   FlatList,
-  Animated,
   Platform,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedGestureHandler,
+  withSpring,
+  useDerivedValue,
+  withDecay,
+} from "react-native-reanimated";
+import { PanGestureHandler } from "react-native-gesture-handler";
+import { clamp, withBouncing } from "react-native-redash";
 
 // Hooks
 import { useOrientation } from '../../hooks/useOrientation';
@@ -20,12 +30,11 @@ import { useOrientation } from '../../hooks/useOrientation';
 
 // Components
 import { HeaderForm } from '../HeaderForm';
-import VerticalSwipePostImage from './VerticalSwipePostImage';
+import PostImageForm from './PostImageForm';
 import PostInfoBox from './PostInfoBox';
 import PostBusinessUserInfoContainer from './PostBusinessUserInfoContainer';
 import PostUserInfoContainer from './PostUserInfoContainer';
 import LikeCommentButtonLine from './LikeCommentButtonLine';
-import PostLikeCommentTimeInfo from './PostLikeCommentTimeInfo';
 
 // Hooks
 import { wait } from '../../hooks/wait';
@@ -38,12 +47,10 @@ const PostCard = ({
 	currentUserPhotoURL,
 	isCardFocused,
 
-  cardHeight,
   cardWidth,
   cardMargin,
 
   cardIndex,
-  // setShowCommentPostIndex
 }) => {
   const [ postState, setPostState ] = useState(post);
   const deletePostState = () => {
@@ -53,22 +60,22 @@ const PostCard = ({
 	const navigation = useNavigation();
 
   const [ expandInfoBox, setExpandInfoBox ] = useState(false);
+
+  const [ commentCountState, setCommentCountState ] = useState(postState.data.commentCount);
+  const incrementCommentCount = () => {
+    setCommentCountState(commentCountState + 1);
+  };
+  const decrementCommentCount = () => {
+    setCommentCountState(commentCountState - 1);
+  };
+
 	return (
     postState &&
 		<View
-      style={
-        expandInfoBox
-        ?
-        { 
-          ...styles.card, 
-          ...{ width: cardWidth, marginBottom: cardMargin } 
-        }
-        :
-        { 
-          ...styles.card, 
-          ...{ height: cardHeight, width: cardWidth, marginBottom: cardMargin } 
-        }
-      }
+      style={[
+        styles.card, 
+        { width: cardWidth, marginBottom: cardMargin }
+      ]}
     >
       <PostUserInfoContainer
     		postId={postState.id}
@@ -77,7 +84,7 @@ const PostCard = ({
         postTimestamp={postState.data.createdAt}
         deletePostState={deletePostState}
     	/>
-      <VerticalSwipePostImage
+      <PostImageForm
         files={postState.data.files}
         onFocus={isCardFocused}
         isDisplay={postState.data.display}
@@ -94,7 +101,9 @@ const PostCard = ({
         postId={postState.id}
         postUserId={postState.data.uid}
         likeCount={postState.data.likeCount}
-        commentCount={postState.data.commentCount}
+        commentCount={commentCountState}
+        incrementCommentCount
+        decrementCommentCount
         postTimestamp={postState.data.createdAt}
         currentUserPhotoURL={currentUserPhotoURL}
         currentUserId={currentUserId}
@@ -102,6 +111,9 @@ const PostCard = ({
         setExpandInfoBox={setExpandInfoBox}
         cardIndex={cardIndex}
         postFiles={postState.data.files}
+        postTitle={postState.data.title}
+        postPrice={postState.data.price}
+        postEtc={postState.data.etc}
         // setShowCommentPostIndex={setShowCommentPostIndex}
       />
     </View>

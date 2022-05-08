@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
   StyleSheet, 
-  View, 
+  View,
+  SafeAreaView,
   Text, 
-  TouchableOpacity,
   TouchableHighlight,
+  TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Dimensions,
   Pressable,
@@ -14,9 +15,10 @@ import {
   Image,
 } from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { Menu, Divider } from 'react-native-paper';
 
 // npms
-import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+// import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -26,6 +28,8 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 import ExpandableText from '../../components/ExpandableText'
 import ReplyBar from '../../components/ReplyBar';
+import SnailBottomSheet from '../../components/SnailBottomSheet';
+import BottomSheetHeader from '../../components/BottomSheetHeader';
 
 // firebase
 import replyGetFire from '../../firebase/reply/replyGetFire';
@@ -38,7 +42,6 @@ import { Context as AuthContext } from '../../context/AuthContext';
 
 // Hooks
 import count from '../../hooks/count';
-import useIsKeyboardVisible from '../../hooks/useIsKeyboardVisible';
 import { timeDifference } from '../../hooks/timeDifference';
 
 // color
@@ -48,12 +51,15 @@ import color from '../../color';
 import sizes from '../../sizes';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+  antClose,
+  entypoDot,
+  entypoList
+} from '../../expoIcons';
 
 const { width, height } = Dimensions.get("window");
 
 const ReplyScreen = ({ navigation, route }) => {
-  const sheetRef = useRef(null);
   const [ bottomSheetHeight, setBottomSheetHeight ] = useState(height - RFValue(95));
   const [ windowWidth, setWindowWidth ] = useState(width);
   const [ windowHeight, setWindowHeight ] = useState(width);
@@ -65,8 +71,12 @@ const ReplyScreen = ({ navigation, route }) => {
   const [ replyLast, setReplyLast ] = useState(null);
   const [ replyFetchSwitch, setReplyFetchSwitch ] = useState(true);
   const [ replyFetchState, setReplyFetchState ] = useState(false);
+  const [ replySortType , setReplySortType ] = useState('top');
 
-  const [ isKeyboardVisible ] = useIsKeyboardVisible();
+  // add new reply to replies state
+  const addNewReply = (newReply) => {
+    setReplies([ newReply, ...replies ]);
+  };
 
   const { 
     postId, 
@@ -74,7 +84,6 @@ const ReplyScreen = ({ navigation, route }) => {
     commentData,
     commentUser,
     currentUserId,
-    textInputAutoFocus,
     incrementReplyCount,
     decrementReplyCount
   } = route.params;
@@ -90,7 +99,7 @@ const ReplyScreen = ({ navigation, route }) => {
     const getScreenReady = new Promise ((res, rej) => {
       if (replyFetchSwitch && !replyFetchState && isMounted) {
         isMounted && setReplyFetchState(true);
-        const getReplies = replyGetFire.getRepliesFire(postId, commentId);
+        const getReplies = replyGetFire.getRepliesFire(postId, commentId, null, "top");
         getReplies
         .then((result) => {
           isMounted && setReplies(result.fetchedReplies);
@@ -103,6 +112,8 @@ const ReplyScreen = ({ navigation, route }) => {
           if (!result.fetchSwitch) {
             isMounted && setReplyFetchSwitch(false);
           };
+
+          isMounted && setReplyFetchState(false);
         })
         .catch((error) => {
           rej(error);
@@ -121,118 +132,144 @@ const ReplyScreen = ({ navigation, route }) => {
     };
   }, []);
 
-  const bottomSheetRef = useRef(null);
-
-  const snapPoints = useMemo(() => 
-    ['75%'],
-    []
-  );
-
-  const handleSheetChanges = useCallback((index) => {
-    if (index === -1) {
-      navigation.goBack();
-    } 
-    // console.log('handleSheetChanges', index);
-  }, []);
-
-  return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }}
-      behavior={Platform.OS == "ios" ? "padding" : "height"}
-    >
-      <View 
-        style={styles.mainContainer}
+  const textInputForm = () => {
+    return (
+      <TouchableWithoutFeedback
+        onPress={() => {
+          navigation.navigate("ReplyTextInput", {
+            postId,
+            commentId,
+            currentUserId: user.id,
+            currentUserPhotoURL: user.photoURL,
+            incrementReplyCount,
+            addNewReply
+          });
+        }}
       >
-        <Pressable 
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-          ]}
-          onPress={() => { navigation.goBack() }}
-        >
-        </Pressable>
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={0}
-          snapPoints={snapPoints}
-          onChange={handleSheetChanges}
-          enablePanDownToClose={true}
-          handleComponent={() => {
-            return (
-              <View 
-                style={styles.bottomSheetHeaderContainer}
-              >
-                <View style={styles.bottomSheetHeaderTopContainer}>
-                  <View style={styles.bottomSheetHeaderTitleContainer}>
-                    <Text style={styles.bottomSheetHeaderTitleText}>Replies</Text>
-                  </View>
-                  <TouchableHighlight
-                    style={styles.bottomSheetHeaderCloseButton}
-                    underlayColor={color.grey4}
-                    onPress={() => {
-                      navigation.goBack();
-                    }}
-                  >
-                    {expoIcons.antClose(RFValue(19), color.black1)}
-                  </TouchableHighlight>
-                </View>
-              </View>
-            )
-          }}
-        >
-          <View 
-            style={{ flex: 1, backgroundColor: color.white2 }} 
-          >
-            <View
-              style={styles.commentBar}
-            >
-              <View style={styles.userPhotoContainer}>
-                { 
-                  commentUser && commentUser.photoURL
-                  ?
-                  <Image 
-                    style={styles.userPhoto} 
-                    source={{ uri: commentUser.photoURL }} 
-                  />
-                  :
-                  <DefaultUserPhoto 
-                    customSizeBorder={RFValue(38)}
-                    customSizeUserIcon={RFValue(26)}
-                  />
-                }
-              </View>
-              <View style={styles.commentContainer}>
-                <View style={styles.commentBarHeader}>
-                  { 
-                    commentUser && commentUser.username
-                    ? <Text style={styles.headerText}>{commentUser.username} {expoIcons.entypoDot(RFValue(11), color.grey1)} {timeDifference(Date.now(), commentData.createdAt)}</Text>
-                    : null
-                  }
-                </View>
-                <ExpandableText 
-                  caption={commentData.text}
-                  defaultCaptionNumLines={5}
+        <View>
+          <View style={styles.newCommentContainer}>
+            <View style={styles.currentUserPhotoContainer}>
+              { 
+                user.photoURL
+                ?
+                <Image 
+                  style={styles.currentUserPhoto} 
+                  source={{ uri: user.photoURL }} 
                 />
+                :
+                <DefaultUserPhoto 
+                  customSizeBorder={RFValue(27)}
+                  customSizeUserIcon={RFValue(18)}
+                />
+              }
+            </View>
+            <View style={
+              styles.newCommentTextInputContainer
+            }>
+              <Text style={styles.newCommentTextInput}>
+                Start writing
+              </Text>
+            </View>
+            <View style={styles.newCommentButton}>
+              <View style={styles.newCommentButtonTextContainer}>
+                <Text style={styles.newCommentButtonText}>Post</Text>
               </View>
             </View>
-            <HeaderBottomLine />
-            <View style={styles.replyContainer}>
-              <BottomSheetFlatList
-                onEndReached={() => {
-                  
-                }}
-                onEndReachedThreshold={0.1}
-                contentContainerStyle={{
+          </View>
+          <HeaderBottomLine />
+        </View>
+      </TouchableWithoutFeedback>
+    )
+  }
 
-                }}
-                vertical
-                showsVerticalScrollIndicator={false}
-                decelerationRate={"fast"}
-                data={replies}
-                keyExtractor={(reply, index) => reply.id}
-                renderItem={({ item: reply, index }) => {
-                  return (
+  const _repliesFlatListRef = useRef(null);
+
+  const renderContent = () => {
+    return (
+      <View 
+        style={{ flex: 1, backgroundColor: color.white2 }} 
+      >
+        <View
+          style={styles.commentBar}
+        >
+          <View style={styles.userPhotoContainer}>
+            { 
+              commentUser && commentUser.photoURL
+              ?
+              <Image 
+                style={styles.userPhoto} 
+                source={{ uri: commentUser.photoURL }} 
+              />
+              :
+              <DefaultUserPhoto 
+                customSizeBorder={RFValue(38)}
+                customSizeUserIcon={RFValue(26)}
+              />
+            }
+          </View>
+          <View style={styles.commentContainer}>
+            <View style={styles.commentBarHeader}>
+              { 
+                commentUser && commentUser.username
+                ? <Text style={styles.headerText}>{commentUser.username} {entypoDot(RFValue(11), color.grey1)} {timeDifference(Date.now(), commentData.createdAt)}</Text>
+                : null
+              }
+            </View>
+            <ExpandableText 
+              caption={commentData.text}
+              defaultCaptionNumLines={5}
+            />
+          </View>
+        </View>
+        <HeaderBottomLine />
+        <View style={styles.replyContainer}>
+          {
+            replies.length > 0
+            ?
+            <FlatList
+              ref={_repliesFlatListRef}
+              onEndReached={() => {
+                // console.log("replyFetchSwitch:", replyFetchSwitch, "replyFetchState: ", replyFetchState);
+                if (replyFetchSwitch && !replyFetchState) {
+                  setReplyFetchState(true);
+                  const getReplies = replyGetFire.getRepliesFire(postId, commentId, replyLast, replySortType);
+                  getReplies
+                  .then((result) => {
+                    setReplies([ ...replies, ...result.fetchedReplies ]);
+                    if (result.lastReply) {
+                      setReplyLast(result.lastReply);
+                    } else {
+                      setReplyFetchSwitch(false);
+                    };
+
+                    if (!result.fetchSwitch) {
+                      setReplyFetchSwitch(false);
+                    };
+
+                    setReplyFetchState(false);
+                  })
+                  .catch((error) => {
+                    rej(error);
+                  });
+                };
+              }}
+              onEndReachedThreshold={0.1}
+              contentContainerStyle={{
+
+              }}
+              vertical
+              showsVerticalScrollIndicator={false}
+              decelerationRate={"fast"}
+              data={replies}
+              keyExtractor={(reply, index) => reply.id}
+              renderItem={({ item: reply, index }) => {
+                return (
+                  index === 0
+                  ?
+                  <View>
+                    {textInputForm()}
                     <ReplyBar
+                      index={index}
                       postId={postId}
                       commentId={commentId}
                       replyId={reply.id}
@@ -240,84 +277,179 @@ const ReplyScreen = ({ navigation, route }) => {
                       currentUserId={user.id}
                       decrementReplyCount={decrementReplyCount}
                     />
-                  )
-                }}
-              />
-            </View>
-            <View style={styles.newCommentContainer}>
-              <View style={styles.currentUserPhotoContainer}>
-                { 
-                  user.photoURL
-                  ?
-                  <Image 
-                    style={styles.currentUserPhoto} 
-                    source={{ uri: user.photoURL }} 
-                  />
+                  </View>
                   :
-                  <DefaultUserPhoto 
-                    customSizeBorder={RFValue(38)}
-                    customSizeUserIcon={RFValue(26)}
+                  <ReplyBar
+                    index={index}
+                    postId={postId}
+                    commentId={commentId}
+                    replyId={reply.id}
+                    replyData={reply.data}
+                    currentUserId={user.id}
+                    decrementReplyCount={decrementReplyCount}
                   />
-                }
-              </View>
-              <View style={styles.newCommentTextInputContainer}>
-                <TextInput
-                  style={styles.newCommentTextInput}
-                  onChangeText={setNewReply}
-                  value={newReply}
-                  placeholder={"Start writing"}
-                  autoComplete={false}
-                  autoCorrect={false}
-                  autoFocus={textInputAutoFocus}
-                />
-              </View>
-              <TouchableHighlight 
-                style={styles.newCommentButton}
-                underlayColor={color.grey4}
-                onPress={() => {
-                  setPostReplyState(true);
-                  const newReplyLen = newReply.trim().length;
-                  if (!postReplyState && newReplyLen > 0) {
-                    const postReply = replyPostFire.postReplyFire(postId, commentId, user.id, newReply);
-                    postReply
-                    .then((newReply) => {
-                      setReplies([ newReply, ...replies ]);
-                      setNewReply(null);
-                      setPostReplyState(false);
-                      incrementReplyCount();
-                    })
-                    .catch((error) => {
-                      setPostReplyState(false);
-                      // handle error
-                    });
+                )
+              }}
+            />
+            :
+            textInputForm()
+          }
+        </View>
+      </View>
+    )
+  };
+
+  // -- render comment bottom sheet header
+    const [ showSetting, setShowSetting ] = useState(false);
+    const renderBottomSheetHeader = () => {
+      return (
+        <View 
+          style={styles.bottomSheetHeaderContainer}
+        > 
+          <View style={styles.bottomSheetHeaderInner}>
+            <View style={styles.sliderIndicatorContainer}>
+              <View style={styles.sliderIndicator}/>
+            </View>
+            <View style={styles.bottomSheetHeaderBottomContainer}>
+              <View style={styles.bottomSheetHeaderTitleContainer}>
+                <Text style={styles.bottomSheetHeaderTitleText}>
+                  {
+                    replies.length > 1 ? "Replies" : "Reply"
                   }
-                }}
-              >
-                <View style={styles.newCommentButtonTextContainer}>
-                  { 
-                    false
-                    ?
-                    <SpinnerFromActivityIndicator 
-                      customSize={"small"}
-                      customColor={color.red3}
-                    />
-                    :
-                    <Text style={styles.newCommentButtonText}>Post</Text>
-                  }
-                </View>
-              </TouchableHighlight>
+                </Text>
+              </View>
+              <View style={styles.buttonsContainer}>
+                <Menu
+                  visible={showSetting}
+                  onDismiss={() => {
+                    setShowSetting(false);
+                  }}
+                  anchor={
+                    <TouchableHighlight
+                      style={styles.bottomSheetHeaderCloseButton}
+                      underlayColor={color.grey4}
+                      onPress={() => {
+                        setShowSetting(!showSetting);
+                      }}
+                    >
+                      <View>
+                        {entypoList(RFValue(21), color.black1)}
+                      </View>
+                    </TouchableHighlight>
+                  }>
+                  <Menu.Item onPress={() => {
+                    if (
+                      !replyFetchState && 
+                      replySortType !== "top"
+                    ) {
+                      setReplyFetchState(true);
+                      setReplyFetchSwitch(true);
+                      setReplyLast(null);
+                      const getReplies = replyGetFire.getRepliesFire(postId, commentId, null, "top");
+                      getReplies
+                      .then((result) => {
+                        setReplies(result.fetchedReplies);
+                        if (result.lastReply) {
+                          setReplyLast(result.lastReply);
+                        } else {
+                          setReplyFetchSwitch(false);
+                        };
+
+                        if (!result.fetchSwitch) {
+                          setReplyFetchSwitch(false);
+                        };
+
+                        setReplyFetchState(false);
+                        setShowSetting(false);
+                        setReplySortType("top");
+                        _repliesFlatListRef.current.scrollToOffset({ animated: true, offset: 0 });
+                      })
+                      .catch((error) => {
+                        
+                      });
+                    };
+                  }} title="Top" />
+                  <Divider />
+                  <Menu.Item onPress={() => {
+                    if ( 
+                      !replyFetchState &&
+                      replySortType !== 'new'
+                    ) {
+                      setReplyFetchState(true);
+                      setReplyFetchSwitch(true);
+                      setReplyLast(null);
+                      const getReplies = replyGetFire.getRepliesFire(postId, commentId, null, "new");
+                      getReplies
+                      .then((result) => {
+                        setReplies(result.fetchedReplies);
+                        if (result.lastReply) {
+                          setReplyLast(result.lastReply);
+                        } else {
+                          setReplyFetchSwitch(false);
+                        };
+
+                        if (!result.fetchSwitch) {
+                          setReplyFetchSwitch(false);
+                        };
+
+                        setReplyFetchState(false);
+                        setShowSetting(false);
+                        setReplySortType("new");
+                        _repliesFlatListRef.current.scrollToOffset({ animated: true, offset: 0 });
+                      })
+                      .catch((error) => {
+                        
+                      });
+                    };
+                  }} title="New" />
+                </Menu>
+                <TouchableHighlight
+                  style={styles.bottomSheetHeaderCloseButton}
+                  underlayColor={color.grey4}
+                  onPress={() => {
+                    navigation.goBack();
+                  }}
+                >
+                  {antClose(RFValue(21), color.black1)}
+                </TouchableHighlight>
+              </View>
             </View>
           </View>
-        </BottomSheet>
-      </View>
-    </KeyboardAvoidingView>
+          <HeaderBottomLine />
+        </View>
+      )
+    };
+
+  return (
+    <View 
+      style={styles.mainContainer}
+    >
+      <Pressable 
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+        ]}
+        onPress={() => { navigation.goBack() }}
+      >
+      </Pressable>
+      <SnailBottomSheet
+        header={renderBottomSheetHeader()}
+        content={renderContent()}
+        snapPoints={[0, 0.75, 1]}
+        snapSwitchs={[false, false]}
+        onCloseEnd={() => {
+          navigation.goBack();
+        }}
+        bottomSheetContainerStyle={{
+          borderTopLeftRadius: RFValue(9),
+          borderTopRightRadius: RFValue(9),
+        }}
+      />
+    </View>
   )
 };
 
 const styles = StyleSheet.create({
-  replyContainer: {
-    flex: 1
-  },
   commentActionBar: {
     paddingVertical: RFValue(5),
     flexDirection: 'row',
@@ -346,14 +478,14 @@ const styles = StyleSheet.create({
 
   mainContainer: { flex: 1 },
   currentUserPhotoContainer: {
-    padding: RFValue(10),
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingRight: RFValue(9),
     width: RFValue(70)
   },
   currentUserPhoto: {
-    width: RFValue(38),
-    height: RFValue(38),
-    borderRadius: RFValue(38),
+    width: RFValue(27),
+    height: RFValue(27),
+    borderRadius: RFValue(27),
   },
 
   newCommentContainer: {
@@ -365,12 +497,12 @@ const styles = StyleSheet.create({
   },
 
   newCommentTextInputContainer: {
-    flex: 1
+    flex: 1,
   },
   newCommentTextInput: {
-    flex: 1,
     fontSize: RFValue(17),
-    color: color.black1
+    color: color.grey3,
+    paddingLeft: RFValue(5)
   },
 
   newCommentButton: {
@@ -378,9 +510,9 @@ const styles = StyleSheet.create({
     height: RFValue(45),
     paddingHorizontal: RFValue(15),
     paddingVertical: RFValue(5),
-    borderWidth: 1,
-    borderRadius: RFValue(10),
-    borderColor: color.red2,
+    // borderWidth: 1,
+    // borderRadius: RFValue(10),
+    // borderColor: color.red2,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: RFValue(5)
@@ -388,34 +520,6 @@ const styles = StyleSheet.create({
   newCommentButtonText: {
     color: color.red2,
     fontSize: RFValue(17)
-  },
-
-  bottomSheetHeaderContainer: {
-    height: RFValue(55),
-    width: "100%", 
-    justifyContent: 'center'
-  },
-  bottomSheetHeaderTopContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  bottomSheetHeaderTitleContainer: {
-    paddingLeft: RFValue(10),
-    justifyContent: 'center',
-  },
-  bottomSheetHeaderTitleText: {
-    fontSize: RFValue(19),
-    color: color.black1,
-    fontWeight: 'bold'
-  },
-  bottomSheetHeaderCloseButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: RFValue(10),
-    width: RFValue(35),
-    height: RFValue(35),
-    borderRadius: RFValue(35)
   },
 
   commentBar: {
@@ -469,6 +573,59 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: RFValue(18),
     color: color.black1
+  },
+
+  replyContainer: {
+    flex: 1
+  },
+
+  bottomSheetHeaderContainer: {
+    backgroundColor: color.white2,
+    height: RFValue(55),
+    width: "100%", 
+    borderTopLeftRadius: RFValue(9),
+    borderTopRightRadius: RFValue(9),
+  },
+  bottomSheetHeaderInner: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  bottomSheetHeaderTitleText: {
+    fontSize: RFValue(19),
+    color: color.black1,
+    fontWeight: 'bold'
+  },
+  sliderIndicatorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  sliderIndicator: {
+    width: 50,
+    height: 5,
+    backgroundColor: color.grey1,
+    borderRadius: 100
+  },
+  bottomSheetHeaderBottomContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: RFValue(15),
+  },
+  bottomSheetHeaderTitleContainer: {
+    paddingLeft: RFValue(10),
+    justifyContent: 'center',
+  },
+  bottomSheetHeaderCloseButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: RFValue(10),
+    width: RFValue(35),
+    height: RFValue(35),
+    borderRadius: RFValue(35)
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    alignItems: 'center',
   },
 });
 

@@ -22,7 +22,9 @@ import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
 // Firebase
-import usersGetFire from '../../firebase/usersGetFire';
+import {
+  getUserInfoFire
+} from '../../firebase/user/usersGetFire';
 
 // Hooks
 import { timeDifference } from '../../hooks/timeDifference';
@@ -48,7 +50,7 @@ const PostUserInfoContainer = ({
 
   useEffect(() => {
     let isMounted = false;
-    const getUserInfo = usersGetFire.getUserInfoFire(postData.uid);
+    const getUserInfo = getUserInfoFire(postData.uid);
     getUserInfo
     .then((user) => {
       const postUserData = {
@@ -72,27 +74,21 @@ const PostUserInfoContainer = ({
   const navigation = useNavigation();
   return (
     <View style={styles.userInfoContainer}>
-      <ScrollView 
-        contentContainerStyle={{paddingRight: RFValue(50)}}
-        horizontal={true}
-        fadingEdgeLength={RFValue(100)}
-        showsHorizontalScrollIndicator={false}
+      <TouchableWithoutFeedback 
+        onPress={() => {
+          // postData.uid === currentUserId
+          // ?
+          // navigation.navigate('AccountTab')
+          // :
+          navigation.navigate('UserAccountStack', {
+            screen: 'UserAccount',
+            params: {
+              accountUserId: postData.uid
+            }
+          })
+        }}
       >
-        <TouchableOpacity 
-          style={styles.infoContainer}
-          onPress={() => {
-            // postData.uid === currentUserId
-            // ?
-            // navigation.navigate('AccountTab')
-            // :
-            navigation.navigate('UserAccountTab', {
-              screen: 'UserAccount',
-              params: {
-                accountUserId: postData.uid
-              }
-            })
-          }}
-        >
+        <View style={styles.infoContainer}>
           <View style={styles.userPhotoContainer}>
             { 
               postUser && postUser.photoURL
@@ -128,25 +124,8 @@ const PostUserInfoContainer = ({
             }
             <Text style={styles.timeDifferenceText}>{timeDifference(Date.now(), postTimestamp)}</Text>
           </View>
-        </TouchableOpacity>
-        {
-          postData.display
-          ?
-          <View style={styles.displayPostInfoContainer}>
-            <TouchableWithoutFeedback 
-              style={styles.titleTextContainer}
-              onPress={() => {
-                navigation.navigate("PostDetail", {
-                  postId: postId
-                })
-              }}
-            >
-              <Text style={styles.titleText}>{postData.title}</Text>
-            </TouchableWithoutFeedback>
-          </View>
-          : null
-        }
-      </ScrollView>
+        </View>
+      </TouchableWithoutFeedback>
       <View style={styles.postManagerButtonContainer}>
         <TouchableHighlight
           onPress={() => 
@@ -171,20 +150,19 @@ const PostUserInfoContainer = ({
 
 const styles = StyleSheet.create({
   userInfoContainer: {
-    paddingLeft: 10,
-    backgroundColor: '#fff',
+    paddingLeft: RFValue(10),
+    backgroundColor: color.white2,
     width: width,
-    paddingVertical: 3,
+    paddingVertical: RFValue(3),
     height: DEFAULT_USER_INFO_BOX_HEIGHT,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'flex-end'
   },
   infoContainer: {
+    flex: 1, 
     flexDirection: 'row',
-    alignSelf: 'center',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: RFValue(7),
   },
   userPhotoContainer: {
     height: "100%",

@@ -8,7 +8,7 @@ const usersRef = Firebase.firestore().collection("users");
 const postsRef = Firebase.firestore().collection("posts");
 
 // accept user as a parameter then use user data to merge in userPost
-const getUserPostsFire = (lastPost, accountUserId) => {
+const getUserPostsFire = (lastPost = null, accountUserId) => {
 	return new Promise ((res, rej) => {
 		const LIMIT = 15;
 		let postRef;
@@ -59,9 +59,9 @@ const getUserPostsFire = (lastPost, accountUserId) => {
 	})
 };
 
-const getBusinessDisplayPostsFire = (lastPost, businessUserId) => {
+const getBusinessDisplayPostsFire = (businessUserId, lastPost = null,  limitNum = 10) => {
 	return new Promise ((res, rej) => {
-		const LIMIT = 10;
+		const LIMIT = limitNum;
 		let postRef;
 		if (lastPost) {
 			postRef = postsRef
@@ -108,7 +108,7 @@ const getBusinessDisplayPostsFire = (lastPost, businessUserId) => {
 };
 
 // posts that rated the business user 
-const getBusRatedPostsFire = (lastPost, businessUserId) => {
+const getBusRatedPostsFire = (lastPost = null, businessUserId) => {
 	return new Promise (async (res, rej) => {
 		const LIMIT = 15;
 		let ratedPostsRef;
@@ -162,7 +162,7 @@ const getBusRatedPostsFire = (lastPost, businessUserId) => {
 };
 
 // get posts that user made to rate
-const getUserRatedPostsFire = (lastPost, userId) => {
+const getUserRatedPostsFire = (lastPost = null, userId) => {
 	return new Promise (async (res, rej) => {
 		const LIMIT = 15;
 		let ratedPostsRef;
@@ -215,7 +215,7 @@ const getUserRatedPostsFire = (lastPost, userId) => {
 	});
 };
 
-const getHotPostsFire = (lastPost) => {
+const getHotPostsFire = (lastPost = null) => {
 	return new Promise ((res, rej) => {
 		const LIMIT = 6;
 		let postRef;
@@ -276,20 +276,20 @@ const getPostFire = (postId) => {
 				}
 				res(post);
 			} else {
-				rej(false);
+				rej("post does not exist");
 			}
 		})
 		.catch((error) => {
 			rej(error);
 		});
 	})
-}
+};
 
-export default { 
+export { 
 	getUserPostsFire, 
 	getBusinessDisplayPostsFire, 
 	getBusRatedPostsFire,
 	getUserRatedPostsFire,
 	getHotPostsFire,
-	getPostFire
+	getPostFire,
 };

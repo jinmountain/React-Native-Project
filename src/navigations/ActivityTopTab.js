@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   StyleSheet, 
   View, 
-  Text, 
+  Text,
+  SafeAreaView,
 } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -17,18 +18,27 @@ import UserNotiStack from './UserNotiStack';
 
 // Components
 import MainTemplate from '../components/MainTemplate';
+import NavigationBar from '../components/NavigationBar';
 
 // color
 import color from '../color';
 
 // icon
-import expoIcons from '../expoIcons';
+import {
+	featherBookmark,
+	antdesignBook,
+	antdesignHeart,
+	antdesignHearto,
+	ioniconsNotifications,
+	ioniconsNotificationsOutline
+} from '../expoIcons';
 
 const Tab = createMaterialTopTabNavigator();
 
 const ActivityTopTab = () => {
   return (
-  	<MainTemplate>
+  	<View style={{ flex: 1, backgroundColor: color.white2 }}>
+  		<SafeAreaView />
 	    <Tab.Navigator
 	    	backBehavior="history"
 	    	screenOptions={({ route }) => ({
@@ -77,13 +87,13 @@ const ActivityTopTab = () => {
 	      				? 
 	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.featherBookmark(RFValue(19), color.red2)
+	      						featherBookmark(RFValue(19), color.red2)
 	      					}
 	      				</View>
 	      				: 
 	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.antdesignBook(RFValue(19), color.black1)
+	      						antdesignBook(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)
@@ -104,13 +114,13 @@ const ActivityTopTab = () => {
 	      				? 
 	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.antdesignHeart(RFValue(19), color.red2)
+	      						antdesignHeart(RFValue(19), color.red2)
 	      					}
 	      				</View>
 	      				: 
 	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.antdesignHearto(RFValue(19), color.black1)
+	      						antdesignHearto(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)
@@ -131,13 +141,13 @@ const ActivityTopTab = () => {
 	      				? 
 	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.ioniconsNotifications(RFValue(19), color.black1)
+	      						ioniconsNotifications(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      				: 
 	      				<View style={styles.tabIconContainer}>
 	      					{
-	      						expoIcons.ioniconsNotificationsOutline(RFValue(19), color.black1)
+	      						ioniconsNotificationsOutline(RFValue(19), color.black1)
 	      					}
 	      				</View>
 	      			)
@@ -149,7 +159,9 @@ const ActivityTopTab = () => {
 	      	}}
 	      />
 	    </Tab.Navigator>
-		</MainTemplate>
+	    <NavigationBar />
+	    <SafeAreaView/>
+		</View>
   );
 }
 

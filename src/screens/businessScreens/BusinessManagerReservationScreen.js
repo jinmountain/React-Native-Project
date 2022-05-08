@@ -25,12 +25,24 @@ import { Context as AuthContext } from '../../context/AuthContext';
 import { Context as SocialContext } from '../../context/SocialContext';
 
 // Hooks
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+	convertToNormHourMin,
+	convertEtcToHourMin,
+	convertToDateInMs,
+	convertToMonthInMs,
+	convertToMDD,
+} from '../../hooks/useConvertTime';
 import { wait } from '../../hooks/wait';
 
 // Firebase
-import businessGetFire from '../../firebase/businessGetFire';
-import businessPostFire from '../../firebase/businessPostFire';
+import {
+	getUpcomingRsvsOfBus,
+	getPreviousRsvsOfBus,
+} from '../../firebase/rsv/rsvGetFire';
+import { 
+	completeReservation, 
+	uncompleteReservation 
+} from '../../firebase/rsv/rsvPostFire';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -82,7 +94,7 @@ const RsvInfoCompartment = ({ rsv, borderLineTop }) => {
 			}
 			<View style={styles.timeContainer}>
 				<Text style={styles.timeText}>
-					{useConvertTime.convertToNormHourMin(rsv.rsv.startAt)}
+					{convertToNormHourMin(rsv.rsv.startAt)}
 				</Text>
 			</View>
 			<View style={styles.rsvInfoContainer}>
@@ -157,7 +169,7 @@ const RsvInfoCompartment = ({ rsv, borderLineTop }) => {
 	  					{	
 	  						rsv.post &&
 	  						<Text style={styles.usernameText}>
-	  							{useConvertTime.convertEtcToHourMin(rsv.post.etc)}
+	  							{convertEtcToHourMin(rsv.post.etc)}
 	  							<Entypo name="dot-single" size={RFValue(13)} color="black" /> 
 	  							$ {rsv.post.price}
 	  						</Text>
@@ -185,11 +197,11 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 	const dayInMs = 86400000;
 	const [ dateNow, setDateNow ] = useState(Date.now());
 
-	const [ rsvDate, setRsvDate ] = useState( useConvertTime.convertToDateInMs( Date.now() ));
+	const [ rsvDate, setRsvDate ] = useState( convertToDateInMs( Date.now() ));
 	const [ dateMoveFromToday, setDateMoveFromToday ] = useState(0);
 
 	// calendar 
-	const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
+	const [ calendarDate, setCalendarDate ] = useState(convertToMonthInMs(Date.now()));
 	const [ calendarMove, setCalendarMove ] = useState(0);
 
 	const [ datesOnCalendar, setDatesOnCalendar ] = useState([]);
@@ -211,7 +223,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 		let isMounted = true;
 		if ( isMounted && !getUpcomingRsvsState && dateMoveFromToday >= 0 ) {
 			setGetUpcomingRsvsState(true);
-			const getUpcomingRsvs = businessGetFire.getUpcomingRsvsOfBus(user.id, dateNow, dateMoveFromToday);
+			const getUpcomingRsvs = getUpcomingRsvsOfBus(user.id, dateNow, dateMoveFromToday);
 
 			getUpcomingRsvs
 			.then((rsvs) => {
@@ -225,7 +237,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 
 		if ( isMounted && !getUncompletedRsvsState && dateMoveFromToday <= 0) {
 			setGetUncompletedRsvsState(true);
-			const getUncompletedRsvs = businessGetFire.getPreviousRsvsOfBus(user.id, dateNow, dateMoveFromToday, false);
+			const getUncompletedRsvs = getPreviousRsvsOfBus(user.id, dateNow, dateMoveFromToday, false);
 
 			getUncompletedRsvs
 			.then((rsvs) => {
@@ -239,7 +251,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 
 		if ( isMounted && !getCompletedRsvsState && dateMoveFromToday <= 0) {
 			setGetCompletedRsvsState(true);
-			const getCompletedRsvs = businessGetFire.getPreviousRsvsOfBus(user.id, dateNow, dateMoveFromToday, true);
+			const getCompletedRsvs = getPreviousRsvsOfBus(user.id, dateNow, dateMoveFromToday, true);
 
 			getCompletedRsvs
 			.then((rsvs) => {
@@ -287,7 +299,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
     .then(() => {
     	if ( isMounted && !getUpcomingRsvsState && dateMoveFromToday >= 0 ) {
 				setGetUpcomingRsvsState(true);
-				const getUpcomingRsvs = businessGetFire.getUpcomingRsvsOfBus(userId, dateNow, dateMoveFromToday);
+				const getUpcomingRsvs = getUpcomingRsvsOfBus(userId, dateNow, dateMoveFromToday);
 
 				getUpcomingRsvs
 				.then((rsvs) => {
@@ -302,7 +314,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 			if ( isMounted && !getUncompletedRsvsState && dateMoveFromToday <= 0) {
 				console.log(dateMoveFromToday);
 				setGetUncompletedRsvsState(true);
-				const getUncompletedRsvs = businessGetFire.getPreviousRsvsOfBus(userId, dateNow, dateMoveFromToday, false);
+				const getUncompletedRsvs = getPreviousRsvsOfBus(userId, dateNow, dateMoveFromToday, false);
 
 				getUncompletedRsvs
 				.then((rsvs) => {
@@ -316,7 +328,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 
 			if ( isMounted && !getCompletedRsvsState && dateMoveFromToday <= 0) {
 				setGetCompletedRsvsState(true);
-				const getCompletedRsvs = businessGetFire.getPreviousRsvsOfBus(userId, dateNow, dateMoveFromToday, true);
+				const getCompletedRsvs = getPreviousRsvsOfBus(userId, dateNow, dateMoveFromToday, true);
 
 				getCompletedRsvs
 				.then((rsvs) => {
@@ -382,7 +394,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 								<View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
 									<View style={{ paddingRight: RFValue(7) }}>
 										<Text style={styles.middleCompartmentText}>
-											{useConvertTime.convertToMDD(rsvDate)}
+											{convertToMDD(rsvDate)}
 										</Text>
 									</View>
 									<View>
@@ -541,7 +553,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 								  					//		busLocality: string,
 								  					//		reservationStartAt: number,
 								  					//	)
-								  					const completeRsv = businessPostFire.completeReservation(
+								  					const completeRsv = completeReservation(
 								  						item.id, 
 								  						item.rsv.busId, 
 								  						item.rsv.cusId, 
@@ -661,7 +673,7 @@ const BusinessManagerReservationScreen = ({ navigation, isFocused }) => {
 								  					setCompletedRsvs(filteredRsvs);
 
 								  					// change firestore 
-								  					const uncompleteRsv = businessPostFire.uncompleteReservation(item.id);
+								  					const uncompleteRsv = uncompleteReservation(item.id);
 								  					uncompleteRsv
 								  					.then(() => {
 								  						console.log("uncompleted a reservation: ", item.id);

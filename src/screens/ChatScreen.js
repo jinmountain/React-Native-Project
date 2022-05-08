@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useCallback } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { 
 	View, 
 	Text, 
@@ -25,7 +25,7 @@ import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
 import MainTemplate from '../components/MainTemplate';
 import { HeaderForm } from '../components/HeaderForm';
 import ChatBox from '../components/chat/ChatBox';
-import CancelButton from '../components/CancelButton';
+import CancelButton from '../components/buttons/CancelButton';
 import UserAccountHeaderForm from '../components/accountScreen/UserAccountHeaderForm';
 import MultiplePhotosIndicator from '../components/MultiplePhotosIndicator';
 import ChatScreenDefault from '../components/defaults/ChatScreenDefault';
@@ -43,7 +43,6 @@ import { Context as PostContext } from '../context/PostContext';
 // Firebase
 import chatGetFire from '../firebase/chat/chatGetFire';
 import chatPostFire from '../firebase/chat/chatPostFire';
-import postGetFire from '../firebase/post/postGetFire';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -61,7 +60,9 @@ import { useIsFocused } from '@react-navigation/native';
 import color from '../color';
 
 // expo icons
-import expoIcons from '../expoIcons';
+import {
+	ioniconsMdArrowBack
+} from '../expoIcons';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -214,7 +215,7 @@ const ChatScreen = ({ route, navigation }) => {
 		    	// get theOtherUser's display posts if theOtherUser is business
 		    	if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
 						isMounted && setUserAccountDisplayPostState(true);
-						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(null, theOtherUser.id);
+						const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(theOtherUser.id, null);
 						getDisplayPosts
 						.then((posts) => {
 							isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
@@ -357,7 +358,7 @@ const ChatScreen = ({ route, navigation }) => {
 				<UserAccountHeaderForm
 					addPaddingTop={true}
 				  leftButtonTitle={null}
-					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					userActiveState={
 						chatDoc && chatDoc.theOtherUserActive
@@ -424,7 +425,7 @@ const ChatScreen = ({ route, navigation }) => {
 								let isMounted = true;
 								if (theOtherUser && theOtherUser.type === 'business' && userAccountDisplayPostFetchSwitch && !userAccountDisplayPostState) {
 									isMounted && setUserAccountDisplayPostState(true);
-									const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(chatScreenDisplayPostLast, theOtherUser.id);
+									const getDisplayPosts = contentGetFire.getBusinessDisplayPostsFire(theOtherUser.id, chatScreenDisplayPostLast);
 									getDisplayPosts
 									.then((posts) => {
 										isMounted && setUserAccountDisplayPosts([ ...userAccountDisplayPosts, ...posts.fetchedPosts ]);
@@ -693,7 +694,7 @@ const ChatScreen = ({ route, navigation }) => {
 			<View style={styles.chatContainer}>
 				<UserAccountHeaderForm
 					addPaddingTop={true}
-					leftButtonIcon={expoIcons.ioniconsMdArrowBack(RFValue(27), color.black1)}
+					leftButtonIcon={ioniconsMdArrowBack(RFValue(27), color.black1)}
 					leftButtonPress={() => { navigation.goBack() }}
 					username={theOtherUser.username}
 					title={null}

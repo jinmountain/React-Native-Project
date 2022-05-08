@@ -31,13 +31,13 @@
 // -- NPMs
 	import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 	import { Video, AVPlaybackStatus } from 'expo-av';
-	import {TabView, TabBar} from 'react-native-tab-view';
+	import { TabView, TabBar } from 'react-native-tab-view';
 
 // -- Components
 	import BusRatePosts from '../components/accountScreen/BusRatePosts';
+	import RatedPostForm from '../components/accountScreen/RatedPostForm';
 	// buttons
-	import ButtonA from '../components/ButtonA';
-	import CustomHighlightButton from '../components/buttons/CustomHighlightButton';
+	import ButtonA from '../components/buttons/ButtonA';
 	import ProfileCardUpper from '../components/accountScreen/ProfileCardUpper';
 	import ProfileCardBottom from '../components/accountScreen/ProfileCardBottom';
 	import MainTemplate from '../components/MainTemplate';
@@ -48,11 +48,8 @@
 	import DisplayPostImage from '../components/displayPost/DisplayPostImage';
 	import DisplayPostInfo from '../components/displayPost/DisplayPostInfo';
 	import DisplayPostLoading from '../components/displayPost/DisplayPostLoading';
-	// Loading Containers
-	import GetPostLoading from '../components/GetPostLoading';
 	// horizontal line
 	import HeaderBottomLine from '../components/HeaderBottomLine';
-	import CollapsibleTabView from '../components/CollapsibleTabView';
 	// rating
 	import { RatingReadOnly } from '../components/RatingReadOnly';
 	// business hours
@@ -62,13 +59,30 @@
 	import DisplayPostEndSign from '../components/DisplayPostEndSign';
 	// Header
 	import UserAccountHeaderForm from '../components/accountScreen/UserAccountHeaderForm';
+	// custom nav bar
+	import NavigationBar from '../components/NavigationBar';
 
 // Context
 import { Context as AuthContext } from '../context/AuthContext';
 
 // -- Firebase
-	import postGetFire from '../firebase/post/postGetFire';
-	import usersGetFire from '../firebase/usersGetFire';
+	import {
+		getUserPostsFire,
+		getBusinessDisplayPostsFire,
+		getUserRatedPostsFire,
+		getBusRatedPostsFire
+	} from '../firebase/post/postGetFire';
+
+	import {
+		getBusSpecialHourFire
+	} from '../firebase/business/businessGetFire';
+
+	import {
+		getUserPhotoURLFire
+	} from '../firebase/user/usersGetFire';
+
+// hooks
+import { convertToTime } from '../hooks/useConvertTime';
 
 // Designs
 import { AntDesign } from '@expo/vector-icons';
@@ -105,8 +119,7 @@ import color from '../color';
 	  android: StatusBar.currentHeight,
 	});
 
-	const PullToRefreshDist = 80;
-	const tab2ItemSize = 100;
+	const PullToRefreshDist = 50;
 
 const AccountScreen = ({ route, navigation }) => {
 	// -- add a new post and change post states
@@ -146,6 +159,9 @@ const AccountScreen = ({ route, navigation }) => {
 
 		const { state: { user }, accountRefresh } = useContext(AuthContext);
 		const [ isBusHoursVisible, setIsBusHoursVisible ] = useState(false); 
+		const [ specialHour, setSpecialHour ] = useState(null);
+
+		// const [ accountUserData, setAccountUserData ] = useState(user);
 
 		const [ accountPosts, setAccountPosts ] = useState([]);
 		const [ accountPostLast, setAccountPostLast ] = useState(null);
@@ -197,14 +213,28 @@ const AccountScreen = ({ route, navigation }) => {
 		useEffect(() => {
 			let isMounted = true;
 			const getScreenReady = new Promise ((res, rej) => {
-				
+				// if user is a busines check if there is a special hour 
+				if (user.type === 'business') {
+					const timestampNow = Date.now();
+					const timeNow = convertToTime(timestampNow);
+					// console.log(timeNow.year, timeNow.monthIndex, timeNow.date);
+					const getBusSpecialHour = getBusSpecialHourFire(user.id, timeNow.year, timeNow.monthIndex, timeNow.date);
+					getBusSpecialHour
+					.then((specialHour) => {
+						setSpecialHour(specialHour);
+					})
+					.catch((error) => {
+						rej(error);
+					})
+				}
+
 				// get account user's posts
 				if (
 					accountPostFetchSwitch && 
 					!accountPostState
 				) {
 					isMounted && setAccountPostState(true);
-					const getUserPosts = postGetFire.getUserPostsFire(null, user.id);
+					const getUserPosts = getUserPostsFire(null, user.id);
 					getUserPosts
 					.then((posts) => {
 						isMounted && setAccountPosts(posts.fetchedPosts);
@@ -226,7 +256,7 @@ const AccountScreen = ({ route, navigation }) => {
 					!accountDisplayPostState
 				) {
 					isMounted && setAccountDisplayPostState(true);
-					const getDisplayPosts = postGetFire.getBusinessDisplayPostsFire(null, user.id);
+					const getDisplayPosts = getBusinessDisplayPostsFire(user.id, null);
 					getDisplayPosts
 					.then((posts) => {
 						isMounted && setAccountDisplayPosts(posts.fetchedPosts);
@@ -259,31 +289,20 @@ const AccountScreen = ({ route, navigation }) => {
 		}, []);
 
 	  const onRefresh = useCallback(() => {
-	  	let isMounted = true;
-	  	accountRefresh();
-
 	    const clearState = new Promise((res, rej) => {
-	    	setAccountPosts([]);
-				setAccountPostLast(null);
-				setAccountPostFetchSwitch(true);
-				setAccountPostState(false);
-
-				setAccountDisplayPosts([]);
-				setAccountDisplayPostLast(null);
-				setAccountDisplayPostFetchSwitch(true);
-				setAccountDisplayPostState(false);
-
+	    	resetPostStates();
 				res(true);
 	    });
 
 	    clearState
 	    .then(() => {
-	    	if(accountPostFetchSwitch && !accountPostState) {
+		  	accountRefresh();
+	    	if(!accountPostState) {
 					setAccountPostState(true);
-					const getUserPosts = postGetFire.getUserPostsFire(accountPostLast, user.id, user.id);
+					const getUserPosts = getUserPostsFire(null, user.id);
 					getUserPosts
 					.then((posts) => {
-						setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
+						setAccountPosts(posts.fetchedPosts);
 						if (posts.lastPost !== undefined && isMounted) {
 							setAccountPostLast(posts.lastPost);
 						} else {
@@ -293,12 +312,12 @@ const AccountScreen = ({ route, navigation }) => {
 					})
 				}
 
-				if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState) {
-					isMounted && setAccountDisplayPostState(true);
-					const getDisplayPosts = postGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id, user.id);
+				if (user.type === 'business' && !accountDisplayPostState) {
+					setAccountDisplayPostState(true);
+					const getDisplayPosts = getBusinessDisplayPostsFire(user.id, null);
 					getDisplayPosts
 					.then((posts) => {
-						setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
+						setAccountDisplayPosts(posts.fetchedPosts);
 						if (posts.lastPost !== undefined) {
 							setAccountDisplayPostLast(posts.lastPost);
 						} else {
@@ -311,12 +330,9 @@ const AccountScreen = ({ route, navigation }) => {
 	    .catch((error) => {
 				// handle error
 			});
-
-	    return () => {
-	    	isMounted = false;
-	    }
 	  }, []);
 
+	// -- here on same for both AccountScreen and UserAccountScreen  
 	// -- methods
 		const busHoursVisibleSwitch = () => {
 			setIsBusHoursVisible(!isBusHoursVisible);
@@ -324,7 +340,7 @@ const AccountScreen = ({ route, navigation }) => {
 
   // -- collapsible tab states
   	// -- states
-		const [routes] = useState(
+		const [ routes, setRoutes ] = useState(
 			user.type === 'business'
 			?
 			[
@@ -345,7 +361,7 @@ const AccountScreen = ({ route, navigation }) => {
 		    {key: 'tab2', title: 'Tab2'},
 			]
 		);
-		const [tabIcons] = useState(
+		const [ tabIcons, setTabIcons ] = useState(
 			user.type === 'business'
 			?
 			[ 
@@ -359,6 +375,30 @@ const AccountScreen = ({ route, navigation }) => {
 				matStarBoxMultipleOutline(RFValue(23), color.black1)
 			]
 		);
+
+		useEffect(() => {
+			if (user.type === 'business' || user.type === 'technician') {
+				setRoutes([
+			    {key: 'tab1', title: 'Tab1'},
+			    {key: 'tab2', title: 'Tab2'},
+			    {key: 'tab3', title: 'Tab3'}
+				]);
+				setTabIcons([ 
+					antdesignPicture(RFValue(23), color.black1),
+					<RatingReadOnly rating={user.totalRating/user.countRating}/>,
+					matStarBoxMultipleOutline(RFValue(23), color.black1)
+				]);
+			} else {
+				setRoutes([
+			    {key: 'tab1', title: 'Tab1'},
+			    {key: 'tab2', title: 'Tab2'}
+				]);
+				setTabIcons([ 
+					antdesignPicture(RFValue(23), color.black1),
+					matStarBoxMultipleOutline(RFValue(23), color.black1)
+				]);
+			}
+		}, [user]);
 
 		/**
 	   * stats
@@ -485,7 +525,7 @@ const AccountScreen = ({ route, navigation }) => {
 	    	if (userRatedPostFetchSwitch && !userRatedPostState) {
 					setIsUserRatedPostActive(true);
 					setUserRatedPostState(true);
-					const getPosts = postGetFire.getUserRatedPostsFire(null, user.id);
+					const getPosts = getUserRatedPostsFire(null, user.id);
 					getPosts
 					.then((result) => {
 						console.log('fetchedPosts: ', result.fetchedPosts.length);
@@ -507,7 +547,7 @@ const AccountScreen = ({ route, navigation }) => {
 				if(busRatedPostFetchSwitch && !busRatedPostState) {
 					setIsBusRatedPostActive(true);
 					setBusRatedPostState(true);
-					const getBusRatedPosts = postGetFire.getBusRatedPostsFire(null, user.id);
+					const getBusRatedPosts = getBusRatedPostsFire(null, user.id);
 					getBusRatedPosts
 					.then((result) => {
 						setBusRatedPosts(result.fetchedPosts);
@@ -573,7 +613,7 @@ const AccountScreen = ({ route, navigation }) => {
 	    if (Platform.OS === 'ios') {
 	      listRefArr.current.forEach((listRef) => {
 	        listRef.value.scrollToOffset({
-	          offset: -60,
+	          offset: -80,
 	          animated: true,
 	        });
 	      });
@@ -608,9 +648,9 @@ const AccountScreen = ({ route, navigation }) => {
 	  const handlePanReleaseOrEnd = (evt, gestureState) => {
 	    // console.log('handlePanReleaseOrEnd', scrollY._value);
 	    syncScrollOffset();
-	    headerScrollY.setValue(scrollY._value);
 	    if (Platform.OS === 'ios') {
 	      if (scrollY._value < 0) {
+	      	console.log("value: ", scrollY._value);
 	        if (scrollY._value < -PullToRefreshDist && !refreshStatusRef.current) {
 	          startRefreshAction();
 	        } else {
@@ -758,27 +798,31 @@ const AccountScreen = ({ route, navigation }) => {
   // -- Tab View Render Scene
 	  const renderBusScene = ({route}) => {
 	    const focused = route.key === routes[tabIndex].key;
+	    let flatListKey;
 	    let numCols;
 	    let data;
 	    let renderItem;
 	    let onEndReached;
 	    switch (route.key) {
 	      case 'tab1':
+	      	flatListKey = "tab1"
 	        numCols = 3;
 	        data = accountPosts;
 	        renderItem = renderFirstTabItem;
 	        onEndReached = firstTabOnEndReached;
 	        break;
 	      case 'tab2':
-	        numCols = 2;
+	      	flatListKey = "tab2"
+	        numCols = 1;
 	        data = busRatedPosts;
-	        renderItem = renderRatedPostItem;
+	        renderItem = renderBusRatedPostItem;
 	        onEndReached = busRatedPostOnEndReached;
 	        break;
 	      case 'tab3':
-	        numCols = 2;
+	      	flatListKey = "tab3"
+	        numCols = 1;
 	        data = userRatedPosts;
-	        renderItem = renderRatedPostItem;
+	        renderItem = renderUserRatedPostItem;
 	        onEndReached = userRatedPostOnEndReached;
 	        break;
 	      default:
@@ -786,6 +830,7 @@ const AccountScreen = ({ route, navigation }) => {
 	    }
 	    return (
 	      <Animated.FlatList
+	      	key={flatListKey}
 	        scrollToOverflowEnabled={true}
 	        {...listPanResponder.panHandlers}
 	        numColumns={numCols}
@@ -820,7 +865,7 @@ const AccountScreen = ({ route, navigation }) => {
 	        // ListHeaderComponent={() => <View style={{height: 10}} />}
 	        contentContainerStyle={{
 	          paddingTop: tabHeaderHeight + TabBarHeight,
-	          minHeight: windowHeight - SafeStatusBar + tabHeaderHeight,
+	          minHeight: windowHeight
 	        }}
 	        showsHorizontalScrollIndicator={false}
 	        data={data}
@@ -848,7 +893,7 @@ const AccountScreen = ({ route, navigation }) => {
 	      case 'tab2':
 	        numCols = 2;
 	        data = userRatedPosts;
-	        renderItem = renderRatedPostItem;
+	        renderItem = renderUserRatedPostItem;
 	        onEndReached = userRatedPostOnEndReached;
 	        break;
 	      default:
@@ -873,15 +918,15 @@ const AccountScreen = ({ route, navigation }) => {
 	        scrollEventThrottle={16}
 	        onScroll={
 	          focused
-	            ? Animated.event(
-	                [
-	                  {
-	                    nativeEvent: {contentOffset: {y: scrollY}},
-	                  },
-	                ],
-	                {useNativeDriver: true},
-	              )
-	            : null
+            ? Animated.event(
+                [
+                  {
+                    nativeEvent: {contentOffset: {y: scrollY}},
+                  },
+                ],
+                {useNativeDriver: true},
+              )
+            : null
 	        }
 	        onMomentumScrollBegin={onMomentumScrollBegin}
 	        onScrollEndDrag={onScrollEndDrag}
@@ -890,7 +935,7 @@ const AccountScreen = ({ route, navigation }) => {
 	        // ListHeaderComponent={() => <View style={{height: 10}} />}
 	        contentContainerStyle={{
 	          paddingTop: tabHeaderHeight + TabBarHeight,
-	          minHeight: windowHeight - SafeStatusBar + tabHeaderHeight,
+	          minHeight: windowHeight
 	        }}
 	        showsHorizontalScrollIndicator={false}
 	        data={data}
@@ -918,7 +963,10 @@ const AccountScreen = ({ route, navigation }) => {
 	          position: 'absolute',
 	          transform: [{translateY: y}],
 	          width: '100%',
-	        }}>
+	        }}
+	        // enable tabbar to have pan responder to move the header
+	        {...headerPanResponder.panHandlers}
+	      >
 	        <TabBar
 	          {...props}
 	          onTabPress={({route, preventDefault}) => {
@@ -1004,6 +1052,7 @@ const AccountScreen = ({ route, navigation }) => {
 							displayPostCount={user.displayPostCount}
 						/>
 						<ProfileCardBottom
+							phoneNumber={user.phoneNumber}
 							locationType={user.type === 'business' && user.locationType}
 							address={user.type === 'business' && user.formatted_address}
 							googleMapUrl={user.type === 'business' && user.googlemapsUrl}
@@ -1017,6 +1066,7 @@ const AccountScreen = ({ route, navigation }) => {
 								busHoursVisibleSwitch
 								: null
 							}
+							specialHour={specialHour ? specialHour : null}
 						/>
 						<View style={styles.accountManagerContainer}>
 							<View style={styles.managerButtonContainer}>
@@ -1055,14 +1105,15 @@ const AccountScreen = ({ route, navigation }) => {
 									?
 									<DisplayPostLoading />
 									:
-									<Text style={styles.userPostsLabelText}>
-										{featherBook(RFValue(23), color.black1)}
-									</Text>
+									featherBook(RFValue(23), color.black1)
 								}
 								<TouchableOpacity 
 									style={styles.showTwoColumnButtonContainer}
 									onPress={() => {
-										console.log("two");
+										// navigate to two column screen
+										navigation.navigate("DisplayPostTwoColumn", {
+											posts: accountDisplayPosts
+										});
 									}}
 								>
 									{featherBookOpen(RFValue(23), color.black1)}
@@ -1079,28 +1130,22 @@ const AccountScreen = ({ route, navigation }) => {
 							<View style={styles.displayPostContainer}>
 								<FlatList
 									onEndReached={() => {
-										let isMounted = true;
-										if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState && isMounted) {
-											isMounted && setAccountDisplayPostState(true);
-											const getDisplayPosts = postGetFire.getBusinessDisplayPostsFire(accountDisplayPostLast, user.id);
+										if (user.type === 'business' && accountDisplayPostFetchSwitch && !accountDisplayPostState) {
+											setAccountDisplayPostState(true);
+											const getDisplayPosts = getBusinessDisplayPostsFire(user.id, accountDisplayPostLast);
 											getDisplayPosts
 											.then((posts) => {
-												isMounted && setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
+												setAccountDisplayPosts([ ...accountDisplayPosts, ...posts.fetchedPosts ]);
 												if (posts.lastPost !== undefined) {
-													isMounted && setAccountDisplayPostLast(posts.lastPost);
+													setAccountDisplayPostLast(posts.lastPost);
 												} else {
-													isMounted && setAccountDisplayPostFetchSwitch(false);
+													setAccountDisplayPostFetchSwitch(false);
 												};
-												isMounted && setAccountDisplayPostState(false);
+												setAccountDisplayPostState(false);
 											})
-										} else {
-											console.log("accountScreen: FlatList: onEndReached: display switch: " + accountDisplayPostFetchSwitch + " display state: " + accountDisplayPostState );
-										}
-										return () => {
-											isMounted = false;
 										}
 									}}
-									onEndReachedThreshold={0.01}
+									onEndReachedThreshold={0.1}
 									// ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
 			            horizontal
 			            decelerationRate={'fast'}
@@ -1127,14 +1172,17 @@ const AccountScreen = ({ route, navigation }) => {
 			                  	// 	postSource: 'account'
 			                  	// });
 			                  	navigation.navigate(
-			                  		'PostsSwipe',
+			                  		"AccountPostsSwipeStack",
 			                  		{
-			                  			postSource: 'accountDisplay',
-			                  			cardIndex: index,
-			                  			posts: accountDisplayPosts,
-		      										postState: accountDisplayPostState,
-															postFetchSwitch: accountDisplayPostFetchSwitch,
-															postLast: accountDisplayPostLast,
+			                  			screen: "PostsSwipe",
+			                  			params: {
+			                  				postSource: 'accountDisplay',
+				                  			cardIndex: index,
+				                  			posts: accountDisplayPosts,
+			      										postState: accountDisplayPostState,
+																postFetchSwitch: accountDisplayPostFetchSwitch,
+																postLast: accountDisplayPostLast,
+			                  			}
 			                  		}
 			                  	);
 			                  }}
@@ -1200,8 +1248,8 @@ const AccountScreen = ({ route, navigation }) => {
 	             //  },
 	              {
 	                translateY: scrollY.interpolate({
-	                  inputRange: [-100, 0],
-	                  outputRange: [120, 0],
+	                  inputRange: [-50, 0],
+	                  outputRange: [80, 0],
 	                  extrapolate: 'clamp',
 	                })
 	              },
@@ -1222,13 +1270,6 @@ const AccountScreen = ({ route, navigation }) => {
 	                  extrapolate: 'clamp',
 	                })
 	              },
-	              {
-	              	scale: scrollY.interpolate({
-			            	inputRange: [-100, 0],
-			              outputRange: [1.5, 0.5],
-			              extrapolate: 'clamp',
-			            })
-	              }
 	            ],
 	            backgroundColor: '#eee',
 	            height: 38,
@@ -1262,17 +1303,17 @@ const AccountScreen = ({ route, navigation }) => {
 	      >
 	        <TouchableWithoutFeedback
 	          onPress={() => {
-	            navigation.navigate(
-	              'PostsSwipe',
-	              { 
-	                postSource: 'account',
-	                cardIndex: index,
-	                posts: accountPosts,
-	                postState: accountPostState,
-	                postFetchSwitch: accountPostFetchSwitch,
-	                postLast: accountDisplayPostLast,
-	              }
-	            );
+	            navigation.navigate("AccountPostsSwipeStack", {
+              	screen: 'PostsSwipe',
+  							params: {
+  								postSource: 'account',
+		              cardIndex: index,
+		              posts: accountPosts,
+		              postState: accountPostState,
+		              postFetchSwitch: accountPostFetchSwitch,
+		              postLast: accountDisplayPostLast,
+                }
+              });
 	          }}
 	        > 
 	          <View>
@@ -1318,7 +1359,7 @@ const AccountScreen = ({ route, navigation }) => {
 	  const firstTabOnEndReached = () => {
 	  	if (accountPostFetchSwitch && !accountPostState) {
 	  		setAccountPostState(true);
-		  	const getUserPosts = postGetFire.getUserPostsFire(accountPostLast, user.id);
+		  	const getUserPosts = getUserPostsFire(accountPostLast, user.id);
 				getUserPosts
 				.then((posts) => {
 					setAccountPosts([ ...accountPosts, ...posts.fetchedPosts ]);
@@ -1332,74 +1373,33 @@ const AccountScreen = ({ route, navigation }) => {
 	  	}
 	  };
 
-  const rednerTab2Item = ({item, index}) => {
-    return (
-      <View
-        style={{
-          marginLeft: index % 3 === 0 ? 0 : 10,
-          borderRadius: 16,
-          width: tab2ItemSize,
-          height: tab2ItemSize,
-          backgroundColor: '#aaa',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text>{index}</Text>
-      </View>
-    );
-  };
+  // -- Bus Rated Post Item
+	  const renderBusRatedPostItem = ({item, index}) => {
+	  	return (
+		  	<RatedPostForm
+		  		item={item}
+		  		index={index}
+		  		type={"bus"}
+		  	/>
+		  )
+	  };
 
   // -- Bus Rated Post Item
-	  const renderRatedPostItem = ({item, index}) => {
+	  const renderUserRatedPostItem = ({item, index}) => {
 	  	return (
-	  		<TouchableWithoutFeedback>
-					<View style={[
-						styles.ratedPostContainer,
-						index % 2 !== 0 ? { paddingLeft: 2 } : { paddingLeft: 0 }
-					]}>
-	  				<View>
-	            { 
-	              item.data.files[0].type === 'video'
-	              ?
-	              <View style={{width: ratedPostImageWH, height: ratedPostImageWH}}>
-	                <Video
-	                  // ref={video}
-	                  style={{backgroundColor: color.white2, borderWidth: 0, width: ratedPostImageWH, height: ratedPostImageWH}}
-	                  source={{
-	                    uri: item.data.files[0].url,
-	                  }}
-	                  useNativeControls={false}
-	                  resizeMode="contain"
-	                  shouldPlay={false}
-	                />
-	              </View>
-	              : item.data.files[0].type === 'image'
-	              ?
-	              <ImageBackground 
-	                // defaultSource={require('../../img/defaultImage.jpeg')}
-	                source={{uri: item.data.files[0].url}}
-	                style={{width: ratedPostImageWH, height: ratedPostImageWH}}
-	              />
-	              : null
-	            }
-	            { item.data.files.length > 1
-	              ? <MultiplePhotosIndicator size={16}/>
-	              : null
-	            }
-	          </View>
-	          <View style={styles.ratingContainer}>
-	          	<RatingReadOnly rating={item.data.rating}/>
-	          </View>
-	        </View>
-		    </TouchableWithoutFeedback>
-	  	)
+		  	<RatedPostForm
+		  		item={item}
+		  		index={index}
+		  		type={"user"}
+		  	/>
+		  )
 	  };
 
 	// -- Bus Rated Post OnEndReached
 	  const busRatedPostOnEndReached = ({item, index}) => {
 	  	if(busRatedPostFetchSwitch && !busRatedPostState) {
 				setBusRatedPostState(true);
-				const getUserPosts = postGetFire.getBusRatedPostsFire(busRatedPostLast, user.id);
+				const getUserPosts = getBusRatedPostsFire(busRatedPostLast, user.id);
 				getUserPosts
 				.then((posts) => {
 					setBusRatedPosts(posts.fetchedPosts);
@@ -1417,7 +1417,7 @@ const AccountScreen = ({ route, navigation }) => {
 		const userRatedPostOnEndReached = ({item, index}) => {
 	  	if(busRatedPostFetchSwitch && !busRatedPostState) {
 				setBusRatedPostState(true);
-				const getUserPosts = postGetFire.getBusRatedPostsFire(busRatedPostLast, user.id);
+				const getUserPosts = getBusRatedPostsFire(busRatedPostLast, user.id);
 				getUserPosts
 				.then((posts) => {
 					setBusRatedPosts(posts.fetchedPosts);
@@ -1438,11 +1438,29 @@ const AccountScreen = ({ route, navigation }) => {
 					leftButtonTitle={null} 
 				  leftButtonIcon={null}
 				  leftButtonPress={null}
+				  coverPhotoMode={user.coverPhotoURL ? true : false}
 					username={user.username}
+					usernameTextStyle={
+						user.coverPhotoURL 
+						? { color: color.white2 }
+						: { color: color.black1 }
+					}
 					title={null}
-					firstIcon={<AntDesign name="plus" size={RFValue(27)} color={color.black1} />}
-					secondIcon={<AntDesign name="message1" size={RFValue(27)} color={color.black1} />}
-					thirdIcon={<Feather name="menu" size={RFValue(27)} color={color.black1} />}
+					firstIcon={<AntDesign name="plus" size={RFValue(27)} color={
+						user.coverPhotoURL
+						? color.white2
+						: color.black1
+					} />}
+					secondIcon={<AntDesign name="message1" size={RFValue(27)} color={
+						user.coverPhotoURL
+						? color.white2
+						: color.black1
+					} />}
+					thirdIcon={<Feather name="menu" size={RFValue(27)} color={
+						user.coverPhotoURL
+						? color.white2
+						: color.black1
+					} />}
 					firstOnPress={() => {
 						navigation.navigate("ContentCreate");
 					}}
@@ -1461,8 +1479,14 @@ const AccountScreen = ({ route, navigation }) => {
 		?
 		<View style={{ flex: 1, backgroundColor: color.white1 }}>
 			<View style={styles.headerBarContainer}>
-				<SafeAreaView />
-				{renderHeaderBar()}
+				<ImageBackground
+					source={{ uri: user.coverPhotoURL }}
+					resizeMode="cover"
+					style={{ }}
+				>
+					<SafeAreaView/>
+					{renderHeaderBar()}
+				</ImageBackground>
 			</View>
 			<View style={styles.mainContainer}>
 				{renderTabView()}
@@ -1476,12 +1500,14 @@ const AccountScreen = ({ route, navigation }) => {
 					busHoursVisibleSwitch={busHoursVisibleSwitch}
 				/>
 			}
+			<SafeAreaView/>
 		</View>
 		: 
 		<SafeAreaView style={{ 
 			flex: 1, 
 			justifyContent: 'center', 
-			alignItems: 'center' 
+			alignItems: 'center',
+			backgroundColor: color.white2,
 		}}>
 			<SpinnerFromActivityIndicator/>
 		</SafeAreaView>
@@ -1528,29 +1554,6 @@ const styles = StyleSheet.create({
     height: RFValue(57),
 	},
 
-	userPostLabelContainer: {
-		height: RFValue(60),
-		backgroundColor: color.white2,
-	},
-	userPostLabelIndicatorContainer: {
-		height: RFValue(3)
-	},
-	userPostLabelButtonsContainer: {
-		backgroundColor: color.white2,
-		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
-    padding: RFValue(10),
-    height: RFValue(57),
-	},
-	userPostLabelButton: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	userPostsLabelText: {
-		fontSize: RFValue(15),
-	},
 	showTwoColumnButtonContainer: {
 		position: 'absolute',
 		alignSelf: 'flex-end',
@@ -1575,21 +1578,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 1,
   },
-  emptyPostContainer: {
-    marginVertical: RFValue(7),
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyPostText: {
-    fontSize: RFValue(17),
-    color: color.grey3,
-  },
 
   header: {
     width: '100%',
     position: 'absolute',
-    backgroundColor: '#FFA088',
+    backgroundColor: color.white2,
   },
   label: {fontSize: 16, color: '#222'},
   tab: {
@@ -1601,14 +1594,7 @@ const styles = StyleSheet.create({
   indicator: {
     backgroundColor: color.black1,
     height: 3,
-  },
-
-  ratedPostContainer: {
-  	marginBottom: 2
-  },
-  ratingContainer: {
-  	position: 'absolute'
-  },
+  }
 });
 
 export default AccountScreen;

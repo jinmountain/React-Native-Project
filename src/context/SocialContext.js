@@ -271,10 +271,6 @@ export const { Provider, Context } = createDataContext(
 		// technician application
 		techApps: [],
 
-		// business schedule
-		scheduleChartGrids: [],
-		scheduleChartGridsCount: 0,
-
 		appStateSocial: 'active',
 
 		// current screen

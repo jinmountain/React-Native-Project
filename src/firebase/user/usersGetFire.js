@@ -1,6 +1,5 @@
-import Firebase from '../firebase/config';
+import Firebase from '../../firebase/config';
 import firebase from 'firebase/app';
-import { navigate } from '../navigationRef';
 // import * as geolib from 'geolib';
 import * as geofirestore from 'geofirestore';
 
@@ -11,17 +10,19 @@ const currentUserFire = () => {
 	return Firebase.auth().currentUser || {}
 };
 
-const getSearchUsersFire = (username, type) => {
+const getSearchUsersFire = (username, type = "all") => {
 	return new Promise (async (res, rej) => {
     let usersRefWithType;
-		if (type === 'bus') {
-      usersRefWithType = usersRef.where("type", "==", "business");
-    }
+
     if (type === 'all') {
       usersRefWithType = usersRef;
     }
+    else {
+      usersRefWithType = usersRef.where("type", "==", type);
+    }
+
     usersRefWithType
-		.orderBy('username')
+		.orderBy("username")
 		.startAt(username)
 		.limit(10)
 		.get()
@@ -43,35 +44,66 @@ const getSearchUsersFire = (username, type) => {
 	});
 };
 
-const getBusinessUsersNearFire = (currentLocation, distance) => {
-  // distacne in km
+const getBusinessUsersNearFire = (currentLocation, distance, unit) => {
+  // distacne in miles
+  // convert it to km
+  // geofirestore takes km
 	return new Promise (async (res, rej) => {
+    const MILE_TO_KM = 1.6;
+    console.log("get bus near in: ", distance, unit);
+    const distanceInKm = unit === "mile" ? distance * MILE_TO_KM : distance;
+    console.log("distance in km: ", distanceInKm);
     const firestore = Firebase.firestore();
     // Create a GeoFirestore reference
     const GeoFirestore = geofirestore.initializeApp(firestore);
 		const findBusinessRef = await GeoFirestore.collection("users").where("type", "==", "business");
-		const query = findBusinessRef.near({ 
+		const geoQuery = findBusinessRef.near({ 
       center: new firebase.firestore.GeoPoint(currentLocation.latitude, currentLocation.longitude),
-      radius: distance
+      radius: distanceInKm
     });
-    query
+    geoQuery
     .get()
-    .then((querySnapshot) => {
-      let businessUsers = []
-      querySnapshot.forEach( async (userDoc) => {
-        const user = userDoc
-        const userData = user.data();
-        // delete these attributes because they are geopoints in firebase and they are functions
-        // they cause an error when they are in json object
-        delete userData['g']
-        delete userData['coordinates']
-        // console.log({ "distance": user.distance, ...user.data() });
-        businessUsers.push({ "distance": user.distance, ...userData });
-      });
-      res(businessUsers);
+    .then(async (querySnapshot) => {
+      const docLength = querySnapshot.docs.length;
+      if (docLength > 0) {
+        const userDocs = querySnapshot.docs.map((doc) => {
+          const docId = doc.id;
+          const docData = doc.data();
+          const distance = unit === "mile" ? doc.distance : doc.distance/MILE_TO_KM;
+
+          // sign
+          // countRating
+          // totalRating
+          // username
+          // photoURL
+          // geometry
+          
+          if (docData && docData.g) {
+            delete docData['g']
+          };
+
+          if (docData && docData.coordinates) {
+            delete docData['coordinates']
+          };
+
+          const businessUser = {
+            id: docId,
+            data: docData,
+            distance: distance
+          };
+
+          return businessUser;
+        });
+
+        const businessUsers = await Promise.all(userDocs);
+        res(businessUsers);
+      }
+      else {
+        res([]);
+      }
     })
-    .catch(function(error) {
-      console.log("Error occured during fetching business users in ", distance, ": ", error);
+    .catch((error) => {
+      rej(error);
     });
 	});
 };
@@ -177,7 +209,9 @@ const getUserNotificationsRealtime = (uid, schedulePushNotification) => {
 
 const getUserDataRealtime = (uid, addCurrentUserData) => {
   console.log("start listening user data");
+  let initState = true;
   const userDoc = usersRef.doc(uid);
+
   return userDoc.onSnapshot(docSnapshot => {
     const userData = docSnapshot.data();
     if (userData && userData.g) {
@@ -186,8 +220,15 @@ const getUserDataRealtime = (uid, addCurrentUserData) => {
     if (userData && userData.coordinates) {
       delete userData['coordinates']
     }
-    console.log("add user's realtime data: ", userData.id);
-    addCurrentUserData(userData);
+
+    if (!initState) {
+      console.log("added user's realtime data: ", userData.id);
+      addCurrentUserData(userData);
+    } else {
+      initState = false;
+    }
+    // console.log("added user's realtime data: ", userData.id);
+    // addCurrentUserData(userData);
   }, err => {
     console.log(`error: getUserDataRealtime: ${err}`);
   });
@@ -292,12 +333,44 @@ const getUserPhotoURLFire = (userId) => {
   });
 }
 
+const getUserSearchHistoryFire = (userId) => {
+  return new Promise ((res, rej) => {
+    usersRef
+    .doc(userId)
+    .collection("user_search_history")
+    .where("deleted", "==", false)
+    .orderBy("searchedAt", "desc")
+    .limit(10)
+    .get()
+    .then(async (querySnapshot) => {
+      const docLength = querySnapshot.docs.length;
+      // const lastVisible = querySnapshot.docs[docLength - 1];
+      if (docLength > 0) {
+        const searchDocs = querySnapshot.docs.map((doc) => {
+          const docData = doc.data();
 
-export default { 
+          return docData;
+        });
+
+        const searchHist = await Promise.all(searchDocs);
+        res({ fetchedSearchHist: searchHist });
+      } else {
+        res({ fetchedSearchHist: [] });
+      };
+    })
+    .catch((error) => {
+      rej(error);
+    });
+  });
+};
+
+
+export { 
   getSearchUsersFire, 
   getBusinessUsersNearFire, 
   getUserInfoFire, 
   getUserNotificationsRealtime, 
   getUserDataRealtime,
-  getUserPhotoURLFire
+  getUserPhotoURLFire,
+  getUserSearchHistoryFire
 };

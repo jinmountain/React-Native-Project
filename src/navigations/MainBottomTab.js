@@ -1,8 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { 
   View,
   StyleSheet, 
-  Image, 
+  Image,
+  Text,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -38,30 +39,31 @@ const MainBottomTab = () => {
   const { 
     state: { 
       user,
-      userLogin,
-    }
+      // userLogin,
+      // homeTab,
+      // searchTab,
+      // activityTab,
+      // accountTab,
+    }, 
+    // tabHome,
   } = useContext(AuthContext);
+
+  // useEffect(() => {
+  //   tabHome()
+  // }, []);
+
   return (
+  // -- original bottom tab
     <BottomTab.Navigator
       screenOptions={{
         tabBarShowLabel: false,
-        headerShown: false
+        headerShown: false,
+        backBehavior: "history"
       }}
     >
       <BottomTab.Screen 
         name="HomeTab" 
         component={HomeStack}
-        options={{
-          tabBarIcon: ({ focused, color, size }) => (
-            focused
-            ? <Foundation name="home" size={RFValue(24)} color={color.black1} />
-            : <Feather name="home" size={RFValue(24)} color={color.black1} />
-          ),
-        }}
-      />
-      <BottomTab.Screen 
-        name="UserAccountTab" 
-        component={UserAccountStack}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             focused
@@ -87,8 +89,14 @@ const MainBottomTab = () => {
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             focused
-            ? <MaterialCommunityIcons name="alpha-s-box" size={RFValue(31)} color={color.black1} />
-            : <MaterialCommunityIcons name="alpha-s" size={RFValue(31)} color={color.black1} />
+            ? <Text style={[
+              styles.sText,
+              {
+                fontWeight: 'bold',
+                color: '#E44753'
+              }
+            ]}>S</Text>
+            : <Text style={styles.sText}>S</Text>
           ),
         }}
       />
@@ -101,10 +109,12 @@ const MainBottomTab = () => {
             ? <Octicons name="pulse" size={RFValue(24)} color={color.black1} />
             : <MaterialCommunityIcons name="pulse" size={RFValue(24)} color={color.black1} />
           ),
-          tabBarBadge: "",
+          tabBarBadge: "2",
           tabBarBadgeStyle: {
+
             backgroundColor: color.red2
-          }
+          },
+          tabBarStyle: { height: 50 }
         }}
       />
       <BottomTab.Screen 
@@ -130,6 +140,17 @@ const MainBottomTab = () => {
         }}
       />
     </BottomTab.Navigator>
+
+  // flexible mainBottomTab
+    // homeTab
+    // ? <HomeStack />
+    // : searchTab
+    // ? <SearchStack />
+    // : activityTab
+    // ? <ActivityTopTab />
+    // : accountTab
+    // ? <AccountStack />
+    // : <HomeStack />
   )
 };
 
@@ -139,6 +160,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: RFValue(33),
     height: RFValue(33),
+  },
+  sText: {
+    fontSize: RFValue(20),
+    color: color.black1
   }
 });
 

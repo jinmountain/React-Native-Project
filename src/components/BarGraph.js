@@ -23,7 +23,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
 // Hooks
-import useConvertTime from '../hooks/useConvertTime';
+import {
+  convertToMonthly
+} from '../hooks/useConvertTime';
 
 // Color
 import color from '../color';
@@ -115,7 +117,7 @@ const BarGraph = ({ counts, maxCount }) => {
                   <View style={{ height: RFValue(10) }}>
                   </View>
                   <View style={{ height: RFValue(30), borderWidth: 1, borderColor: 'red', justifyContent: 'center', alignItems: 'center' }}>
-                    <Text>{useConvertTime.convertToMonthly(item.time)}</Text>
+                    <Text>{convertToMonthly(item.time)}</Text>
                   </View>
                 </View>
               )

@@ -22,9 +22,24 @@ import {clockIcon} from '../../expoIcons';
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-const DisplayPostInfo = ({ containerWidth, title, taggedCount, rating, likeCount, etc, price }) => {
+const DisplayPostInfo = ({ 
+	containerWidth, 
+	title, 
+	taggedCount, 
+	rating, 
+	likeCount, 
+	etc, 
+	price, 
+	infoBoxBackgroundColor 
+}) => {
 	return (
-		<View style={{ ...styles.displayPostInfoContainer, ...{ width: containerWidth } }}>
+		<View style={[ 
+			styles.displayPostInfoContainer, 
+			{ width: containerWidth },
+			infoBoxBackgroundColor
+			? { backgroundColor: infoBoxBackgroundColor }
+			: null
+		]}>
 			<View style={styles.infoTop}>
 				<Text style={styles.infoTitleText} numberOfLines={1}>
 					{title}

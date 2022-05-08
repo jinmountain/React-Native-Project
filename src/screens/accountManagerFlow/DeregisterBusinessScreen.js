@@ -5,48 +5,56 @@ import {
 	ScrollView, 
 	View,
 	TouchableOpacity,
+	SafeAreaView,
+	Pressable
 } from 'react-native';
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Componenets
 import CheckBox from '../../components/CheckBox';
 import { HeaderForm } from '../../components/HeaderForm';
-import SimpleSpinnerTopMargin from '../../components/loading/SimpleSpinnerTopMargin';
-
+import SpinnerFromActivityIndicator from '../../components/ActivityIndicator';
 
 // Hooks
-import businessUpdateFire from '../../firebase/businessUpdateFire';
+import {
+	businessDeregisterFire
+} from '../../firebase/business/businessUpdateFire';
+import { wait } from '../../hooks/wait';
 
 // Contexts
 import { Context as AuthContext } from '../../context/AuthContext';
+
+// expo icons
+import {
+	chevronBack,
+	antdesignCheckCircleo
+} from '../../expoIcons';
+
+// color
+import color from '../../color';
 
 const DeregisterBusinessScreen = ({ navigation }) => {
 	const { state: { user }, localSignin } = useContext(AuthContext);
 	const [isChecked, setChecked] = useState(false);
 	const [ deregistering, setDeregistering ] = useState(false);
+	const [ complete, setComplete ] = useState(false);
 
-	return (
-		<SafeAreaView style={styles.deregisterBusinessScreenContainer}>
-			{
-				deregistering
-				? <SimpleSpinnerTopMargin/>
-				: null
-			}
-			<HeaderForm 
-        leftButtonTitle='Back'
-        headerTitle={"Deregistration"} 
-        rightButtonTitle={null} 
-        leftButtonPress={() => {
-          navigation.goBack();
-        }}
-        rightButtonPress={() => {
-          {
-            null
-          }
-        }}
-      />
+	const renderDeregister = () => {
+		return (
 			<View style={styles.deregistrationContainer}>
+				<HeaderForm 
+	        leftButtonIcon={chevronBack(RFValue(27), color.black1)}
+	        headerTitle={"Deregistration"} 
+	        rightButtonTitle={null} 
+	        leftButtonPress={() => {
+	          navigation.goBack();
+	        }}
+	        rightButtonPress={() => {
+	          {
+	            null
+	          }
+	        }}
+	      />
 				<ScrollView style={styles.noticeContainer}>
 					<View style={styles.titleContainer}>
 						<Text>
@@ -72,35 +80,49 @@ const DeregisterBusinessScreen = ({ navigation }) => {
 						</Text>
 					</View>
 					<View style={styles.checkBoxContainer}>
-						<CheckBox
-							value={isChecked}
-		          onValueChange={() => {
-		          	setChecked(!isChecked)
-		          }}
-						/>
-		        <Text>By checking the box I agree the statement above.</Text>
+						<View style={styles.checkBox}>
+							<CheckBox
+								value={isChecked}
+			          onValueChange={() => {
+			          	setChecked(!isChecked)
+			          }}
+							/>
+						</View>
+						<View style={styles.checkBoxMessageContainer}>
+		        	<Text style={styles.checkBoxMessageText}>
+		        		By checking the box I agree the statement above.
+		        	</Text>
+		       	</View>
 					</View>
 					<View style={styles.buttonContainerContainer}>
 						<View style={styles.rowContainer}>
 							<TouchableOpacity 
 								style={{ ...styles.buttonContainer, ...{ backgroundColor: "#E9FEFF" }}}
 								onPress={() => {
-									const businessDeregister = businessUpdateFire.businessDeregister(user.id);
+									const businessDeregister = businessDeregisterFire(user.id);
 									isChecked 
 									? 
 									(
 										setDeregistering(true),
 										businessDeregister
 										.then(() => {
-											localSignin(navigation.navigate, "AccountManager")
-											setDeregistering(false);
+											wait(1000)
+											.then(() => {
+												setDeregistering(false);
+												setComplete(true);
+
+											})
 										})
 									)
 									: console.log("need checkmark")
 								}}
 							>
 								<Text style={{...styles.buttonText, ...{color: "#1069FF"}}}>
-									Yes
+									{
+										deregistering
+										? <SpinnerFromActivityIndicator customSize={"small"}/>
+										: "Yes"
+									}
 								</Text>
 							</TouchableOpacity>
 							<TouchableOpacity 
@@ -108,13 +130,46 @@ const DeregisterBusinessScreen = ({ navigation }) => {
 								style={{ ...styles.buttonContainer, ...{ backgroundColor: "#F0F0F0" }}}
 							>
 								<Text style={{...styles.buttonText, ...{color: "#252525"}}}>
-									No
+									Go Back
 								</Text>
 							</TouchableOpacity>
 						</View>
 					</View>
 				</View>
 			</View>
+		)
+	};
+
+	const renderComplete = () => {
+  	return (
+  		<View style={styles.completeContainer}>
+  			<View style={styles.completeMessageContainer}>
+  				<Text style={{ fontSize: RFValue(47), color: color.black1, paddingVertical: RFValue(27) }}>Deregisteration</Text>
+  				<Text style={{ fontSize: RFValue(47), color: color.black1, paddingVertical: RFValue(27) }}>Complete</Text>
+  				<Text style={{paddingVertical: RFValue(27)}}>{antdesignCheckCircleo(RFValue(47), color.blue1)}</Text>
+  			</View>
+  			<View style={styles.closeButtonContainer}>
+  				<Pressable
+  					onPress={() => {
+  						navigation.navigate("Account");
+  					}}
+  				>
+  					<View style={styles.closeButtonTextContainer}>
+  						<Text style={styles.closeButtonText}>Close</Text>
+  					</View>
+  				</Pressable>
+  			</View>
+  		</View>
+  	)
+  };
+
+	return (
+		<SafeAreaView style={styles.deregisterBusinessScreenContainer}>
+      {
+      	complete
+      	?	renderComplete()
+      	: renderDeregister()
+      }
 		</SafeAreaView>
 	)
 }
@@ -142,14 +197,7 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		fontSize: RFValue(25),
 	},
-	checkBoxContainer: {
-		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	checkbox: {
-    margin: 3,
-  },
+
 	buttonContainerContainer: {
 	},
 	buttonContainer: {
@@ -165,7 +213,48 @@ const styles = StyleSheet.create({
 	rowContainer: {
 		justifyContent: 'center',
 		flexDirection: 'row',
-	}
+	},
+
+	checkBoxContainer: {
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	checkBox: {
+    padding: RFValue(5),
+  },
+	checkBoxMessageContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		paddingVertical: RFValue(3)
+	},
+	checkBoxMessageText: {
+		fontSize: RFValue(17),
+		color: color.black1
+	},
+
+	completeContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	completeMessageContainer: {
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+
+	closeButtonContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	closeButtonTextContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: RFValue(5)
+	},
+	closeButtonText: {
+		fontSize: RFValue(21)
+	},
 });
 
 export default DeregisterBusinessScreen;

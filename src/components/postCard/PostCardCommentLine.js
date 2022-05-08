@@ -20,7 +20,9 @@ import { useNavigation } from '@react-navigation/native';
 
 // firebase
 import commentGetFire from '../../firebase/comment/commentGetFire';
-import usersGetFire from '../../firebase/usersGetFire';
+import {
+  getUserPhotoURLFire
+} from '../../firebase/user/usersGetFire';
 
 // components
 import DefaultUserPhoto from '../defaults/DefaultUserPhoto';
@@ -31,7 +33,15 @@ import count from '../../hooks/count';
 // color
 import color from '../../color';
 
-const PostCardCommentLine = ({ postId, currentUserPhotoURL, commentCount }) => {
+const PostCardCommentLine = ({ 
+  postId,
+  postFiles,
+  postCaption,
+  incrementCommentCount,
+  decrementCommentCount,
+  currentUserPhotoURL, 
+  commentCount
+}) => {
   const [ comment, setComment ] = useState(null);
   const [ userPhotoURL, setUserPhotoURL ] = useState(null);
 
@@ -46,7 +56,7 @@ const PostCardCommentLine = ({ postId, currentUserPhotoURL, commentCount }) => {
       //console.log("top comment: ", topComment);
       isMounted && setComment(topComment);
       if (topComment) {
-        const getUserPhotoURL = usersGetFire.getUserPhotoURLFire(topComment.data.uid);
+        const getUserPhotoURL = getUserPhotoURLFire(topComment.data.uid);
         getUserPhotoURL
         .then((userPhotoURL) => {
           isMounted && setUserPhotoURL(userPhotoURL);
@@ -68,22 +78,23 @@ const PostCardCommentLine = ({ postId, currentUserPhotoURL, commentCount }) => {
   }, []);
 
   return (
-    <View style={styles.mainContainer}>
-      {
-        !comment
-        ? null
-        : comment.data
-        ?
-        // when the top comment exists
-        <TouchableWithoutFeedback
-          style={styles.naviagteToComments}
-          onPress={() => {
-            navigation.navigate('Comment', {
-              postId: postId,
-              commentCount: commentCount
-            });
-          }}
-        > 
+    <TouchableWithoutFeedback
+      style={styles.naviagteToComments}
+      onPress={() => {
+        navigation.navigate('Comment', {
+          postId,
+          postFiles,
+          postCaption,
+          incrementCommentCount,
+          decrementCommentCount,
+        });
+      }}
+    >
+      <View style={styles.mainContainer}>
+        {
+          comment && comment.data
+          ?
+          // when the top comment exists
           <View>
             <View style={styles.commentContainer}>
               <View style={styles.userPhotoContainer}>
@@ -109,7 +120,7 @@ const PostCardCommentLine = ({ postId, currentUserPhotoURL, commentCount }) => {
                   numberOfLines={1}
                   style={styles.commentText}
                 >
-                  {comment.data.comment}
+                  {comment.data.text}
                 </Text>
               </View>
             </View>
@@ -120,32 +131,32 @@ const PostCardCommentLine = ({ postId, currentUserPhotoURL, commentCount }) => {
               </View>
             }
           </View>
-        </TouchableWithoutFeedback>
-        : 
-        <View style={styles.commentContainer}>
-          <View style={styles.userPhotoContainer}>
-            { 
-              currentUserPhotoURL
-              ?
-              <Image 
-                style={styles.userPhoto} 
-                source={{ uri: currentUserPhotoURL }} 
-              />
-              :
-              <DefaultUserPhoto 
-                customSizeBorder={RFValue(15)}
-                customSizeUserIcon={RFValue(10)}
-              />
-            }
+          : 
+          <View style={styles.commentContainer}>
+            <View style={styles.userPhotoContainer}>
+              { 
+                currentUserPhotoURL
+                ?
+                <Image 
+                  style={styles.userPhoto} 
+                  source={{ uri: currentUserPhotoURL }} 
+                />
+                :
+                <DefaultUserPhoto 
+                  customSizeBorder={RFValue(15)}
+                  customSizeUserIcon={RFValue(10)}
+                />
+              }
+            </View>
+            <View style={styles.firstCommentContainer}>
+              <Text style={styles.firstCommentText}>
+                be the first to write
+              </Text>
+            </View>
           </View>
-          <View style={styles.firstCommentContainer}>
-            <Text style={styles.firstCommentText}>
-              be the first to write
-            </Text>
-          </View>
-        </View>
-      }
-    </View>
+        }
+      </View>
+    </TouchableWithoutFeedback>
   )
 };
 
@@ -170,11 +181,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
   },
+  firstCommentText: {
+    fontSize: RFValue(15),
+    color: color.black1
+  },
   textInput: {
     flex: 1,
   },
   commentText: {
     color: color.black1,
+    fontSize: RFValue(15)
   },
   userPhotoContainer: {
     justifyContent: 'center',

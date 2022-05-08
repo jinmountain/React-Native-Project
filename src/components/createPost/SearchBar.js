@@ -32,7 +32,8 @@ import color from '../../color';
 const SearchBar = ({ 
   searchUserUsername,
   setSearchUserUsername,
-  setUsersFound
+  setUsersFound,
+  customPlaceholderText
 }) => {
   return (
     <View style={styles.searchBarTextInputContainer}>
@@ -42,7 +43,11 @@ const SearchBar = ({
           ? {width: '80%'}
           : {width: '94%'}
         ]}
-        placeholder="Search a shop"
+        placeholder={
+          customPlaceholderText
+          ? customPlaceholderText
+          : "Search a shop"
+        }
         placeholderTextColor={color.grey2}
         onChangeText={(text) => setSearchUserUsername(text.trim())}
         value={searchUserUsername}
@@ -57,7 +62,7 @@ const SearchBar = ({
         <TouchableHighlight
           style={styles.closeButtonContainer}
           onPress={() => {
-            setSearchUserUsername(null);
+            setSearchUserUsername('');
             setUsersFound([]);
           }}
           underlayColor={color.grey4}

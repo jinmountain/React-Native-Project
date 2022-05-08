@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { 
 	View, 
 	Text, 
@@ -8,12 +8,18 @@ import {
   Animated, 
 	StyleSheet,  
 	TouchableOpacity,
+  TouchableWithoutFeedback,
   Dimensions,
   Platform,
   TouchableHighlight,
+  FlatList,
+  Pressable,
+  Linking,
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Circle, Marker, Callout } from 'react-native-maps';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { Video, AVPlaybackStatus } from 'expo-av';
+import { useNavigation } from '@react-navigation/native';
 
 // Designs
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -28,6 +34,9 @@ import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
 import { RatingReadOnly } from '../components/RatingReadOnly';
 import DefaultUserPhoto from '../components/defaults/DefaultUserPhoto';
 
+// firebase
+import { getBusinessDisplayPostsFire } from '../firebase/post/postGetFire';
+
 // Contexts
 // import { Context as PostContext } from '../context/PostContext';
 // import { Context as LocationContext } from '../context/LocationContext';
@@ -35,63 +44,170 @@ import DefaultUserPhoto from '../components/defaults/DefaultUserPhoto';
 // Color
 import color from '../color';
 
+// expo icons
+import { antdesignPhone } from '../expoIcons';
+
 const { width, height } = Dimensions.get("window");
-const CARD_HEIGHT = height * 0.35;
+const CARD_HEIGHT = height * 0.25;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 
-const colorByRating = (rating) => {
-  // about color look colors for rating in color.js
-  if (rating !== null && rating >= 1) {
-    return '#4815AA';
-  } 
-  else if (rating !== null && rating >= 2) {
-    return "#DA9E00";
-  }
-  else if (rating !== null && rating >= 3) {
-    return "#0C6B94";
-  } 
-  else if (rating !== null && rating >= 4) {
-    return "#6E5BD4";
-  } 
-  else if (rating !== null && rating >= 5) {
-    return "#F60000";
-  } 
-  else {
-    return "#E0E0E0";
+const BusDisplayPosts = ({ busId }) => {
+  const ImageWidth = RFValue(75);
+
+  const [ displayPosts, setDisplayPosts ] = useState([]);
+  const [ displayPostLast, setDisplayPostLast ] = useState(null);
+  const [ displayPostFetchSwitch, setDisplayPostFetchSwitch ] = useState(true);
+  const [ displayPostState, setDisplayPostState ] = useState(false);
+
+  const resetStates = () => {
+    setDisplayPosts([]);
+    setDisplayPostLast(null);
+    setDisplayPostFetchSwitch(true);
+    setDisplayPostState(false);
   };
+
+  useEffect(() => {
+    let isMounted = true;
+    if (displayPostFetchSwitch && !displayPostState) {
+      isMounted && setDisplayPostState(true);
+      const getDisplayPosts = getBusinessDisplayPostsFire(busId, null);
+      getDisplayPosts
+      .then((result) => {
+        isMounted && setDisplayPosts(result.fetchedPosts);
+        if (result.lastPost !== undefined) {
+          isMounted && setDisplayPostLast(result.lastPost);
+        } else {
+          isMounted && setDisplayPostFetchSwitch(false);
+        };
+        isMounted && setDisplayPostState(false);
+      })
+      .catch((error) => {
+
+      });
+    }
+    return () => {
+      isMounted = false;
+      resetStates();
+    };
+  }, [])
+
+  const renderItem = () => {
+    return (
+      <View 
+        key={item.id}
+        style={styles.displayImageContainer}
+      >
+        { 
+          item.data.files[0].type === 'video'
+          ?
+          <View style={{width: ImageWidth, height: ImageWidth}}>
+            <Video
+              style={{
+                backgroundColor: color.white2,
+                width: ImageWidth, 
+                height: ImageWidth
+              }}
+              source={{
+                uri: item.data.files[0].url,
+              }}
+              useNativeControls={false}
+              resizeMode="contain"
+              shouldPlay={false}
+            />
+          </View>
+          : item.data.files[0].type === 'image'
+          ?
+          <Image
+            // defaultSource={require('../../img/defaultImage.jpeg')}
+            source={{uri: item.data.files[0].url}}
+            style={{width: ImageWidth, height: ImageWidth}}
+          />
+          : null
+        }
+      </View>
+    )
+  }
+
+  return (
+    displayPosts.length > 0
+    ?
+    <Pressable
+      onLongPress={() => {
+        console.log("modal");
+      }}
+    >
+      <View style={styles.displayPostsContainer}>
+        {
+          displayPosts.map((item, index) => (
+            <View 
+              key={item.id}
+              style={styles.displayImageContainer}
+            >
+              { 
+                item.data.files[0].type === 'video'
+                ?
+                <View style={{width: ImageWidth, height: ImageWidth}}>
+                  <Video
+                    style={{
+                      backgroundColor: color.white2,
+                      width: ImageWidth, 
+                      height: ImageWidth
+                    }}
+                    source={{
+                      uri: item.data.files[0].url,
+                    }}
+                    useNativeControls={false}
+                    resizeMode="contain"
+                    shouldPlay={false}
+                  />
+                </View>
+                : item.data.files[0].type === 'image'
+                ?
+                <Image
+                  // defaultSource={require('../../img/defaultImage.jpeg')}
+                  source={{uri: item.data.files[0].url}}
+                  style={{width: ImageWidth, height: ImageWidth}}
+                />
+                : null
+              }
+            </View>
+          ))
+        }
+      </View>
+    </Pressable>
+    :
+    <View style={{ justifyContent: 'center', alignItems: 'center', height: ImageWidth, backgroundColor: color.white1 }}>
+      <Text>
+        No Posts Yet
+      </Text>
+    </View>
+  )
 };
 
 const MapSearchMap = ({ 
-  businessUsersNear, 
-  navigate, 
-  userPhotoURL,
+  busUsersNear, 
   currentLocation,
-  searchLocation,
-  addBusinessUser
+  searchLocation
 }) => {
-  // show or hide scroll view
-  const [ viewScrollView, setViewScrollView ] = useState(true);
-
   // refer to his code 
   // https://github.com/itzpradip/Food-Finder-React-Native-App/blob/master/screens/ExploreScreen.js
 	// const { 
  //    state: { currentLocation, searchLocation } 
  //  } = useContext(LocationContext);
 
-  // const { 
-  //   state: { businessUsersNear }, 
-  // } = useContext(PostContext);
+  const navigation = useNavigation();
 
 	let mapIndex = 0;
   let mapAnimation = new Animated.Value(0);
 
 	useEffect(() => {
+    // map animation listener 
     mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / CARD_WIDTH + 0.3); 
       // animate 30% away from landing on the next item
-      if (index >= businessUsersNear.length) {
-        index = businessUsersNear.length - 1;
+      if (index >= busUsersNear.length) {
+        index = busUsersNear.length - 1;
       }
       if (index <= 0) {
         index = 0;
@@ -102,7 +218,7 @@ const MapSearchMap = ({
       const regionTimeout = setTimeout(() => {
         if( mapIndex !== index ) {
           mapIndex = index;
-          const { location } = businessUsersNear[index].geometry;
+          const { location } = busUsersNear[index].data.geometry;
           console.log(location);
           _map.current.animateToRegion(
             {
@@ -118,7 +234,7 @@ const MapSearchMap = ({
     });
   });
 
-  const interpolations = businessUsersNear.map((marker, index) => {
+  const interpolations = busUsersNear.map((marker, index) => {
     const inputRange = [
       (index - 1) * CARD_WIDTH,
       index * CARD_WIDTH,
@@ -146,15 +262,11 @@ const MapSearchMap = ({
       x = x - SPACING_FOR_CARD_INSET;
     }
 
-    if (viewScrollView === true) {
-      _scrollView.current.scrollTo({x: x, y: 0, animated: true});
-    } else {
-      setViewScrollView(true);
-    };
+    _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
   };
 
-  const _map = React.useRef(null);
-  const _scrollView = React.useRef(null);
+  const _map = useRef(null);
+  const _scrollView = useRef(null);
 
 	if (!currentLocation) {
 		return (
@@ -175,26 +287,8 @@ const MapSearchMap = ({
 					latitudeDelta: 0.01,
 					longitudeDelta: 0.01
 				}}
-        onPress={() => { setViewScrollView(!viewScrollView) }}
 			>
-        <MapView.Marker
-          key={'currrentLocation'}
-          coordinate={{
-            ...currentLocation,
-          }}
-        >
-          { 
-            userPhotoURL
-            ?
-            <Image 
-              style={styles.userPhoto} 
-              source={{uri: userPhotoURL}} 
-            />
-            :
-            <AntDesign name="smile-circle" size={RFValue(24)} color="#2B2C33" />
-          }
-        </MapView.Marker>
-				{businessUsersNear.map((marker, index) => {
+				{busUsersNear.map((marker, index) => {
           const scaleStyle = {
             transform: [
               {
@@ -207,27 +301,33 @@ const MapSearchMap = ({
             <MapView.Marker 
               key={index} 
               coordinate={{
-                "latitude": marker.geometry.location.lat,
-                "longitude": marker.geometry.location.lng
+                "latitude": marker.data.geometry.location.lat,
+                "longitude": marker.data.geometry.location.lng
               }} 
               onPress={(e)=>onMarkerPress(e)}
             >
-              <Animated.View style={[styles.markerWrap]}>
+              <Animated.View style={styles.markerWrap}>
                 <Animated.View
                   style={[styles.marker, scaleStyle]}
                 > 
-                  { marker.photoURL
-                    ? <Image 
-                        style={{ 
-                          ...styles.userPhoto, 
-                          ...{ 
-                            borderWidth: 2, 
-                            borderColor: '#fff'
-                          }
-                        }} 
-                        source={{uri: marker.photoURL}} 
-                      />
-                    : <Feather name="user" size={RFValue(24)} color="black" />
+                  { marker.data.photoURL
+                    ? 
+                    <Image 
+                      style={{ 
+                        ...styles.businessPhoto, 
+                        ...{ 
+                          borderWidth: 2, 
+                          borderColor: '#fff'
+                        }
+                      }} 
+                      source={{uri: marker.data.photoURL}} 
+                    />
+                    : 
+                    <DefaultUserPhoto 
+                      customSizeBorder={RFValue(30)}
+                      customSizeUserIcon={RFValue(20)}
+                      customColor={color.black1}
+                    />
                   }
                 </Animated.View>
               </Animated.View>
@@ -235,99 +335,143 @@ const MapSearchMap = ({
           );
         })}
 			</MapView>
-      { viewScrollView
-        ?
-  			<Animated.ScrollView
-          ref={_scrollView}
-          horizontal
-          pagingEnabled
-          scrollEventThrottle={1}
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_WIDTH + 20}
-          snapToAlignment="center"
-          style={styles.scrollView}
-          contentInset={{
-            top: 0,
-            left: SPACING_FOR_CARD_INSET,
-            bottom: 0,
-            right: SPACING_FOR_CARD_INSET
-          }}
-          contentContainerStyle={{
-            paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
-          }}
-          onScroll={Animated.event(
-            [
-              {
-                nativeEvent: {
-                  contentOffset: {
-                    x: mapAnimation,
-                  }
-                },
+
+			<Animated.ScrollView
+        ref={_scrollView}
+        decelerationRate={"fast"}
+        horizontal
+        pagingEnabled
+        scrollEventThrottle={1}
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={CARD_WIDTH + 20}
+        snapToAlignment="center"
+        style={styles.scrollView}
+        contentInset={{
+          top: 0,
+          left: SPACING_FOR_CARD_INSET,
+          bottom: 0,
+          right: SPACING_FOR_CARD_INSET
+        }}
+        contentContainerStyle={{
+          paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
+        }}
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: {
+                contentOffset: {
+                  x: mapAnimation,
+                }
               },
-            ],
-            {useNativeDriver: true}
-          )}
-        >
-          {businessUsersNear.map((marker, index) =>(
-            <TouchableOpacity
-              style={styles.card}
-              key={index}
-              onPress={() => {
-                addBusinessUser(marker);
-                navigate("MapSearchPosts", 
-                  {
-                    businessUser: marker, 
-                  }
-                );
-              }}
-            >
-              <Image 
-                source={{uri: marker.photoURL}}
-                style={styles.cardImage}
-                resizeMode="cover"
-              />
-              <View style={styles.textContent}>
-                <Text numberOfLines={1} style={styles.cardtitle}>{marker.username}</Text>
-                { marker.countRating >= 1 
-                  ?
-                  <View style={styles.cardRatingContainer}>
-                    <Text style={styles.averageRatingText}>
-                      {
-                        // round up to the first decimal point
-                        // fix the decimal point to the first
-                        // change the type to Number
-                        Number((Math.round(marker.totalRating/marker.countRating * 10) / 10).toFixed(1))
-                      }
-                    </Text>
-                    <RatingReadOnly 
-                      rating={Number((Math.round(marker.totalRating/marker.countRating * 10) / 10).toFixed(1))}
+            },
+          ],
+          {useNativeDriver: true}
+        )}
+      >
+        { busUsersNear && busUsersNear.map((marker, index) =>(
+          <TouchableWithoutFeedback
+            key={index}
+            onPress={() => {
+              navigation.navigate('UserAccountStack', {
+                screen: 'UserAccount',
+                params: {
+                  accountUserId: marker.id
+                }
+              })
+            }}
+          >
+            <View style={styles.card}>
+              <View style={styles.cardTop}>
+                <View style={styles.userPhotoContainer}>
+                  { 
+                    marker.data.photoURL
+                    ? 
+                    <Image 
+                      source={{uri: marker.data.photoURL}}
+                      style={styles.cardUserPhoto}
+                      resizeMode="cover"
                     />
+                    : 
+                    <DefaultUserPhoto 
+                      customSizeBorder={RFValue(33)}
+                      customSizeUserIcon={RFValue(22)}
+                      customColor={color.black1}
+                    />
+                  }
+                  <View style={styles.userDistanceContainer}>
+                    <Text style={styles.userDistanceText}>
+                      {Math.round(marker.distance * 10) / 10}
+                    </Text>
+                    <Text style={styles.userDistanceText}>
+                      miles
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.cardUserInfo}>  
+                  <View styles={styles.cardUserInfoTop}>
+                    <Text numberOfLines={1} style={styles.cardtitle}>{marker.data.username}</Text>
+                    { marker.data.countRating >= 1 
+                      ?
+                      <View style={styles.cardRatingContainer}>
+                        <Text style={styles.averageRatingText}>
+                          {
+                            // round up to the first decimal point
+                            // fix the decimal point to the first
+                            // change the type to Number
+                            Number((Math.round(marker.data.totalRating/marker.data.countRating * 10) / 10).toFixed(1))
+                          }
+                        </Text>
+                        <RatingReadOnly 
+                          rating={Number((Math.round(marker.data.totalRating/marker.data.countRating * 10) / 10).toFixed(1))}
+                        />
+                        {
+                          marker.data.countRating === 1
+                          ? 
+                            <Text style={styles.countRatingText}>
+                              1 review
+                            </Text>
+                          : <Text style={styles.countRatingText}>
+                              {marker.data.countRating} reviews
+                            </Text>
+                        }
+                      </View>
+                      :
+                      <View style={styles.cardRatingContainer}>
+                        <Text numberOfLines={1} style={styles.noRatingWarning}>
+                          Waiting for the first review
+                        </Text>
+                      </View>
+                    }
                     {
-                      marker.countRating === 1
-                      ? 
-                        <Text style={styles.countRatingText}>
-                          1 review
-                        </Text>
-                      : <Text style={styles.countRatingText}>
-                          {marker.countRating} reviews
-                        </Text>
+                      marker.data.sign && 
+                      <Text numberOfLines={1} style={styles.cardDescription}>{marker.data.sign}</Text>
+                    }
+                    {
+                      marker.data.phoneNumber && 
+                      <Text 
+                        numberOfLines={1} 
+                        style={styles.cardDescription}
+                        onPress={()=>{Linking.openURL(`tel:${marker.data.phoneNumber}`)}}
+                      >
+                        {antdesignPhone(RFValue(13), color.black1)} {marker.data.phoneNumber}
+                      </Text>
                     }
                   </View>
-                  :
-                  <View style={styles.cardRatingContainer}>
-                    <Text numberOfLines={1} style={styles.noRatingWarning}>
-                      Waiting for the first
-                    </Text>
-                    <AntDesign name="heart" size={RFValue(13)} color={color.rating5}/>
-                  </View>
-                }
-                <Text numberOfLines={1} style={styles.cardDescription}>{marker.sign}</Text>
+{/*                  <View style={styles.cardUserInfoBottom}>
+                    <View>
+                    </View>
+                  </View>*/}
+                </View>
               </View>
-            </TouchableOpacity>
-          ))}
-        </Animated.ScrollView>
-        : null
-      }
+              <View style={styles.cardBottom}>
+                <BusDisplayPosts
+                  busId={marker.id}
+                />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        ))}
+      </Animated.ScrollView>
 		</View>
 	)
 };
@@ -349,11 +493,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   card: {
-    // padding: 10,
     elevation: 5,
     backgroundColor: "#FFF",
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
+    borderTopLeftRadius: RFValue(5),
+    borderTopRightRadius: RFValue(5),
     marginHorizontal: 10,
     shadowColor: "#000",
     shadowRadius: 5,
@@ -363,15 +506,30 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     overflow: "hidden",
   },
-  cardImage: {
-    flex: 3,
-    width: CARD_WIDTH,
-    height: CARD_WIDTH,
-    alignSelf: "center",
-  },
-  textContent: {
-    flex: 2,
+  cardTop: {
+    flex: 1,
     padding: RFValue(10),
+    flexDirection: 'row',
+  },
+  cardBottom: {
+    justifyContent: 'flex-end'
+  },
+  userPhotoContainer: {
+    paddingHorizontal: RFValue(5),
+    paddingTop: RFValue(5),
+  },
+  cardUserPhoto: {
+    width: RFValue(35),
+    height: RFValue(35),
+    borderRadius: 100,
+  },
+  cardUserInfo: {
+    flex: 1,
+    paddingHorizontal: RFValue(5),
+    paddingTop: RFValue(5),
+  },
+  cardUserInfoTop: {
+
   },
   cardtitle: {
     fontSize: RFValue(15),
@@ -379,87 +537,71 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   cardDescription: {
-    fontSize: RFValue(12),
-    color: "#444",
+    fontSize: RFValue(13),
+    color: color.grey3,
   },
   // Rating
   cardRatingContainer: {
     alignItems: 'center',
-    paddingVertical: 3, 
+    paddingVertical: RFValue(3), 
     flexDirection: 'row',
   },
   countRatingText: {
-    paddingLeft: 3,
-    color: '#5A646A',
-    paddingHorizontal: 2,
+    paddingLeft: RFValue(3),
+    color: color.grey3,
+    paddingHorizontal: RFValue(2),
   },
   noRatingWarning: {
     paddingRight: RFValue(3),
     fontSize: RFValue(12),
-    color: '#5A646A',
+    color: color.grey3,
   },
   averageRatingText: {
-    color: '#5A646A',
-    paddingRight: 3, 
+    color: color.grey3,
+    paddingRight: RFValue(3), 
   },
   // Markers stay static (not responsive)
   markerWrap: {
     alignItems: "center",
     justifyContent: 'center',
-    width: 110,
-    height: 80,
+    width: RFValue(55),
+    height: RFValue(55),
   },
   marker: {
     alignItems: "center",
     justifyContent: 'center',
-    width: 30,
-    height: 30,
+    width: RFValue(55),
+    height: RFValue(55),
     elevation: 5,
-  },
-  markerText: {
-    fontSize: 15,
-    color: 'black',
-    elevation: 5,
-    fontWeight: 'bold',
-  },
-  markerTextOutlineLeft: {
-    position: 'absolute',
-    paddingBottom: 1,
-    paddingRight: 1, 
-    color: "red",
-    fontSize: 15,
-    elevation: 4,
-  },
-  markerTextOutlineRight: {
-    position: 'absolute',
-    paddingTop: 1,
-    paddingLeft: 1, 
-    color: "red",
-    fontSize: 15,
-    elevation: 4,
-  },
-  button: {
-    alignItems: 'center',
-    marginTop: 5
-  },
-  signIn: {
-    width: '100%',
-    padding:5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 3
-  },
-  textSign: {
-    fontSize: 14,
-    fontWeight: 'bold'
   },
   userPhoto: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: RFValue(30),
+    height: RFValue(30),
+    borderRadius: 100,
+  },
+  businessPhoto: {
     justifyContent: 'center',
     alignItems: 'center',
     width: RFValue(40),
     height: RFValue(40),
     borderRadius: 100,
-  }
+  },
+
+  userDistanceContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: RFValue(10)
+  },
+  userDistanceText: {
+    color: color.black1,
+    fontSize: RFValue(11)
+  },
+
+  displayPostsContainer: {
+    flexDirection: 'row'
+  },
 });
 
 export default MapSearchMap;

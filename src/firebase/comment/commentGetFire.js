@@ -34,22 +34,76 @@ const getTopComment = (postId) => {
 	});
 };
 
-const getCommentsFire = (postId, lastComment) => {
+const getCommentsFire = (
+	postId, 
+	lastComment = null, 
+	sorting = null
+) => {
 	return new Promise (async (res, rej) => {
-		const COMMENT_LIMIT = 10;
+		const COMMENT_LIMIT = 5;
+
+		const topCommentRef = () => {
+			return (
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("heat", "desc")
+				.startAfter(lastComment)
+			)
+		};
+
+		const newCommentRef = () => {
+			return (
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("createdAt", "desc")
+				.startAfter(lastComment)
+			)
+		};
 
 		let commentsRef;
 		if (lastComment) {
-			commentsRef = postsRef
-			.doc(postId)
-			.collection("comments")
-			.orderBy("heat", "desc")
-			.startAfter(lastPost)
+			if (sorting === 'top') {
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("heat", "desc")
+				.startAfter(lastComment)
+			}
+			else if (sorting === 'new') {
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("createdAt", "desc")
+				.startAfter(lastComment)
+			}
+			else {
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("heat", "desc")
+				.startAfter(lastComment)
+			}
 		} else {
-			commentsRef = postsRef
-			.doc(postId)
-			.collection("comments")
-			.orderBy("heat", "desc")
+			if (sorting === 'top') {
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("heat", "desc")
+			}
+			else if (sorting === 'new') {
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("createdAt", "desc")
+			} 
+			else {
+				commentsRef = postsRef
+				.doc(postId)
+				.collection("comments")
+				.orderBy("heat", "desc")
+			}
 		};
 
 		commentsRef

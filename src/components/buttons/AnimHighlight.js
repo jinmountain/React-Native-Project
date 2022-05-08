@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   Animated,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -52,6 +53,8 @@ const AnimHighlight = ({ content, customStyles, onPressOutAction }) => {
       onPressOut={() => {
         lightBackground.start();
         lightBorderColor.start();
+      }}
+      onPress={() => {
         onPressOutAction()
       }}
     >

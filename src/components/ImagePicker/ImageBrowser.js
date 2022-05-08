@@ -17,7 +17,7 @@ import {
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import { StatusBar } from 'expo-status-bar';
 import { Video, AVPlaybackStatus } from 'expo-av';
-import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
+// import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as MediaLibrary from 'expo-media-library'
@@ -690,7 +690,7 @@ export default ImageBrowser = ({
     )
   };
 
-  // if (!hasCameraPermission) return noCameraPermissionComponent || null;
+  if (!hasCameraPermission) return noCameraPermissionComponent || null;
 
   return (
     <View style={styles.container}>

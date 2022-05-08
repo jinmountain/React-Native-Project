@@ -28,12 +28,25 @@ import { Context as AuthContext } from '../../context/AuthContext';
 // Hooks
 import count from '../../hooks/count';
 import getRandomColor from '../../hooks/getRandomColor';
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+	convertHourMinToNumber,
+	convertToDateInMs,
+	convertToMonthInMs,
+	getDayIndexFromTimestamp,
+	convertToNormHourMin,
+	convertToTime,
+	moveMonthInMs,
+	convertToMonthly,
+	convertToMDD,
+	convertMilitaryToStandard
+} from '../../hooks/useConvertTime';
 import { getCalendarDates } from '../../hooks/getCalendarDates';
 // Firebase
-import businessGetFire from '../../firebase/businessGetFire';
-import businessPostFire from '../../firebase/businessPostFire';
-import postGetFire from '../../firebase/post/postGetFire';
+import {
+	getScheduleBusinessSpecialHours,
+	getRsvTimestampsOfTech,
+	getTechsRating
+} from '../../firebase/business/businessGetFire';
 
 // Components
 import AlertBoxTop from '../../components/AlertBoxTop'; 
@@ -92,12 +105,12 @@ const getAvailableHours = (busBusinessHours, techBusinessHours, busSpecialHours,
 		for (techHoursIndex; techHoursIndex < techHoursLen; techHoursIndex++) {
 			const busHoursOpens = busHours[busHoursIndex].opens;
 			const busHoursCloses = busHours[busHoursIndex].closes;
-			const busHoursOpensNumber = useConvertTime.convertHourMinToNumber(busHours[busHoursIndex].opens.hour, busHours[busHoursIndex].opens.min);
-			const busHoursClosesNumber = useConvertTime.convertHourMinToNumber(busHours[busHoursIndex].closes.hour, busHours[busHoursIndex].closes.min);
+			const busHoursOpensNumber = convertHourMinToNumber(busHours[busHoursIndex].opens.hour, busHours[busHoursIndex].opens.min);
+			const busHoursClosesNumber = convertHourMinToNumber(busHours[busHoursIndex].closes.hour, busHours[busHoursIndex].closes.min);
 			const techHoursOpens = techHours[techHoursIndex].opens;
 			const techHoursCloses = techHours[techHoursIndex].closes;
-			const techHoursOpensNumber = useConvertTime.convertHourMinToNumber(techHours[techHoursIndex].opens.hour, techHours[techHoursIndex].opens.min);
-			const techHoursClosesNumber = useConvertTime.convertHourMinToNumber(techHours[techHoursIndex].closes.hour, techHours[techHoursIndex].closes.min);
+			const techHoursOpensNumber = convertHourMinToNumber(techHours[techHoursIndex].opens.hour, techHours[techHoursIndex].opens.min);
+			const techHoursClosesNumber = convertHourMinToNumber(techHours[techHoursIndex].closes.hour, techHours[techHoursIndex].closes.min);
 
 			// 1. tech.startTime | bus.startTime | tech.endTime | bus.endTime
 			console.log("COMPARE: ", busHoursOpensNumber, busHoursClosesNumber, techHoursOpensNumber, techHoursClosesNumber)
@@ -207,10 +220,10 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	const [ techSpecialHours, setTechSpecialHours ] = useState(null);
 
 	// date
-	const [ rsvDate, setRsvDate ] = useState( useConvertTime.convertToDateInMs( Date.now() ));
+	const [ rsvDate, setRsvDate ] = useState( convertToDateInMs( Date.now() ));
 	const [ dateMoveFromToday, setDateMoveFromToday ] = useState(0);
 	// calendar 
-	const [ calendarDate, setCalendarDate ] = useState(useConvertTime.convertToMonthInMs(Date.now()));
+	const [ calendarDate, setCalendarDate ] = useState( convertToMonthInMs( Date.now() ));
 	const [ calendarMove, setCalendarMove ] = useState(0);
 
 	// screen controls
@@ -243,9 +256,9 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	const [ userAccountDisplayPostState, setUserAccountDisplayPostState ] = useState(false);
 
   const resetCalendar = () => {
-  	setRsvDate(useConvertTime.convertToDateInMs( Date.now() ));
+  	setRsvDate(convertToDateInMs( Date.now() ));
 		setDateMoveFromToday(0);
-		setCalendarDate(useConvertTime.convertToMonthInMs(Date.now() ));
+		setCalendarDate(convertToMonthInMs(Date.now() ));
 		setCalendarMove(0);
 		setShowCalendar(false);
   }
@@ -400,14 +413,14 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 
 	  	// get business hours if there are not business and technician's business hours
 	  	// then don't make available grids
-  		const getScheduleBusinessSpecialHours = businessGetFire.getScheduleBusinessSpecialHours(businessUser.id, selectedTech.id, rsvDate); 
+  		const getScheduleBusinessSpecialHours = getScheduleBusinessSpecialHours(businessUser.id, selectedTech.id, rsvDate); 
     	getScheduleBusinessSpecialHours
     	.then((result) => {
     		if (businessUser.business_hours && result.techBusinessHours) {
 	    		// at this point we have business and special hours of the businsess and the technician
 	    		// get the business hours of rsvDate for business and technician
 	    		// - the day index of rsvDate
-	    		const dayIndexOfRsvDate = useConvertTime.getDayIndexFromTimestamp(rsvDate); 
+	    		const dayIndexOfRsvDate = getDayIndexFromTimestamp(rsvDate); 
 	    		// - use the day Index to get the business hours of business and technician
 	    		// if dayIndexOfRsvDate is 0 then sun
 	    		// - function to get the right attribute based on the day index
@@ -456,7 +469,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 	    		// another filter below to skip adding a grid 
 	    		// if the grid is not in business and technician's business and special hours
 
-	    		const getRsvsStartAtOfTech = businessGetFire.getRsvTimestampsOfTech(businessUser.id, selectedTech.id, rsvDate);
+	    		const getRsvsStartAtOfTech = getRsvTimestampsOfTech(businessUser.id, selectedTech.id, rsvDate);
 			  	getRsvsStartAtOfTech
 			  	.then((rsvTimestamps) => {
 			  		let grids = [[]];
@@ -471,8 +484,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		    			const opensMin = availableHours[availableHoursIndex].opens.min;
 		    			const closesHour = availableHours[availableHoursIndex].closes.hour;
 		    			const closesMin = availableHours[availableHoursIndex].closes.min;
-		    			const startTime = useConvertTime.convertHourMinToNumber(opensHour, opensMin);
-		    			const endTime = useConvertTime.convertHourMinToNumber(closesHour, closesMin);
+		    			const startTime = convertHourMinToNumber(opensHour, opensMin);
+		    			const endTime = convertHourMinToNumber(closesHour, closesMin);
 
 		    			console.log("opensHour:", opensHour, "opensMin: ", opensMin);
 		    			console.log("startTime: ", startTime, "endTime: ", endTime);
@@ -480,7 +493,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 		    				gridHour = opensHour;
 		    			}
 
-		    			const rsvDateTimestamp = useConvertTime.convertToDateInMs(rsvDate);
+		    			const rsvDateTimestamp = convertToDateInMs(rsvDate);
 							var startTimeTimestamp = rsvDateTimestamp + (startTime * 60 * 60 *1000) // convert hours to milisecs
 							const displayPostEtc = pickedDisplayPost.data.etc;
 
@@ -493,12 +506,12 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 								// const floorStartTime = Math.floor(startTime);
 								var gridTimestamp = startTimeTimestamp + (gridIndex * 5 * 60 *1000); // + 5mins
 								if (gridIndex === 0) {
-									console.log(useConvertTime.convertToNormHourMin(startTimeTimestamp), useConvertTime.convertToNormHourMin(gridTimestamp));
+									console.log(convertToNormHourMin(startTimeTimestamp), convertToNormHourMin(gridTimestamp));
 								}
 								var gridEndTimestamp = gridTimestamp + (displayPostEtc - 5) * 60 * 1000;
 								// displayPostEtc - 5 because it is grid like 1:05 - 1:10
 
-								var gridStartTime = useConvertTime.convertToTime(gridTimestamp);
+								var gridStartTime = convertToTime(gridTimestamp);
 
 								// last timestamp of grid available is rsvDateTimestamp + endTime in MS - the picked post's etc in MS
 								const lastTimestamp = rsvDateTimestamp + (endTime * 60 * 60 * 1000) - (pickedDisplayPost.data.etc * 60 * 1000)
@@ -650,7 +663,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 				                  	setPickedDisplayPost(item);
 			                  		setDisplayPostTechs([]);
 														setDisplayPostTechsState(true);
-														const getDisplayPostTechs = businessGetFire.getTechsRating(item.data.techs, businessUser.id, item.id);
+														const getDisplayPostTechs = getTechsRating(item.data.techs, businessUser.id, item.id);
 														getDisplayPostTechs
 														.then((techs) => {
 															setDisplayPostTechs(techs);
@@ -931,14 +944,14 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 						<View style={styles.topControllerContainer}>
 							<View style={styles.topControllerLeftCompartment}>
 								{
-									// new calendar date => useConvertTime.moveMonthInMs(calendarDate, -1)
-									// dateNow's month in miliseconds => useConvertTime.convertToMonthInMs(dateNow)
+									// new calendar date => moveMonthInMs(calendarDate, -1)
+									// dateNow's month in miliseconds => convertToMonthInMs(dateNow)
 									showCalendar && 
-									useConvertTime.convertToMonthInMs(dateNow) <= useConvertTime.moveMonthInMs(calendarDate, -1)
+									convertToMonthInMs(dateNow) <= moveMonthInMs(calendarDate, -1)
 									?
 									<TouchableOpacity
 										onPress={() => {
-											setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, -1));
+											setCalendarDate(moveMonthInMs(calendarDate, -1));
 											setCalendarMove(calendarMove - 1);
 										}}
 									>
@@ -948,8 +961,8 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									?
 									<TouchableOpacity
 										onPress={() => {
-											const dateNowDateInMs = useConvertTime.convertToDateInMs(dateNow);
-											const newRsvDate = useConvertTime.convertToDateInMs(rsvDate - 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
+											const dateNowDateInMs = convertToDateInMs(dateNow);
+											const newRsvDate = convertToDateInMs(rsvDate - 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000);
 											if (dateNowDateInMs <= newRsvDate) {
 												setRsvDate(newRsvDate);
 												setDateMoveFromToday(dateMoveFromToday - 1);
@@ -973,9 +986,9 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									<Text style={styles.rsvDateText}>
 										{ showCalendar
 											?
-											useConvertTime.convertToMonthly(calendarDate)
+											convertToMonthly(calendarDate)
 											:
-											useConvertTime.convertToMDD(rsvDate)
+											convertToMDD(rsvDate)
 										}
 									</Text>
 								</TouchableOpacity>
@@ -988,12 +1001,12 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 										showCalendar
 										?
 										(
-											setCalendarDate(useConvertTime.moveMonthInMs(calendarDate, +1)),
+											setCalendarDate(moveMonthInMs(calendarDate, +1)),
 											setCalendarMove(calendarMove + 1)
 										)
 										:
 										(
-											setRsvDate(useConvertTime.convertToDateInMs(rsvDate + 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000)),
+											setRsvDate(convertToDateInMs(rsvDate + 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000)),
 											setDateMoveFromToday(dateMoveFromToday + 1)
 										)
 
@@ -1034,7 +1047,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									busSpecialHours.hours.map((hours, index) => (
 										<View style={styles.showHoursContainer} key={index}>
 											<View>
-												<Text style={styles.hoursText}>* {useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+												<Text style={styles.hoursText}>* {convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
 											</View>
 										</View>
 									))
@@ -1043,7 +1056,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									busBusinessHours.hours.map((hours, index) => (
 										<View style={styles.showHoursContainer} key={index}>
 											<View>
-												<Text style={styles.hoursText}>{useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+												<Text style={styles.hoursText}>{convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
 											</View>
 										</View>
 									))
@@ -1076,7 +1089,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									techSpecialHours.hours.map((hours, index) => (
 										<View style={styles.showHoursContainer} key={index}>
 											<View>
-												<Text style={styles.hoursText}>* {useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+												<Text style={styles.hoursText}>* {convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
 											</View>
 										</View>
 									))
@@ -1085,7 +1098,7 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 									techBusinessHours.hours.map((hours, index) => (
 										<View style={styles.showHoursContainer} key={index}>
 											<View>
-												<Text style={styles.hoursText}>{useConvertTime.convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {useConvertTime.convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
+												<Text style={styles.hoursText}>{convertMilitaryToStandard(hours.opens.hour, hours.opens.min)} - {convertMilitaryToStandard(hours.closes.hour, hours.closes.min)}</Text>
 											</View>
 										</View>
 									))
@@ -1166,9 +1179,9 @@ const BusinessScheduleScreen = ({ route, navigation }) => {
 																		pickedDisplayPost: pickedDisplayPost,
 																		gridTime: item.gridStartTime,
 										      				}),
-										      				setRsvDate(useConvertTime.convertToDateInMs( Date.now() )),
+										      				setRsvDate(convertToDateInMs( Date.now() )),
 																	setDateMoveFromToday(0),
-																	setCalendarDate(useConvertTime.convertToDateInMs(Date.now() )),
+																	setCalendarDate(convertToDateInMs(Date.now() )),
 																	setCalendarMove(0),
 
 																	setPickedDisplayPost(null),

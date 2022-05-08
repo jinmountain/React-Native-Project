@@ -21,9 +21,15 @@ import { Context as SocialContext } from '../../context/SocialContext';
 // Hooks
 
 // Firebase
-import busTechGetFire from '../../firebase/busTechGetFire';
-import busTechPostFire from '../../firebase/busTechPostFire';
-import businessGetFire from '../../firebase/businessGetFire';
+import {
+	getTechAppToBus
+} from '../../firebase/business/busTechGetFire';
+import {
+	acceptTechApp
+} from '../../firebase/business/busTechPostFire';
+import {
+	getTechnicians
+} from '../../firebase/business/businessGetFire';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -71,7 +77,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 		// get applications from technicians
 		if (techAppFetchSwitch && !techAppFetchState) {
 			setTechAppFetchState(true)
-			const getTechAppToBus = busTechGetFire.getTechAppToBus(
+			const getTechAppToBus = getTechAppToBus(
 				user.id, 
 				setTechAppLast, 
 				setTechAppFetchSwitch, 
@@ -95,7 +101,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 		// get current technicians
 		if (techFetchSwitch && !techFetchState) {
 			setTechFetchState(true);
-			const getTechnicians = businessGetFire.getTechnicians(
+			const getTechnicians = getTechnicians(
 				user.id, 
 				setTechFetchLast,
 				setTechFetchSwitch,
@@ -250,7 +256,7 @@ const BusinessManager = ({ navigation, isFocused }) => {
 							  						}}
 							  						underlayColor={color.gray2}
 							  						onPress={() => {
-							  							const acceptTechApp = busTechPostFire.acceptTechApp(item.id, item.techData.id, user.id)
+							  							const acceptTechApp = acceptTechApp(item.id, item.techData.id, user.id)
 							  							acceptTechApp
 							  							.then((response) => {
 							  								if (response) {

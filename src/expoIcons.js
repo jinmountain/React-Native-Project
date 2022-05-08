@@ -8,6 +8,8 @@ import { Feather } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Octicons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 const dollarSign = (size, color) => {
 	return <FontAwesome name="dollar" size={size} color={color} />
@@ -90,6 +92,10 @@ const mcCheckCircle = (size, color) => {
 	return <MaterialCommunityIcons name="check-circle" size={size} color={color} />
 };
 
+const antdesignCheckCircleo = (size, color) => {
+	return <AntDesign name="checkcircleo" size={size} color={color} />
+};
+
 const antdesignBook = (size, color) => {
 	return <AntDesign name="book" size={size} color={color} />
 };
@@ -146,6 +152,14 @@ const chevronBack = (size, color) => {
 	return <Ionicons name="chevron-back" size={size} color={color} />
 };
 
+const chevronForward = (size, color) => {
+	return <Ionicons name="chevron-forward" size={size} color={color} />
+};
+
+const chevronDown = (size, color) => {
+	return <Ionicons name="chevron-down" size={size} color={color} />
+}
+
 const matMessageTextOutline = (size, color) => {
 	return <MaterialCommunityIcons name="message-text-outline" size={size} color={color} />
 };
@@ -194,6 +208,57 @@ const featherBookOpen = (size, color) => {
 	return <Feather name="book-open" size={size} color={color} />
 };
 
+const octiconsPulse = (size, color) => {
+	return <Octicons name="pulse" size={size} color={color} />
+};
+
+const matPulse = (size, color) => {
+	return <MaterialCommunityIcons name="pulse" size={size} color={color} />
+};
+
+const entypoList = (size, color) => {
+	return <Entypo name="list" size={size} color={color} />
+};
+
+const antdesignPhone = (size, color) => {
+	return <AntDesign name="phone" size={size} color={color} />
+};
+
+const featherMapPin = (size, color) => {
+	return <Feather name="map-pin" size={size} color={color} />
+};
+
+const antdesignRocketOne = (size, color) => {
+	return <AntDesign name="rocket1" size={size} color={color} />
+};
+
+const featherAlertCircle = (size, color) => {
+	return <Feather name="alert-circle" size={size} color={color} />
+};
+
+const antdesignPlus = (size, color) => {
+	return <AntDesign name="plus" size={size} color={color} />
+};
+
+const antdesignWarning = (size, color) => {
+	return <AntDesign name="warning" size={size} color={color} />
+};
+
+const antdesignTeam = (size, color) => {
+	return <AntDesign name="team" size={size} color={color} />
+};
+
+const ioniconsList = (size, color) => {
+	return <Ionicons name="list" size={size} color={color} />
+};
+
+const fontawesomeListAlt = (size, color) => {
+	return <FontAwesome5 name="list-alt" size={size} color={color} />
+};
+
+const antdesignSearch = (size, color) => {
+	return <AntDesign name="search1" size={size} color={color} />
+};
 
 export { 
 	dollarSign, 
@@ -216,6 +281,7 @@ export {
 	entypoNewMessage,
 	mcCheckBoxBlankCircle,
 	mcCheckCircle,
+	antdesignCheckCircleo,
 	antdesignBook,
 	featherBookmark,
 	featherMinus,
@@ -230,6 +296,8 @@ export {
 	snailShell,
 	featherColumns,
 	chevronBack,
+	chevronForward,
+	chevronDown,
 	matMessageTextOutline,
 	ioniconsSend,
 	evilIconsChevronDown,
@@ -241,5 +309,18 @@ export {
 	featherRotateCw,
 	featherRotateCcw,
 	featherBook,
-	featherBookOpen
+	featherBookOpen,
+	octiconsPulse,
+	matPulse,
+	entypoList,
+	antdesignPhone,
+	featherMapPin,
+	antdesignRocketOne,
+	featherAlertCircle,
+	antdesignPlus,
+	antdesignWarning,
+	antdesignTeam,
+	ioniconsList,
+	fontawesomeListAlt,
+	antdesignSearch
 };

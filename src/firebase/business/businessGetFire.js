@@ -1,8 +1,10 @@
-import Firebase from '../firebase/config';
+import Firebase from '../../firebase/config';
 import firebase from 'firebase/app';
-import { navigate } from '../navigationRef';
+import { navigate } from '../../navigationRef';
 
-import useConvertTime from '../hooks/useConvertTime';
+import {
+	convertToDateInMs,
+} from '../../hooks/useConvertTime';
 
 const db = Firebase.firestore();
 const usersRef = db.collection('users');
@@ -21,6 +23,7 @@ const getTechnicians = (
 			techniciansRef = usersRef
 			.doc(busId)
 			.collection("technicians")
+			.where("status", "==", "active")
 			.orderBy("createdAt", "desc")
 			.startAfter(techLast)
 			console.log("getTechnicians => startAfter");
@@ -28,6 +31,7 @@ const getTechnicians = (
 			techniciansRef = usersRef
 			.doc(busId)
 			.collection("technicians")
+			.where("status", "==", "active")
 			.orderBy("createdAt", "desc")
 		};
 
@@ -183,237 +187,7 @@ const getTechsRating = (techs, busId, postId) => {
 	})
 };
 
-// gives grid timestamps that are taken
-const getRsvTimestampsOfTech = (busId, techId, rsvDate) => {
-	return new Promise ((res, rej) => {
-		const dateInMs = rsvDate;
-
-		let reservations = [];
-
-		const getReservations = reservationsRef
-		.where("techId", "==", techId)
-		.where("dateInMs", "==", dateInMs)
-
-		getReservations
-		.get()
-		.then((querySnapshot) => {
-			let docIndex = 0;
-			const docLength = querySnapshot.docs.length;
-
-			if (docLength > 0) {
-				console.log("found reservations");
-				querySnapshot.forEach((doc) => {
-					const rsvData = doc.data();
-					const rsvEtc = Number(rsvData.etc);
-					const numOfGrids = rsvEtc/5; // 5 min per grid
-					let index;
-					console.log("rsv start at: ", rsvData.startAt);
-					console.log("rsv start at: ", rsvData.etc);
-					for (index = 0; index < numOfGrids; index++) {
-						const rsvStartAt = rsvData.startAt;
-						const gridTimestamp = rsvStartAt + 5 * index * 1000 * 60;
-						if (reservations.includes(gridTimestamp)) {
-							continue;
-						} else {
-							reservations.push(gridTimestamp);
-							console.log("existing rsv grid timestamp: ", gridTimestamp);
-						}
-					}
-					docIndex += 1;
-					if (docIndex === docLength) {
-						res(reservations);
-					}
-				});
-			} else {
-				res(reservations);
-			}
-		})
-		.catch((error) => {
-			console.log(error);
-		})
-	})
-};
-
-const getUpcomingRsvsOfBus = (busId, currentTimestamp, daysFromToday) => {
-	return new Promise ( async (res, rej) => {
-		const dateInMs = useConvertTime.convertToDateInMs(currentTimestamp);
-		let reservations = [];
-		
-		let getReservations;
-		if (daysFromToday > 0) {
-			getReservations = reservationsRef
-			.where("busId", "==", busId)
-			.where("dateInMs", "==", dateInMs)
-			.limit(10)
-		}
-		// if daysFromToday is 0 it means it's today
-		// so get upcoming reservations that are after the current time
-		if (daysFromToday == 0) {
-			getReservations = reservationsRef
-			.where("busId", "==", busId)
-			.where("dateInMs", "==", dateInMs)
-			.where("startAt", ">=", currentTimestamp)
-			.limit(10)
-		}
-		
-		getReservations
-		.get()
-		.then((querySnapshot) => {
-			let docIndex = 0;
-			const docLength = querySnapshot.docs.length;
-			if (docLength > 0) {
-				console.log("found upcoming reservations");
-				querySnapshot.forEach(async (doc) => {
-					const rsvData = doc.data();
-
-					const getTechData = await usersRef.doc(rsvData.techId).get();
-					const techData = getTechData.data();
-					const getCusData = await usersRef.doc(rsvData.cusId).get();
-					const cusData = getCusData.data();
-					const getPostData = await postsRef.doc(rsvData.displayPostId).get();
-					const postData = getPostData.data();
-
-					const rsvDetail = {
-						id: doc.id,
-						rsv: {
-							busId: rsvData.busId,
-							cusId: rsvData.cusId,
-							confirm: rsvData.confirm,
-							startAt: rsvData.startAt,
-							etc: rsvData.etc,
-							endAt: rsvData.endAt,
-							fulfilled: rsvData.fulfilled
-						},
-						customer: {
-							id: getCusData.id,
-							username: cusData.username,
-							photoURL: cusData.photoURL,
-						},
-						tech: {
-							id: getTechData.id,
-							username: techData.username,
-							photoURL: techData.photoURL,
-						},
-						post: {
-							id: getPostData.id,
-							title: getPostData.title,
-							file: postData.files[0],
-							etc: postData.etc,
-							price: postData.price,
-							tags: postData.tags
-						}
-					}
-
-					reservations.push(rsvDetail);
-					docIndex += 1;
-					if (docIndex === docLength) {
-						res(reservations);
-						console.log("getUpcomingRsvs: ", reservations.length);
-					}
-				});
-			} else {
-				res(reservations);
-				console.log("getUpcomingRsvs: ", reservations);
-			}
-		})
-		.catch((error) => {
-			console.log("businessGetFire: getUpcomingRsvsOfBus: ", error);
-		})
-	})
-}
-
-const getPreviousRsvsOfBus = (busId, currentTimestamp, daysFromToday, completed) => {
-	return new Promise ( async (res, rej) => {
-		const dateInMs = useConvertTime.convertToDateInMs(currentTimestamp);
-		let reservations = [];
-		
-		let getReservations;
-		if (daysFromToday < 0 ) {
-			getReservations = reservationsRef
-			.where("busId", "==", busId)
-			.where("dateInMs", "==", dateInMs)
-			.where("completed", "==", completed)
-			.orderBy("startAt", "desc")
-			.limit(10);
-		}
-
-		if (daysFromToday === 0) {
-			getReservations = reservationsRef
-			.where("busId", "==", busId)
-			.where("dateInMs", "==", dateInMs)
-			.where("completed", "==", completed)
-			.where("startAt", "<", currentTimestamp)
-			.orderBy("startAt", "desc")
-			.limit(10);
-		}
-		
-		getReservations
-		.get()
-		.then((querySnapshot) => {
-			let docIndex = 0;
-			const docLength = querySnapshot.docs.length;
-			if (docLength > 0) {
-				console.log("found previous reservations");
-				querySnapshot.forEach(async (doc) => {
-					const rsvData = doc.data();
-
-					const getTechData = await usersRef.doc(rsvData.techId).get();
-					const techData = getTechData.data();
-					const getCusData = await usersRef.doc(rsvData.cusId).get();
-					const cusData = getCusData.data();
-					const getPostData = await postsRef.doc(rsvData.displayPostId).get();
-					const postData = getPostData.data();
-
-					const rsvDetail = {
-						id: doc.id,
-						rsv: {
-							busId: rsvData.busId,
-							cusId: rsvData.cusId,
-							confirm: rsvData.confirm,
-							startAt: rsvData.startAt,
-							etc: rsvData.etc,
-							endAt: rsvData.endAt,
-							completed: rsvData.completed
-						},
-						customer: {
-							id: cusData.id,
-							username: cusData.username,
-							photoURL: cusData.photoURL,
-						},
-						tech: {
-							id: techData.id,
-							username: techData.username,
-							photoURL: techData.photoURL,
-						},
-						post: {
-							id: getPostData.id,
-							title: getPostData.title,
-							file: postData.files[0],
-							etc: postData.etc,
-							price: postData.price,
-							tags: postData.tags,
-							service: postData.service,
-						}
-					}
-
-					reservations.push(rsvDetail);
-					docIndex += 1;
-					if (docIndex === docLength) {
-						res(reservations);
-						console.log("getPreviousRsvs: ", reservations.length);
-					}
-				});
-			} else {
-				res(reservations);
-			}
-		})
-		.catch((error) => {
-			console.log("businessGetFire: getPreviousRsvsOfBus: ", error);
-		})
-	})
-};
-
-const getTechBusinessHours = (busId, techId) => {
+const getTechBusinessHoursFire = (busId, techId) => {
 	return new Promise ((res, rej) => {
 		const getTechData = usersRef.doc(busId).collection("technicians").doc(techId).get();
 		getTechData
@@ -433,7 +207,8 @@ const getTechBusinessHours = (busId, techId) => {
 
 const getBusUpcomingSpecialHours = (busId, specialHourLast) => {
 	return new Promise ((res, rej) => {
-		const now = Date.now();
+		// allow fetching special hours from a day before
+		const now = Date.now() - 24 * 60 * 60 * 1000;
 		let specialHours = [];
 		let getSpecialHours;
 
@@ -536,7 +311,7 @@ const getScheduleBusinessSpecialHours = (busId, techId, dateInMs) => {
 		let busSpecialHours;
 		let techSpecialHours;
 
-		const techBusinessHours = await getTechBusinessHours(busId, techId);
+		const techBusinessHours = await getTechBusinessHoursFire(busId, techId);
 
 		const getBusSpecialHours = usersRef.doc(busId).collection("special_hours").where("date_in_ms", "==", dateInMs).get();
 
@@ -584,17 +359,45 @@ const getScheduleBusinessSpecialHours = (busId, techId, dateInMs) => {
 	});
 };
 
-export default { 
+const getBusSpecialHourFire = (userId, year, monthIndex, date) => {
+	return new Promise (async(res, rej) => {
+
+		const getSpecialHour = usersRef
+		.doc(userId)
+		.collection("special_hours")
+		.where("year", "==", year)
+		.where("monthIndex", "==", monthIndex)
+		.where("date", "==", date)
+
+		getSpecialHour
+		.get()
+		.then((querySnapshot) => {
+			const docLength = querySnapshot.docs.length;
+			if (docLength > 0) {
+				const specialHourDoc = querySnapshot.docs[0];
+				const docData = specialHourDoc.data();
+				res(docData);
+			} else {
+				res(null);
+			}
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+} 
+
+export { 
 	getTechnicians, 
 	getTechniciansByIds, 
 	getTechsRating, 
-	getRsvTimestampsOfTech, 
-	getUpcomingRsvsOfBus, 
-	getPreviousRsvsOfBus,
-	getTechBusinessHours,
+
+	getTechBusinessHoursFire,
 
 	getBusUpcomingSpecialHours,
 	getTechUpcomingSpecialHours,
+
+	getBusSpecialHourFire,
 
 	getScheduleBusinessSpecialHours
 };

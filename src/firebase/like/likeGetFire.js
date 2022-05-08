@@ -4,7 +4,7 @@ const db = Firebase.firestore();
 const postsRef = db.collection("posts");
 const usersRef = db.collection("users");
 
-const checkLikeFire = (postId, uid) => {
+const checkPostLikeFire = (postId, uid) => {
 	return new Promise ((res, rej) => {
     const likesRef = postsRef.doc(postId).collection("whoLike").doc(uid);
     likesRef
@@ -66,5 +66,77 @@ const checkReplyLikeFire = (postId, commentId, replyId, uid) => {
   });
 };
 
+const getPostLikeCountFire = (postId) => {
+  return new Promise ((res, rej) => {
+    postsRef
+    .doc(postId)
+    .get()
+    .then((postDoc) => {
+      if (postDoc.exists) {
+        const postData = postDoc.data();
+        const likeCount = postData.likeCount;
+        res({likeCount: likeCount});
+      } else {
+        rej("post does not exist");
+      }
+    })
+    .catch((error) => {
+      rej(error);
+    })
+  });
+};
 
-export default { checkLikeFire, checkCommentLikeFire, checkReplyLikeFire }; 
+const getCommentLikeCountFire = (postId, commentId) => {
+  return new Promise ((res, rej) => {
+    postsRef
+    .doc(postId)
+    .collection("comments")
+    .doc(commentId)
+    .get()
+    .then((commentDoc) => {
+      if (commentDoc.exists) {
+        const commentData = commentDoc.data();
+        const likeCount = commentData.count_likes;
+        res({count_likes: likeCount});
+      } else {
+        rej("comment does not exist");
+      }
+    })
+    .catch((error) => {
+      rej(error);
+    })
+  });
+};
+
+const getReplyLikeCountFire = (postId, commentId, replyId) => {
+  return new Promise ((res, rej) => {
+    postsRef
+    .doc(postId)
+    .collection("comments")
+    .doc(commentId)
+    .collection("replies")
+    .doc(replyId)
+    .get()
+    .then((replyDoc) => {
+      if (replyDoc.exists) {
+        const replyData = replyDoc.data();
+        const likeCount = replyData.count_likes;
+        res({count_likes: likeCount});
+      } else {
+        rej("reply does not exist");
+      }
+    })
+    .catch((error) => {
+      rej(error);
+    })
+  });
+}
+
+export { 
+  checkPostLikeFire, 
+  checkCommentLikeFire, 
+  checkReplyLikeFire,
+  getPostLikeCountFire,
+  getCommentLikeCountFire,
+  getReplyLikeCountFire
+}; 

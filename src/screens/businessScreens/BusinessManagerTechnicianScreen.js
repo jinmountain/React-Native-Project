@@ -21,10 +21,12 @@ import { Context as SocialContext } from '../../context/SocialContext';
 // Hooks
 
 // Firebase
-import busTechGetFire from '../../firebase/busTechGetFire';
-import busTechPostFire from '../../firebase/busTechPostFire';
-import businessGetFire from '../../firebase/businessGetFire';
-import usersGetFire from '../../firebase/usersGetFire';
+import {
+	getTechnicians
+} from '../../firebase/business/businessGetFire';
+import {
+	getUserInfoFire
+} from '../../firebase/user/usersGetFire';
 
 // Components
 import MainTemplate from '../../components/MainTemplate';
@@ -40,7 +42,7 @@ const TechBoxHeader = ({ techId }) => {
 
   useEffect(() => {
     let isMounted = false;
-    const getUserInfo = usersGetFire.getUserInfoFire(techId);
+    const getUserInfo = getUserInfoFire(techId);
     getUserInfo
     .then((user) => {
       const techUserData = {
@@ -93,7 +95,7 @@ const BusinessManagerTechnicianScreen = ({ navigation, isFocused }) => {
 
     if (isMounted && techFetchSwitch && !techFetchState) {
       setTechFetchState(true);
-      const getTechnicians = businessGetFire.getTechnicians(
+      const getTechnicians = getTechnicians(
         user.id, 
         techFetchLast,
       );

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Alert } from 'react-native';
 import Firebase from '../firebase/config'
-import { navigate } from '../navigationRef';
 
 const signupFire = (email, password, confirmPassword) => {
   return new Promise ((res, rej) => {
@@ -193,4 +192,12 @@ const passwordResetFire = (emailAddress) => {
   })
 }
 
-export default { signupFire, signinFire, signoutFire, localSigninFire, authCheck, sendVerificationEmail, passwordResetFire };
+export { 
+  signupFire, 
+  signinFire, 
+  signoutFire, 
+  localSigninFire, 
+  authCheck, 
+  sendVerificationEmail, 
+  passwordResetFire 
+};

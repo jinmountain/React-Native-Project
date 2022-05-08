@@ -1,5 +1,13 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TouchableHighlight, Text, Platform, Animated } from 'react-native';
+import { 
+  View, 
+  StyleSheet, 
+  TouchableOpacity, 
+  TouchableHighlight, 
+  Text, 
+  Platform, 
+  Animated 
+} from 'react-native';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 const platform = Platform.OS;
@@ -31,12 +39,11 @@ const HeaderForm = (
     rightButtonTitle,
     rightButtonIcon,
     rightCustomButtonIcon,
+    rightButtonIconTextCustomStyle,
     leftButtonPress,
     rightButtonPress,
     headerCustomStyle,
     customTextColor,
-    addPaddingTop,
-    paddingTopCustomStyle,
     middleTitleTextCustomStyle,
     customUnderlayColor
   }
@@ -45,127 +52,117 @@ const HeaderForm = (
   const [ isPad, setIsPad ] = useState(Platform.isPad);
 
   return (
-    <View style={styles.headerShadow}>
-      {
-        addPaddingTop
-        ?
-        <View 
-          style={
-            paddingTopCustomStyle
-            ?
-            [styles.safeAreaPadding, paddingTopCustomStyle]
-            :
-            styles.safeAreaPadding
-          }
-        />
-        : null
-      }
-      <View 
-        style={
-          headerCustomStyle
-          ?
-          [styles.headerContainer, headerCustomStyle]
-          :
-          styles.headerContainer
-        }
-      >
-        <View style={styles.compartmentOuter}>
-          <View style={styles.leftCompartmentContainer}>
-            <View style={styles.leftCompartmentInnerContainer}>
-              {
-                leftCustomButtonIcon
-                ? leftCustomButtonIcon
-                :
-                leftButtonIcon &&
-                <AnimHighlight 
-                  customStyles={
-                    styles.compartmentHighlight
-                  }
-                  onPressOutAction={leftButtonPress}
-                  // deplayPressIn={500}
-                  // onPressIn={() => {
-                  //   console.log("HAHA");
-                  // }}
-                  underlayColor={
-                    customUnderlayColor
-                    ?
-                    customUnderlayColor
-                    :
-                    color.grey4
-                  }
-                  content={
-                    <View style={styles.compartmentIconContainer}>
-                      <Text style={styles.buttonIconText}>{leftButtonIcon}</Text>
-                    </View>
-                  }
-                >
-                </AnimHighlight>
-              }
-              {
-                leftButtonTitle &&
-                <View style={styles.compartmentTextContainer}>
-                  <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
-                </View>
-              }
-            </View>
-          </View>
-          <View style={styles.middleCompartmentContainer}>
-            <View
-              style={styles.middleTitleTextContainer}
-            >
-              <Text 
-                style={
-                  middleTitleTextCustomStyle
+    <View style={[ styles.headerContainer, headerCustomStyle ]}>
+      <View style={styles.compartmentOuter}>
+        <View style={styles.leftCompartmentContainer}>
+          <View style={styles.leftCompartmentInnerContainer}>
+            {
+              leftCustomButtonIcon
+              ? leftCustomButtonIcon
+              :
+              leftButtonIcon &&
+              <AnimHighlight 
+                customStyles={
+                  styles.compartmentHighlight
+                }
+                onPressOutAction={leftButtonPress}
+                // deplayPressIn={500}
+                // onPressIn={() => {
+                //   console.log("HAHA");
+                // }}
+                underlayColor={
+                  customUnderlayColor
                   ?
-                  [ styles.headerTitle, middleTitleTextCustomStyle]
+                  customUnderlayColor
                   :
-                  styles.headerTitle
+                  color.grey4
+                }
+                content={
+                  <View style={styles.compartmentIconContainer}>
+                    <Text style={styles.buttonIconText}>{leftButtonIcon}</Text>
+                  </View>
                 }
               >
-                {headerTitle}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.rightCompartmentContainer}>
-            <View style={styles.rightCompartmentInnerContainer}>
-              {
-                rightButtonTitle &&
-                <View style={styles.compartmentTextContainer}>
-                  <Text style={styles.compartmentText}>{rightButtonTitle}</Text>
-                </View>
-              }
-              { 
-                rightCustomButtonIcon
-                ? rightCustomButtonIcon
-                :
-                rightButtonIcon &&
-                <TouchableHighlight 
-                  style={styles.compartmentHighlight}
-                  onPress={rightButtonPress}
-                  underlayColor={
-                    customUnderlayColor
-                    ?
-                    customUnderlayColor
-                    :
-                    color.grey4
-                  }
-                >
-                  <View style={styles.compartmentIconContainer}>
-                    <Text style={styles.buttonIconText}>{rightButtonIcon}</Text>
-                  </View>
-                </TouchableHighlight>
-              }
-            </View>
+              </AnimHighlight>
+            }
+            {
+              leftButtonTitle &&
+              <View style={styles.compartmentTextContainer}>
+                <Text style={styles.compartmentText}>{leftButtonTitle}</Text>
+              </View>
+            }
           </View>
         </View>
-        {/*<HeaderBottomLine />*/}
+        <View style={styles.middleCompartmentContainer}>
+          <View
+            style={styles.middleTitleTextContainer}
+          >
+            <Text 
+              style={
+                middleTitleTextCustomStyle
+                ?
+                [ styles.headerTitle, middleTitleTextCustomStyle]
+                :
+                styles.headerTitle
+              }
+            >
+              {headerTitle}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.rightCompartmentContainer}>
+          <View style={styles.rightCompartmentInnerContainer}>
+            {
+              rightButtonTitle &&
+              <View style={styles.compartmentTextContainer}>
+                <Text style={styles.compartmentText}>
+                  {rightButtonTitle}
+                </Text>
+              </View>
+            }
+            { 
+              rightCustomButtonIcon
+              ? rightCustomButtonIcon
+              :
+              rightButtonIcon &&
+              <AnimHighlight 
+                customStyles={
+                  styles.compartmentHighlight
+                }
+                onPressOutAction={rightButtonPress}
+                // deplayPressIn={500}
+                // onPressIn={() => {
+                //   console.log("HAHA");
+                // }}
+                underlayColor={
+                  customUnderlayColor
+                  ?
+                  customUnderlayColor
+                  :
+                  color.grey4
+                }
+                content={
+                  <View style={styles.compartmentIconContainer}>
+                    <Text style={[styles.buttonIconText, rightButtonIconTextCustomStyle]}>
+                      {rightButtonIcon}
+                    </Text>
+                  </View>
+                }
+              >
+              </AnimHighlight>
+            }
+          </View>
+        </View>
       </View>
+      {/*<HeaderBottomLine />*/}
     </View>
   )
 };
 
 const styles = StyleSheet.create({
-  headerShadow: {
+  headerContainer: {
+    height: headerBoxHeight,
+    justifyContent: "center",
     backgroundColor: color.white2,
     shadowColor: "#000",
     shadowOffset: {
@@ -178,25 +175,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     // for ios
     zIndex: 5,
-  },
-  safeAreaPadding: {
-    height: RFValue(30)
-  },
-  headerContainer: {
-    height: headerBoxHeight,
-    justifyContent: "center",
-    
-    // ...Platform.select({
-    //   android: {
-    //     paddingTop: '7%',
-    //   },
-    //   ios: {
-    //     paddingTop: '11%',
-    //   },
-    //   default: {
-    //     paddingTop: '7%',
-    //   }
-    // }),
   },
 
   compartmentOuter: {
@@ -255,15 +233,11 @@ const styles = StyleSheet.create({
     borderRadius: RFValue(100),
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    color: color.black1,
-  },
-  customText: {
-    fontSize: RFValue(16),
+    fontSize: RFValue(17),
     color: color.black1,
   },
   buttonIconText: {
-    fontSize: RFValue(17)
+    fontSize: RFValue(15)
   },
 });
 

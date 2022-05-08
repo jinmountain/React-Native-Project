@@ -19,7 +19,9 @@ import { HeaderForm } from '../../components/HeaderForm';
 import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 
 // firebase
-import usersGetFire from '../../firebase/usersGetFire';
+import {
+  getSearchUsersFire
+} from '../../firebase/user/usersGetFire';
 
 // Design
 import { AntDesign } from '@expo/vector-icons';
@@ -46,7 +48,7 @@ const WriteNewMessageScreen = ({ navigation }) => {
     // username must be longer than 4 characters
     if (usernameTextInput.length >= 1) {
       const trimmedInput = usernameTextInput.trim();
-      const searchUsers = usersGetFire.getSearchUsersFire(trimmedInput, 'all');
+      const searchUsers = getSearchUsersFire(trimmedInput, 'all');
       searchUsers
       .then((usersFound) => {
         setUsersFound(usersFound);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   FlatList,
   Image,
@@ -7,6 +7,9 @@ import {
   StyleSheet, 
   // TouchableOpacity,
 } from "react-native";
+
+import { useNavigation } from '@react-navigation/native';
+
 // TouchableOpacity from rngh works on both ios and android
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -18,15 +21,93 @@ import DefaultUserPhoto from '../../components/defaults/DefaultUserPhoto';
 // import { navigate } from '../../navigationRef';
 // Designs
 
+// firebase
+import { postUserSearchHistoryFire } from '../../firebase/user/usersPostFire';
+
+// Contexts
+import { Context as AuthContext } from '../../context/AuthContext';
+
 // Color
 import color from '../../color';
+
+const UserBox = ({
+  item,
+  enablePress,
+  setUsersFound,
+  setSearchUserUsername,
+  setChosenUser,
+  navigateToAccount,
+  enableSearchHistory,
+  pressEnabled,
+  pressUnabled,
+  currentUserId
+}) => {
+  const navigation = useNavigation();
+
+  return (
+    <TouchableOpacity
+      style={
+        enablePress
+        ?
+        styles.usersList
+        : { ...styles.usersList, ...{ opacity: 0.3 } }
+      }
+      onPress={() => {
+        if (enablePress) {
+          setUsersFound([]);
+          setSearchUserUsername('');
+          setChosenUser && setChosenUser(item);
+          navigateToAccount && navigation.navigate('UserAccountStack', {
+            screen: 'UserAccount',
+            params: {
+              accountUserId: item.id
+            }
+          });
+          // enableSearchHistory && save the account user id to search history
+          if (enableSearchHistory) {
+            // save the account user id to to the user's user search history
+            const postUserSearchHistory = postUserSearchHistoryFire(currentUserId, item.id);
+            postUserSearchHistory
+            .then(() => {
+              console.log("good")
+            })
+            .catch((error) => {
+
+            });
+          }
+        } else {
+          pressUnabled && pressUnabled()
+        }
+      }} 
+    >
+      <View style={styles.userPhotoContainer}>
+        { 
+          item.photoURL
+          ?
+          <Image style={styles.userPhoto} source={{ uri: item.photoURL }}/>
+          : <DefaultUserPhoto customSizeBorder={RFValue(68)}/>
+        }
+      </View>
+      <View style={styles.userInfoContainer}>
+        <Text style={styles.usernameText}>@{item.username}</Text>
+      </View>
+    </TouchableOpacity>
+  )
+}
 
 const UsersFoundListForm = ({ 
   usersFound,
   setUsersFound,
   setSearchUserUsername,
   setChosenUser,
+  enablePressCondition,
+  enableSearchHistory,
+  navigateToAccount,
+  pressEnabled,
+  pressUnabled,
 }) => {
+  const { state: { user }} = useContext(AuthContext);
+
   return (
     <View style={styles.usersFoundContainer}>
       <FlatList
@@ -35,35 +116,22 @@ const UsersFoundListForm = ({
         keyExtractor={(user) => user.id}
         renderItem={({ item }) => {
           return (
-            <TouchableOpacity
-              style={
-                item.displayPostCount > 0
-                ?
-                styles.usersList
-                : { ...styles.usersList, ...{ opacity: 0.3 } }
+            <UserBox
+              item={item}
+              enablePress={
+                enablePressCondition === "displayPostCount"
+                ? item.displayPostCount > 0
+                : true
               }
-              onPress={() => {
-                if (item.displayPostCount > 0) {
-                  setUsersFound([]);
-                  setSearchUserUsername(null);
-                  setChosenUser(item);
-                } else {
-                  null
-                }
-              }} 
-            >
-              <View style={styles.userPhotoContainer}>
-                { 
-                  item.photoURL
-                  ?
-                  <Image style={styles.userPhoto} source={{ uri: item.photoURL }}/>
-                  : <DefaultUserPhoto customSizeBorder={RFValue(68)}/>
-                }
-              </View>
-              <View style={styles.userInfoContainer}>
-                <Text style={styles.usernameText}>@{item.username}</Text>
-              </View>
-            </TouchableOpacity>
+              enableSearchHistory={enableSearchHistory}
+              setUsersFound={setUsersFound}
+              setSearchUserUsername={setSearchUserUsername}
+              setChosenUser={setChosenUser}
+              navigateToAccount={navigateToAccount}
+              pressEnabled={pressEnabled}
+              pressUnabled={pressUnabled}
+              currentUserId={user.id}
+            />
           )
         }}
       />
@@ -77,14 +145,13 @@ const styles = StyleSheet.create({
     flex: 1,
     opacity: 1,
     paddingHorizontal: "3%",
-    paddingVertical: 10,
+    paddingVertical: RFValue(10),
   },
 
   usersList:{
     flexDirection: 'row',
     height: RFValue(80),
   },
-
   usernameText: {
     color: color.black1,
     fontSize: RFValue(18),
@@ -92,8 +159,8 @@ const styles = StyleSheet.create({
   userPhotoContainer:{
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
-    paddingHorizontal: 5,
+    marginRight: RFValue(10),
+    paddingHorizontal: RFValue(5),
   },
   userPhoto: {
     width: RFValue(68),

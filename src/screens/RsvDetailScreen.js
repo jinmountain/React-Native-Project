@@ -23,7 +23,7 @@ import SpinnerFromActivityIndicator from '../components/ActivityIndicator';
 import BasicLocationMap from '../components/BasicLocationMap';
 import { HeaderForm } from '../components/HeaderForm';
 import THButtonWithBorder from '../components/buttons/THButtonWithBorder'
-import VerticalSwipePostImage from '../components/postCard/VerticalSwipePostImage';
+import PostImageForm from '../components/postCard/PostImageForm';
 import TwoButtonAlert from '../components/TwoButtonAlert';
 
 // Design
@@ -32,7 +32,11 @@ import { FontAwesome } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
 // Hooks
-import useConvertTime from '../hooks/useConvertTime';
+import {
+  convertToMDD,
+  convertToNormHourMin,
+  convertEtcToHourMin
+} from '../hooks/useConvertTime';
 
 // color
 import color from '../color';
@@ -172,10 +176,10 @@ const RsvDetailScreen = ({ route, navigation }) => {
             <Text style={styles.labelText}>Time and Status</Text>
           </View>
           <View style={styles.dateContainer}>
-            <Text style={styles.boldInfoText}>{useConvertTime.convertToMDD(rsvDetail.rsv.startAt)}</Text>
+            <Text style={styles.boldInfoText}>{convertToMDD(rsvDetail.rsv.startAt)}</Text>
           </View>
           <View style={styles.timeContainer}>
-            <Text style={styles.boldInfoText}>{useConvertTime.convertToNormHourMin(rsvDetail.rsv.startAt)}</Text>
+            <Text style={styles.boldInfoText}>{convertToNormHourMin(rsvDetail.rsv.startAt)}</Text>
           </View>
           <View style={styles.statusContainer}>
             {
@@ -324,7 +328,7 @@ const RsvDetailScreen = ({ route, navigation }) => {
                   {rsvDetail.post.data.price}
                 </Text>
                 <Text><Entypo name="dot-single" size={RFValue(13)} color={color.grey7} /></Text>
-                <Text style={styles.boldInfoText}>{useConvertTime.convertEtcToHourMin(rsvDetail.post.data.etc)}</Text>
+                <Text style={styles.boldInfoText}>{convertEtcToHourMin(rsvDetail.post.data.etc)}</Text>
               </View>
             </View>
           </TouchableOpacity>

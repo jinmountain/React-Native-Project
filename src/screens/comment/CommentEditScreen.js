@@ -7,6 +7,7 @@ import {
   TouchableHighlight,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
+  SafeAreaView,
   TextInput,
   Image,
   Keyboard
@@ -40,11 +41,20 @@ import { timeDifference } from '../../hooks/timeDifference';
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+	entypoDot
+} from '../../expoIcons';
 
 
 const CommentEditScreen = ({ navigation, route }) => {
-	const { postId, commentId, commentData, commentUser, currentUserId, setCurrentCommentData } = route.params;
+	const { 
+		postId, 
+		commentId, 
+		commentData, 
+		commentUser, 
+		currentUserId, 
+		setCurrentCommentData 
+	} = route.params;
 
 	const [ isKeyboardVisible ] = useIsKeyboardVisible();
 
@@ -57,8 +67,8 @@ const CommentEditScreen = ({ navigation, route }) => {
       style={{ flex: 1, backgroundColor: color.white2 }} 
       behavior={Platform.OS == "ios" ? "padding" : "height"}
     >
+    	<SafeAreaView/>
       <HeaderForm
-      	addPaddingTop={true}
         leftButtonIcon={"Cancel"}
         leftButtonPress={() => {
           navigation.goBack();
@@ -83,7 +93,7 @@ const CommentEditScreen = ({ navigation, route }) => {
 	        			text: editedText,
 	        			edited: true
 	        		}
-	        		console.log(editedCommentData)
+	        		// console.log(editedCommentData)
 	        		setEditCommentState(false);
 	        		setCurrentCommentData(editedCommentData);
 	        		navigation.goBack();
@@ -117,7 +127,7 @@ const CommentEditScreen = ({ navigation, route }) => {
 		          <View style={styles.commentBarHeader}>
 		            { 
 		              commentUser && commentUser.username
-		              ? <Text style={styles.headerText}>{commentUser.username} {expoIcons.entypoDot(RFValue(15), color.grey1)} {timeDifference(Date.now(), commentData.createdAt)}</Text>
+		              ? <Text style={styles.headerText}>{commentUser.username} {entypoDot(RFValue(15), color.grey1)} {timeDifference(Date.now(), commentData.createdAt)}</Text>
 		              : null
 		            }
 		          </View>

@@ -18,7 +18,10 @@ import HeaderBottomLine from '../../components/HeaderBottomLine';
 import { HeaderForm } from '../../components/HeaderForm';
 
 // firebase
-import businessPostFire from '../../firebase/businessPostFire';
+import {
+  postBusSpecialHours,
+  postTechSpecialHours
+} from '../../firebase/business/businessPostFire';
 
 // Design
 
@@ -28,7 +31,11 @@ import businessPostFire from '../../firebase/businessPostFire';
 import color from '../../color';
 
 // icon
-import expoIcons from '../../expoIcons';
+import {
+  evilIconsClose,
+  clockIcon,
+  matClockTimeEightOutline
+} from '../../expoIcons';
 
 const checkOpensEarlierThanCloses = (opens, closes) => {
   return new Promise ((res, rej) => {
@@ -166,28 +173,110 @@ const UBSetHoursScreen = ({ navigation, route }) => {
     }
   }, [startHour, startMin, startMeridiem, endHour, endMin, endMeridiem]);
 
+  const saveHours = () => {
+    if (hoursReady) {
+      let militaryStartHour;
+      let militaryEndHour;
+
+      if (startMeridiem === 'AM') {
+        if (startHour === 12) {
+          militaryStartHour = 0;
+        } else {
+          militaryStartHour = startHour;
+        }
+      }
+      if (startMeridiem === 'PM') {
+        if (endHour === 12) {
+          militaryStartHour = startHour;
+        } else {
+          militaryStartHour = startHour + 12;
+        }
+      }
+
+      if (endMeridiem === 'AM') {
+        if (endHour === 12) {
+          militaryEndHour = 0;
+        } else {
+          militaryEndHour = endHour;
+        }
+      } 
+      if (endMeridiem === 'PM') {
+        if (endHour === 12) {
+          militaryEndHour = endHour;
+        } else {
+          militaryEndHour = endHour + 12;
+        }
+      }
+
+      const newHours = {
+        opens: {
+          hour: militaryStartHour,
+          min: startMin
+        },
+        closes: {
+          hour: militaryEndHour,
+          min:  endMin
+        }
+      }
+
+      const mergedHours = [ ...currentHours, newHours ];
+      if (hoursType === 'business') {
+        navigation.navigate('SetBusinessHours', {
+          userType: userType,
+          newHours: newHours,
+          businessDay: businessDay,
+          techId: techId
+        });
+      };
+
+      if (hoursType === 'special') {
+        let postSpecialHours;
+
+        if (userType === "bus") {
+          postSpecialHours = postBusSpecialHours(busId, docId, mergedHours);
+        };
+        if (userType === "tech") {
+          postSpecialHours = postTechSpecialHours(busId, techId, docId, mergedHours);
+        };
+
+        // add to firestore
+        postSpecialHours
+        .then(() => {
+          // and then navigate back with params
+          navigation.navigate('SetSpecialHours', {
+            userType: userType,
+            newHours: newHours,
+            specialDateIndex: specialDateIndex,
+            techId: techId
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+      };
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.headerBarContainer}>
         <SafeAreaView/>
         <HeaderForm 
           leftButtonTitle={null}
-          leftButtonIcon={expoIcons.evilIconsClose(RFValue(27), color.black1)}
+          leftButtonIcon={evilIconsClose(RFValue(27), color.black1)}
           headerTitle={"Hours"} 
           rightButtonIcon={"Save"} 
           leftButtonPress={() => {
             navigation.goBack();
           }}
-          rightButtonPress={() => {
-            console.log("save");
-          }}
+          rightButtonPress={saveHours}
         />
       </View>
       <HeaderBottomLine />
       <View style={styles.timeContainer}>
         <View style={styles.labelContainer}>
           <View style={styles.labelTitleContainer}>
-            <Text style={styles.labelText}>{expoIcons.clockIcon(RFValue(27), color.red2)} Opens</Text>
+            <Text style={styles.labelText}>{clockIcon(RFValue(27), color.red2)} Opens</Text>
           </View>
           {
             startHour && startMin !== null && startMeridiem
@@ -366,7 +455,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
         <HeaderBottomLine />
         <View style={styles.labelContainer}>
           <View style={styles.labelTimeContainer}>
-            <Text style={styles.labelText}>{expoIcons.matClockTimeEightOutline(RFValue(27), color.red2)} Closes</Text>
+            <Text style={styles.labelText}>{matClockTimeEightOutline(RFValue(27), color.red2)} Closes</Text>
           </View>
           {
             endHour && endMin !== null && endMeridiem
@@ -547,89 +636,7 @@ const UBSetHoursScreen = ({ navigation, route }) => {
           : styles.saveHourButtonContainer
         }
         underlayColor={color.grey4}
-        onPress={() => {
-          if (hoursReady) {
-            let militaryStartHour;
-            let militaryEndHour;
-
-            if (startMeridiem === 'AM') {
-              if (startHour === 12) {
-                militaryStartHour = 0;
-              } else {
-                militaryStartHour = startHour;
-              }
-            }
-            if (startMeridiem === 'PM') {
-              if (endHour === 12) {
-                militaryStartHour = startHour;
-              } else {
-                militaryStartHour = startHour + 12;
-              }
-            }
-
-            if (endMeridiem === 'AM') {
-              if (endHour === 12) {
-                militaryEndHour = 0;
-              } else {
-                militaryEndHour = endHour;
-              }
-            } 
-            if (endMeridiem === 'PM') {
-              if (endHour === 12) {
-                militaryEndHour = endHour;
-              } else {
-                militaryEndHour = endHour + 12;
-              }
-            }
-
-            const newHours = {
-              opens: {
-                hour: militaryStartHour,
-                min: startMin
-              },
-              closes: {
-                hour: militaryEndHour,
-                min:  endMin
-              }
-            }
-
-            const mergedHours = [ ...currentHours, newHours ];
-            if (hoursType === 'business') {
-              navigation.navigate('SetBusinessHours', {
-                userType: userType,
-                newHours: newHours,
-                businessDay: businessDay,
-                techId: techId
-              });
-            };
-
-            if (hoursType === 'special') {
-              let postSpecialHours;
-
-              if (userType === "bus") {
-                postSpecialHours = businessPostFire.postBusSpecialHours(busId, docId, mergedHours);
-              };
-              if (userType === "tech") {
-                postSpecialHours = businessPostFire.postTechSpecialHours(busId, techId, docId, mergedHours);
-              };
-
-              // add to firestore
-              postSpecialHours
-              .then(() => {
-                // and then navigate back with params
-                navigation.navigate('SetSpecialHours', {
-                  userType: userType,
-                  newHours: newHours,
-                  specialDateIndex: specialDateIndex,
-                  techId: techId
-                });
-              })
-              .catch((error) => {
-                console.log(error);
-              })
-            };
-          }
-        }}
+        onPress={saveHours}
       >
         <View style={styles.saveTextContainer}>
           <Text 
