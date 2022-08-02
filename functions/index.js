@@ -5,19 +5,19 @@ admin.initializeApp();
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 
-exports.addMessage = functions.https.onRequest(async (req, res) => {
-  const original = req.query.text;
-  const writeResult = await admin
-      .firestore()
-      .collection("messages")
-      .add({original: original});
-  res.json({result: `Message with ID: ${writeResult.id} added.`});
-});
+// get new avg based on the new value
+exports.updateUser = functions.firestore
+    .document("users/{userId}/technicians/{techId}")
+    .onWrite((change, context) => {
+      const newValue = change.after.data();
 
-exports.makeUppercase = functions.firestore.document("/messages/{documentId}")
-    .onCreate((snap, context) => {
-      const original = snap.data().original;
-      functions.logger.log("Uppercasing", context.params.documentId, original);
-      const uppercase = original.toUpperCase();
-      return snap.ref.set({uppercase}, {merge: true});
+      if (newValue.totalRating > 0 && newValue.countRating > 0) {
+        const newAvgRating = newValue.totalRating / newValue.countRating;
+
+        // console.log("new avg rating: ", newAvgRating);
+
+        return change.after.ref.set({
+          avgRating: newAvgRating,
+        }, {merge: true});
+      }
     });

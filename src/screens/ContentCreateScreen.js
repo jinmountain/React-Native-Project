@@ -12,12 +12,13 @@ import {
   FlatList,
   Text,
   TouchableHighlight,
-  Alert
+  Alert,
+  ScrollView,
+  KeyboardAvoidingView
 } from 'react-native';
 
 // npms
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as MediaLibrary from 'expo-media-library'
 import { Video, AVPlaybackStatus } from 'expo-av';
@@ -196,7 +197,8 @@ const addPost = (
   postETC,
   selectedTechs,
   changeProgress,
-  setPostState
+  setPostState,
+  location
 ) => {
   return new Promise((res, rej) => {
     setPostState(true);
@@ -246,6 +248,10 @@ const addPost = (
           caption: caption,
           likeCount: 0,
           heat: 0,
+          location: {
+            lat: location.lat,
+            lng: location.lng
+          }
         }
 
         // if the post is a dipslay post
@@ -258,7 +264,7 @@ const addPost = (
               title: postTitle, 
               price: Number(postPrice), 
               etc: Number(postETC), 
-              techs: selectedTechs 
+              techs: selectedTechs
             }
           }
         } else {
@@ -280,11 +286,14 @@ const addPost = (
         } else {
           newPost = { ...newPost, ...{ isRated: false }}
         }
+
+        // add post test
+        console.log(newPost);
         
         // Firestore | posts | post.id | newPost
         // await until the post is made.
-        const addPost = addPostFire(newPost);
-        addPost
+        const addPostToDB = addPostFire(newPost);
+        addPostToDB
         .then((post) => {
           console.log("post: ", post);
           if (post) {
@@ -388,7 +397,6 @@ const ContentCreateScreen = ({ navigation }) => {
   const [ chosenUserDisplayPostFetchSwitch, setChosenUserDisplayPostFetchSwtich ] = useState(true);
   const [ chosenUserDisplayPostState, setChosenUserDisplayPostState ] = useState(false);
 
-
   const Reset = () => {
     setAlertBoxStatus(false);
     setAlertBoxText(null);
@@ -421,11 +429,24 @@ const ContentCreateScreen = ({ navigation }) => {
     state: { user },
   } = useContext(AuthContext);
 
+  const {
+    state: { currentLocation },
+  } = useContext(LocationContext);
+
   useEffect(() => {
+
+    // user type business and regular
+    // business 
+    // with coordinates
+    // without -
+    // regular
+    // with location on
+    // without -
+
     return () => {
       Reset();
     }
-  }, [])
+  }, []);
 
   // user search
   useEffect(() => {
@@ -596,7 +617,7 @@ const ContentCreateScreen = ({ navigation }) => {
             }}
           />
           :
-          <KeyboardAwareScrollView>
+          <ScrollView>
             {
               user.type === "business" && chosenUser === null
               ?
@@ -801,7 +822,7 @@ const ContentCreateScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
             <View style={{ height: RFValue(50) }}/>
-          </KeyboardAwareScrollView>
+          </ScrollView>
         }
         { 
           // put this at the last so it can be on the top of others

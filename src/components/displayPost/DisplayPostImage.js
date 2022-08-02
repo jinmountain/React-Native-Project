@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Video, AVPlaybackStatus } from 'expo-av';
 
-const DisplayPostImage = ({ type, url, imageWidth }) => {
+const DisplayPostImage = ({ type, url, imageWidth, imageCustomStyle }) => {
 
   const [status, setStatus] = React.useState({});
 
@@ -30,7 +30,7 @@ const DisplayPostImage = ({ type, url, imageWidth }) => {
     ?
     <Image
       defaultSource={require('../../../img/defaultImage.jpeg')}
-    	style={{ width: imageWidth, height: imageWidth, borderRadius: 9 }} 
+    	style={[{ width: imageWidth, height: imageWidth, borderRadius: 9 }, imageCustomStyle]} 
     	source={{ uri: url }}
     />
     : null

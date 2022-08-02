@@ -81,7 +81,8 @@ const signinFire = (email, password) => {
               delete userData['coordinates']
             }
             usersRef.doc(uid).update({ 
-              last_login_at: Date.now()
+              last_login_at: Date.now(),
+              appState: 'active'
             });
             res(userData);
           };
@@ -121,7 +122,8 @@ const localSigninFire = () => {
             console.log("fetched the current user's data: ", userData.email);
             // update last login to the current time and the user data before updated is pulled and use it
             usersRef.doc(userData.id).update({ 
-              last_login_at: Date.now()
+              last_login_at: Date.now(),
+              appState: 'active'
             });
             res(userData);
           })

@@ -30,7 +30,8 @@ const DisplayPostInfo = ({
 	likeCount, 
 	etc, 
 	price, 
-	infoBoxBackgroundColor 
+	infoBoxBackgroundColor,
+	infoTextFontSize
 }) => {
 	return (
 		<View style={[ 
@@ -40,32 +41,38 @@ const DisplayPostInfo = ({
 			? { backgroundColor: infoBoxBackgroundColor }
 			: null
 		]}>
-			<View style={styles.infoTop}>
-				<Text style={styles.infoTitleText} numberOfLines={1}>
-					{title}
-				</Text>
-			</View>
+			{
+				title &&
+				<View style={styles.infoTop}>
+					<Text style={styles.infoTitleText} numberOfLines={1}>
+						{title}
+					</Text>
+				</View>
+			}
 			<View style={styles.infoBottom}>
 				<View style={styles.infoContainer}>
-					<AntDesign name="hearto" size={RFValue(11)} color={color.ratingRed} />
-					<Text style={styles.infoText} numberOfLines={1}>
+					<AntDesign 
+					name="hearto" 
+					size={infoTextFontSize} 
+					color={color.ratingRed} />
+					<Text style={[ styles.infoText, {fontSize: infoTextFontSize} ]} numberOfLines={1}>
 						{likeCount}
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
-					<Text style={styles.infoText} numberOfLines={1}>
+					<Text style={[ styles.infoText, {fontSize: infoTextFontSize} ]} numberOfLines={1}>
 						${price}
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
-					{clockIcon(RFValue(11), color.black1)}
-			  	<Text style={styles.infoText} numberOfLines={1}>
+					{clockIcon(infoTextFontSize, color.black1)}
+			  	<Text style={[ styles.infoText, {fontSize: infoTextFontSize} ]} numberOfLines={1}>
 						{etc}
 			  	</Text>
 				</View>
 				<View style={styles.infoContainer}>
-					<AntDesign name="staro" size={RFValue(11)} color={color.yellow2} />
-					<Text style={styles.infoText} numberOfLines={1}>
+					<AntDesign name="staro" size={infoTextFontSize} color={color.yellow2} />
+					<Text style={[ styles.infoText, {fontSize: infoTextFontSize} ]} numberOfLines={1}>
 						{rating}
 			  	</Text>
 				</View>
@@ -76,7 +83,7 @@ const DisplayPostInfo = ({
 
 const styles = StyleSheet.create({ 
 	displayPostInfoContainer: {
-		flex: 1,
+
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 2,

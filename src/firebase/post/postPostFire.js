@@ -3,7 +3,9 @@ import firebase from 'firebase/app';
 
 // hooks
 import makeTagBridgeId from '../../hooks/makeTagBridgeId';
-import useConvertTime from '../../hooks/useConvertTime';
+import {
+  convertToTime
+} from '../../hooks/useConvertTime';
 
 const uid = () => {
   return (Firebase.auth().currentUser || {}).uid
@@ -31,13 +33,15 @@ const addPostFire = (newPost) => {
       // add each tag and its tid(timestamp) into tags collection
       let tagIndex; // tagIndex for the first level doc in tags
       let relatedTagIndex; // relatedTagIndex for the tags in related in tag docs
+
       const postTags = newPost.tags;
       const tagLength = postTags.length;
+      
       for (tagIndex = 0; tagIndex < tagLength; tagIndex++) {
         const currentTag = postTags[tagIndex];
         const smallCurrentTag = currentTag.toLowerCase()
         const checkExistingTag = await tagsRef.doc(smallCurrentTag).get();
-        console.log("checkExistingTag: ", checkExistingTag.data());
+        // console.log("checkExistingTag: ", checkExistingTag.data());
         const existingTagData = checkExistingTag.data();
         if (existingTagData === undefined) {
           batch.set(
@@ -75,21 +79,21 @@ const addPostFire = (newPost) => {
         // until tag index is less than tagLength - 1
         if (tagIndex < tagLength - 1) {
           for (relatedTagIndex = tagIndex + 1; relatedTagIndex < tagLength; relatedTagIndex++) {
-            console.log("relatedTagIndex: ", relatedTagIndex);
+            // console.log("relatedTagIndex: ", relatedTagIndex);
 
             const rootTag = postTags[tagIndex];
             const nextTag = postTags[relatedTagIndex]
 
-            console.log("rootTag: ", rootTag, "nextTag: ", nextTag);
+            // console.log("rootTag: ", rootTag, "nextTag: ", nextTag);
 
             const tagBridgeId = await makeTagBridgeId(rootTag, nextTag);
 
-            console.log("tag brideg id: ", tagBridgeId);
+            // console.log("tag bridge id: ", tagBridgeId);
 
             const checkExistingTagBridge = await tagBridgesRef.doc(tagBridgeId).get();
             const existingTagBridgeData = checkExistingTagBridge.data();
 
-            console.log("existing tag brideg: ", existingTagBridgeData);
+            // console.log("existing tag bridge: ", existingTagBridgeData);
 
             if (existingTagBridgeData === undefined) {
               batch.set(
@@ -125,7 +129,7 @@ const addPostFire = (newPost) => {
 
       // Create a post
       // make a new post with firebase refs before create a post
-      const postRef = Firebase.firestore().collection("posts")
+      const postRef = db.collection("posts")
       const id = await postRef.doc().id;
 
       batch.set(
@@ -142,33 +146,40 @@ const addPostFire = (newPost) => {
           usersRef,
           { 
             displayPostCount: postCountIncrement,
-            last_display_post_update_at: Date.now()
+            last_display_post_update_at: now
           }
         );
+      }
+      else if (!newPost.display && newPost.isRated) {
+        batch.update(
+          usersRef,
+          {
+            reviewPostCount: postCountIncrement,
+            last_review_post_update_at: now
+          }
+        );
+      }
       // if the post is a regular post without rating
-      } else {
+      else {
         batch.update(
           usersRef,
           { 
             postCount: postCountIncrement,
-            last_post_update_at: Date.now()
+            last_post_update_at: now
           }
         );
       }
+      // console.log("post count");
 
       // if there are a tagged user, rating, and a tagged post
       //  - countRating +1
       //  - totalRating +rating
       //  - countRating(one, two, three, four, five)
 
-      if (
-        newPost.isRated &&
-        newPost.ratedBusId && 
-        newPost.ratedPostId && 
-        newPost.rating && 
-        newPost.ratedTechId
-      ) {
-        const nowTime = useConvertTime.convertToTime(now);
+      if (newPost.isRated) {
+        // console.log("isRated: ", newPost.isRated);
+
+        const nowTime = convertToTime(now);
         const nowMonthIndex = nowTime.monthIndex;
         const nowNormalMonth = nowTime.normalMonth;
         const nowYear = nowTime.year;
@@ -178,6 +189,8 @@ const addPostFire = (newPost) => {
         const countRatingIncrement = firebase.firestore.FieldValue.increment(1);
 
         const ratedUserRef = db.collection("users").doc(newPost.ratedBusId);
+
+        // console.log("nowTime: ", nowTime);
 
         let ratedPostChange = { 
           countRating: countRatingIncrement, 
@@ -216,6 +229,7 @@ const addPostFire = (newPost) => {
           { merge: true }
         );
 
+        // ratedPostChange with month and year
         const ratedPostChageMonthYear = { 
           ...ratedPostChange,
           monthIndex: nowMonthIndex,
@@ -250,11 +264,18 @@ const addPostFire = (newPost) => {
           ratedPostChageMonthYear,
           { merge: true }
         );
+
+        // tech user rating
+        batch.set(
+          db.collection("users").doc(newPost.ratedTechId),
+          ratedPostChange,
+          { merge: true }
+        )
       };
       
       // final commit
       batch.commit();
-      res({id: id, data: newPost});
+      res({ id: id, data: newPost });
     } catch {(error) => {
       console.log("Error occured: contentPostFire: addPostFire: ", error);
       res(false);
@@ -267,17 +288,18 @@ const uploadFileAsyncFire = (userId, fileId, fileType, uri) => {
     let path;
 
     if (fileType === 'video') {
-      path = `${userId}/post/videos/${fileId}`;
+      path = `post/videos/${userId}/${fileId}`;
     }
     else if (fileType === 'photo') {
-      path = `${userId}/post/images/${fileId}`;
+      path = `post/images/${userId}/${fileId}`;
     } 
     else if (fileType === 'image') {
-      path = `${userId}/post/images/${fileId}`;
+      path = `post/images/${userId}/${fileId}`;
     }
     else {
       return
     };
+    
     const response = await fetch(uri);
     const file = await response.blob();
     let upload = Firebase

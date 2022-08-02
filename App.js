@@ -224,6 +224,7 @@ const App = () => {
     }
   }, [appStateVisible]);
 
+  // receive the state of app and set state
   const handleAppStateChange = (nextAppState) => {
     appState.current = nextAppState;
     setAppStateVisible(appState.current);
@@ -260,9 +261,10 @@ const App = () => {
   useEffect(() => {
     let notificationListener;
     let userDataListener;
+    let appStateListener;
 
     if (userId) {
-      AppState.addEventListener('change', handleAppStateChange);
+      appStateListener = AppState.addEventListener('change', handleAppStateChange);
       notificationListener = getUserNotificationsRealtime(userId, schedulePushNotification);
       userDataListener = getUserDataRealtime(userId, addCurrentUserData);
     } else {
@@ -272,6 +274,10 @@ const App = () => {
       if (userDataListener) {
         userDataListener();
       };
+
+      if (appStateListener) {
+        appStateListener.remove();
+      }
     }
 
     return () => {
@@ -286,7 +292,9 @@ const App = () => {
       };
       
       // remove app state listener
-      AppState.removeEventListener('change', handleAppStateChange);
+      if (appStateListener) {
+        appStateListener.remove();
+      }
     };
   }, [userId]);
 

@@ -74,10 +74,10 @@ const uploadFileAsyncFire = (userId, fileId, fileType, uri, changeProgress) => {
     let path;
 
     if (fileType === 'video') {
-      path = `${userId}/chat/videos/${fileId}`;
+      path = `chat/videos/${userId}/${fileId}`;
     }
     else if (fileType === 'image') {
-      path = `${userId}/chat/photos/${fileId}`;
+      path = `chat/photos/${userId}/${fileId}`;
     } else {
       return
     };

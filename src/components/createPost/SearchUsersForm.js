@@ -482,6 +482,17 @@ const styles = StyleSheet.create({
   userSearchFormContainer: {
     paddingTop: RFValue(10),
     backgroundColor: color.white2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    // for android
+    elevation: 5,
+    // for ios
+    zIndex: 5
   },
   searchBarContainer: {
     marginVertical: RFValue(7),

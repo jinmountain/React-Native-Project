@@ -14,16 +14,16 @@ const reservationsRef = db.collection('reservations');
 const getTechnicians = (
 	busId, 
 	techLast,
+	status = "active",
+	limit = 12
 ) => {
 	return new Promise (async (res, rej) => {
-		const LIMIT = 12
-
 		let techniciansRef;
 		if (techLast) {
 			techniciansRef = usersRef
 			.doc(busId)
 			.collection("technicians")
-			.where("status", "==", "active")
+			.where("status", "==", status)
 			.orderBy("createdAt", "desc")
 			.startAfter(techLast)
 			console.log("getTechnicians => startAfter");
@@ -31,12 +31,12 @@ const getTechnicians = (
 			techniciansRef = usersRef
 			.doc(busId)
 			.collection("technicians")
-			.where("status", "==", "active")
+			.where("status", "==", status)
 			.orderBy("createdAt", "desc")
 		};
 
 		techniciansRef
-		.limit(LIMIT)
+		.limit(limit)
 		.get()
 		.then(async (querySnapshot) => {
 			let docIndex = 0;
@@ -118,6 +118,7 @@ const getTechniciansByIds = (techs) => {
 	})
 }
 
+// get techs and their rating related to the post
 const getTechsRating = (techs, busId, postId) => {
 	return new Promise ( async (res, rej) => {
 		let technicians = [];
@@ -143,10 +144,11 @@ const getTechsRating = (techs, busId, postId) => {
 					// get tech rating for this post
 					let techRatingPost;
 					try {
-						const getTechRatingPost = await usersRef.doc(busId).collection("technicians").doc(techs[i]).collection("ratingsByPost").doc(postId).get();
+						const getTechRatingPost = await usersRef.doc(busId).collection("technicians").doc(techs[i]).collection("post_ratings").doc(postId).get();
 						techRatingPost = getTechRatingPost.data();
-					} catch {(error) => {
-						console.log("businessGetFire: getTechsRating: getTechRatingPost: ", error);
+					} 
+					catch {(error) => {
+						rej(error);
 					}}
 					
 					let tech = {
@@ -158,16 +160,20 @@ const getTechsRating = (techs, busId, postId) => {
 		    			specialHours: techData.special_hours
 		    		},
 		    		techRatingBus: {
-		    			countRating: techRatingBus.countRating,
-		    			totalRating: techRatingBus.totalRating
+		    			countRating: techRatingBus.countRating ? techRatingBus.countRating : 0,
+		    			totalRating: techRatingBus.totalRating ? techRatingBus.totalRating : 0
 		    		},
+		    		techRatingPost: {
+		    			countRating: 0,
+		    			totalRating: 0
+		    		}
 					}
 
 					if (techRatingPost !== undefined) {
 						tech = { ...tech, ...{
 								techRatingPost: {
-				    			countRating: techRatingPost.countRating,
-				    			totalRating: techRatingPost.totalRating
+				    			countRating: techRatingPost.countRating ? techRatingPost.countRating : 0,
+				    			totalRating: techRatingPost.totalRating ? techRatingPost.totalRating : 0
 				    		}
 				    	}
 				    }
@@ -180,11 +186,33 @@ const getTechsRating = (techs, busId, postId) => {
 					}
 				}
 			}
-		} catch {(error) => {
-			res(technicians);
-			console.log("Error occured: firebase: businessGetFire: getTechsRating")
+		} 
+		catch {(error) => {
+			rej(error);
 		}}
 	})
+};
+
+// get tech avg rating
+const getTechAvgRatingFire = (busId, techId) => {
+	return new Promise ((res, rej) => {
+		const getTechData = usersRef.doc(busId).collection("technicians").doc(techId).get();
+		getTechData
+		.then((doc) => {
+			const techData = doc.data();
+			res(techData);
+		})
+		.catch((error) => {
+			rej(error);
+		});
+	});
+};
+
+// get tech rating related to a specific display post
+const getTechRatingOfDPFire = (busId, techId, postId) => {
+	return new Promise ((res, rej) => {
+
+	});
 };
 
 const getTechBusinessHoursFire = (busId, techId) => {

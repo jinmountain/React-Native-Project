@@ -12,12 +12,12 @@ import {
 	Image,
 	FlatList,
 	Dimensions,
+	SafeAreaView
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 // NPMs
-import { SafeAreaView, } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Components

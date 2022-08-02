@@ -79,8 +79,9 @@ const RegisterTechnicianScreen = ({ navigation }) => {
 	      >
 	      	<View style={styles.selectServiceButtonContainer}>
 	        	<Text style={styles.selectServiceText}>
-	        		Select Your Business' Services {chevronForward(RFValue(23), color.black1)}
+	        		Select Your skills 
 	        	</Text>
+	        	{chevronForward(RFValue(23), color.black1)}
 	        </View>
 	      </Pressable>
 	      <HeaderBottomLine />
@@ -137,25 +138,13 @@ const RegisterTechnicianScreen = ({ navigation }) => {
 		          	setChecked(!isChecked)
 		          }}
 						/>
-		        <Text>By checking the box I agree the statement above.</Text>
+		        <Text>I agree the statement above.</Text>
 					</View>
 					<View style={styles.buttonContainerContainer}>
 						<View style={styles.rowContainer}>
 							<TouchableOpacity 
 								style={{ ...styles.buttonContainer, ...{ backgroundColor: "#E9FEFF" }}}
 								onPress={() => {
-									isChecked 
-									? 
-									(
-										setRegistering(true),
-										technicianRegister(user.id)
-										.then(() => {
-											navigation.goBack();
-											setRegistering(false);
-										})
-									)
-									: console.log("need checkmark")
-
 									const techRegister = technicianRegister(techService);
 									isChecked && techService.length > 0
 									? 
@@ -439,10 +428,11 @@ const styles = StyleSheet.create({
 	},
 
 	selectServiceButtonContainer: {
-		justifyContent: 'center', 
-		paddingLeft: RFValue(12), 
+		flexDirection: 'row',
+		paddingHorizontal: RFValue(12), 
 		paddingVertical: RFValue(10),
-		justifyContent: 'center',
+		alignItems: 'center',
+		justifyContent: 'space-between'
 	},
 	selectServiceText: {
 		fontSize: RFValue(19),

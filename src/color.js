@@ -26,6 +26,7 @@ export default {
 
 	white1: '#F9F9F9', // background color
 	white2: '#FFFFFF', // video background color
+	white3: '#F3F3F3',
 
 	ratingGuide: '#E0E0E0',
 	rating0: '#5A646A',

@@ -6,10 +6,12 @@ import
 	Text, 
 	Image, 
 	TouchableOpacity,
-	TextInput
+	TextInput,
+	SafeAreaView,
+	KeyboardAvoidingView,
+	TouchableWithoutFeedback,
+	Keyboard,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Context as AuthContext } from '../context/AuthContext';
 import NavLink from '../components/NavLink';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
@@ -34,58 +36,62 @@ const SignupScreen = ({ navigation }) => {
 	}, []);
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<KeyboardAwareScrollView
-				style={styles.signScreenContainer}
-				keyboardShouldPersistTaps="always"
-			>
-				<Image
-					style={styles.logo}
-					// source={require('../../../assets/icon.png')}
-				/>
-				{state.errorMessage ? <Text style={styles.errorMessage}>{state.errorMessage}</Text> : null}
-				<TextInput
-					style={styles.input}
-					placeholder='E-mail'
-					placeholderTextColor="#aaaaaa"
-					onChangeText={(text) => setEmail(text)}
-					value={email}
-					underlineColorAndroid="transparent"
-					autoCapitalize="none"
-				/>
-				<TextInput
-					style={styles.input}
-					placeholderTextColor="#aaaaaa"
-					secureTextEntry
-					placeholder='Password'
-					onChangeText={(text) => setPassword(text)}
-					value={password}
-					underlineColorAndroid="transparent"
-					autoCapitalize="none"
-				/>
-				<TextInput
-					style={styles.input}
-					placeholderTextColor="#aaaaaa"
-					secureTextEntry
-					placeholder='Confirm Password'
-					onChangeText={(text) => setConfirmPassword(text)}
-					value={confirmPassword}
-					underlineColorAndroid="transparent"
-					autoCapitalize="none"
-				/>
-				<TouchableOpacity
-					style={styles.button}
-					onPress={() => 
-						signup({email, password, confirmPassword})
-					}>
-					<Text style={styles.buttonTitle}>Create account</Text>
-				</TouchableOpacity>
-				<NavLink
-					routeName="Signin"
-					text="Already have an account? Sign in instead!"
-				/>
-			</KeyboardAwareScrollView>
-		</SafeAreaView>
+		<KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+    	<TouchableWithoutFeedback 
+        onPress={Keyboard.dismiss}
+      >
+        <View style={styles.inner}>
+					<Image
+						style={styles.logo}
+						// source={require('../../../assets/icon.png')}
+					/>
+					{state.errorMessage ? <Text style={styles.errorMessage}>{state.errorMessage}</Text> : null}
+					<TextInput
+						style={styles.input}
+						placeholder='E-mail'
+						placeholderTextColor="#aaaaaa"
+						onChangeText={(text) => setEmail(text)}
+						value={email}
+						underlineColorAndroid="transparent"
+						autoCapitalize="none"
+					/>
+					<TextInput
+						style={styles.input}
+						placeholderTextColor="#aaaaaa"
+						secureTextEntry
+						placeholder='Password'
+						onChangeText={(text) => setPassword(text)}
+						value={password}
+						underlineColorAndroid="transparent"
+						autoCapitalize="none"
+					/>
+					<TextInput
+						style={styles.input}
+						placeholderTextColor="#aaaaaa"
+						secureTextEntry
+						placeholder='Confirm Password'
+						onChangeText={(text) => setConfirmPassword(text)}
+						value={confirmPassword}
+						underlineColorAndroid="transparent"
+						autoCapitalize="none"
+					/>
+					<TouchableOpacity
+						style={styles.button}
+						onPress={() => 
+							signup({email, password, confirmPassword})
+						}>
+						<Text style={styles.buttonTitle}>Create account</Text>
+					</TouchableOpacity>
+					<NavLink
+						routeName="Signin"
+						text="Already have an account? Sign in instead!"
+					/>
+				</View>
+			</TouchableWithoutFeedback>
+		</KeyboardAvoidingView>
 	);
 };
 
@@ -94,19 +100,17 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: color.white1,
 	},
-	signScreenContainer: {
-		flex: 1, 
-		marginHorizontal: RFValue(20),
-	},
+  inner: {
+    flex: 1,
+    marginHorizontal: RFValue(20),
+    justifyContent: 'center',
+  },
 	title: {
 
 	},
 	logo: {
-		flex: 1,
-		height: 120,
-		width: 90,
-		alignSelf: "center",
-		margin: 30
+    height: RFValue(50),
+    width: RFValue(50)
 	},
 	input: {
 		height: 48,

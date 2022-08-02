@@ -122,22 +122,6 @@ import color from '../color';
 	const PullToRefreshDist = 50;
 
 const AccountScreen = ({ route, navigation }) => {
-	// -- add a new post and change post states
-		const { newPost } = route.params;
-		useEffect(() => {
-			if (newPost) {
-				if (newPost.display) {
-					setAccountDisplayPosts([ newPost, ...accountDisplayPosts ]);
-				}
-				else if (newPost.isRated) {
-
-				}
-				else {
-					setAccountPosts([ newPost, ...accountPosts ]);
-				}
-			}
-		}, [newPost]);
-
 	// -- orientation responsive width and height
 		const [ windowWidth, setWindowWidth ] = useState(Dimensions.get("window").width);
 	  const [ windowHeight, setWindowHeight ] = useState(Dimensions.get("window").height);
@@ -156,6 +140,22 @@ const AccountScreen = ({ route, navigation }) => {
 
   // -- account screen post states and effect
 		const [ screenReady, setScreenReady ] = useState(false);
+
+		// -- add a new post and change post states
+		const { newPost } = route.params;
+		useEffect(() => {
+			if (newPost && screenReady) {
+				if (newPost.display) {
+					setAccountDisplayPosts([ newPost, ...accountDisplayPosts ]);
+				}
+				else if (newPost.isRated) {
+
+				}
+				else {
+					setAccountPosts([ newPost, ...accountPosts ]);
+				}
+			}
+		}, [newPost]);
 
 		const { state: { user }, accountRefresh } = useContext(AuthContext);
 		const [ isBusHoursVisible, setIsBusHoursVisible ] = useState(false); 
@@ -1153,7 +1153,7 @@ const AccountScreen = ({ route, navigation }) => {
 			            snapToInterval={DISPLAY_POST_WIDTH + DISPLAY_POST_MARGIN}
 			            showsHorizontalScrollIndicator={false}
 			            data={accountDisplayPosts}
-			            keyExtractor={(displayPost, index ) => index.toString()}
+			            keyExtractor={(displayPost, index) => index.toString()}
 			            getItemLayout={
 			            	(data, index) => (
 				            	{

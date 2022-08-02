@@ -9,8 +9,8 @@ import
 	TouchableOpacity, 
 	TouchableHighlight,
 	StyleSheet, 
+	SafeAreaView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 // Contexts

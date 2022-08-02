@@ -16,7 +16,7 @@ import { AntDesign } from '@expo/vector-icons';
 import color from '../../color';
 
 // icons
-import expoIcons from '../../expoIcons';
+import { snailShell } from '../../expoIcons';
 
 const TagInputForm = ({ tags, setTags }) => {
   // const { 
@@ -69,7 +69,6 @@ const TagInputForm = ({ tags, setTags }) => {
                     >
                       <View style={styles.unitContainer}>
                         <View style={styles.tagsContainer}>
-                          {expoIcons.snailShell(RFValue(15), color.black1)}
                           <Text style={styles.tagText}>
                             {item}
                           </Text>
